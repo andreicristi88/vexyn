@@ -1,0 +1,19 @@
+{
+  "name": "Vexyn",
+  "short_name": "Vexyn",
+  "description": "Privacy-first browser tools. Everything runs on your device.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities", "developer"]
+}

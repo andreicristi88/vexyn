@@ -6,6 +6,10 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   site: 'https://vexyn.app',
+  trailingSlash: 'never',
+  build: {
+    format: 'file',
+  },
   integrations: [sitemap(), svelte()],
   vite: {
     plugins: [tailwindcss()],

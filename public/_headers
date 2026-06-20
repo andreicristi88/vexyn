@@ -1,0 +1,29 @@
+# HTML — revalidate fiecare cerere (deploy nou = imediat la utilizator)
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: interest-cohort=()
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Assets cu hash din build — cache infinit (Astro pune hash in filename)
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Imagini și fonturi din public — cache lung
+/*.svg
+  Cache-Control: public, max-age=86400
+/*.png
+  Cache-Control: public, max-age=86400
+/*.webp
+  Cache-Control: public, max-age=86400
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+# Manifest + favicon — cache mediu
+/favicon.svg
+  Cache-Control: public, max-age=86400
+/manifest.webmanifest
+  Cache-Control: public, max-age=3600
+/robots.txt
+  Cache-Control: public, max-age=3600

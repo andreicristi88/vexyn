@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Base64Tool from '../components/tools/Base64Tool.svelte';
+import { SITE } from '../lib/constants';
+
+const title = 'Base64 Encoder & Decoder';
+const description = 'Free Base64 encoder and decoder with full UTF-8 support. Runs locally in your browser — nothing uploaded. No signup needed.';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: `${title} — ${SITE.name}`,
+  url: `${SITE.url}/base64`,
+  description,
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+};
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Base64</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Base64 Encoder & Decoder</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Encode text to Base64 or decode Base64 back to plain text. Full UTF-8 support, instant results, zero uploads.
+      </p>
+    </header>
+
+    <Base64Tool client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Base64 encoding, explained</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Base64 is a way to represent binary data using only 64 printable ASCII characters. It's used everywhere: data URIs in CSS, JSON Web Tokens, email attachments, basic HTTP auth, embedded images, API payloads. Encoding adds about 33% to the byte size, so it's never the right choice for compression — only for safe transport through text-only channels.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Encode or decode in your browser</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        This tool uses the browser's native <code class="text-[color:var(--color-brand-400)]">btoa</code> and <code class="text-[color:var(--color-brand-400)]">atob</code> APIs, wrapped with a <code class="text-[color:var(--color-brand-400)]">TextEncoder</code>/<code class="text-[color:var(--color-brand-400)]">TextDecoder</code> pair to handle UTF-8 correctly. Emoji, accented characters, CJK text — all encode and decode losslessly. The native APIs alone choke on anything outside Latin-1; we fix that.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Why use a private Base64 tool?</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Devs frequently Base64-encode secrets, tokens, JWT payloads, or API credentials while debugging. Pasting those into a random online encoder is a one-way trip to a log file you don't control. Vexyn does all the work in your browser. Nothing crosses the network. Open DevTools' Network tab and verify — zero requests fire when you encode or decode.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
+      <div class="space-y-4">
+        <div>
+          <h3 class="font-semibold mb-1">Does it handle UTF-8?</h3>
+          <p class="text-[color:var(--color-text-mute)]">Yes — emojis, accented characters, non-Latin scripts all work correctly. The tool encodes through UTF-8 bytes, not raw character codes.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Can I use this with URL-safe Base64?</h3>
+          <p class="text-[color:var(--color-text-mute)]">Standard Base64 output uses <code>+</code>, <code>/</code>, and <code>=</code>. URL-safe variant (RFC 4648) is on the roadmap.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Is the data sent anywhere?</h3>
+          <p class="text-[color:var(--color-text-mute)]">No. Everything runs in your browser's JavaScript engine. No fetch calls, no telemetry, no logging.</p>
+        </div>
+      </div>
+    </article>
+  </div>
+</BaseLayout>

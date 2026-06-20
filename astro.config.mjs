@@ -1,17 +1,17 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-
+import sitemap from '@astrojs/sitemap';
+import svelte from '@astrojs/svelte';
 import tailwindcss from '@tailwindcss/vite';
 
-import svelte from '@astrojs/svelte';
-
-import sitemap from '@astrojs/sitemap';
-
-// https://astro.build/config
 export default defineConfig({
+  site: 'https://vexyn.app',
+  integrations: [sitemap(), svelte()],
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
   },
-
-  integrations: [svelte(), sitemap()]
+  prefetch: {
+    prefetchAll: true,
+    defaultStrategy: 'viewport',
+  },
 });

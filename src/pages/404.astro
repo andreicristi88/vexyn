@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Page not found" noindex>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
+    <div class="text-7xl font-bold gradient-text mb-4">404</div>
+    <h1 class="text-3xl font-bold mb-3">Page not found</h1>
+    <p class="text-[color:var(--color-text-mute)] mb-8">
+      The tool you're looking for doesn't exist — yet. Check the homepage for what's available.
+    </p>
+    <a href="/" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[color:var(--color-brand-500)] hover:bg-[color:var(--color-brand-600)] text-white font-medium transition-colors">
+      Back to home
+    </a>
+  </div>
+</BaseLayout>

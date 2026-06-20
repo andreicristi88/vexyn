@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../lib/constants';
+---
+
+<BaseLayout title="About" description="Why Vexyn exists: free, private, local-first browser tools. No upload, no signup, no tracking.">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <h1 class="text-4xl font-bold mb-6">About Vexyn</h1>
+
+    <p class="text-lg text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+      Vexyn is a collection of free browser tools that run entirely on your device. No file uploads. No signup. No tracking. No ads. Open the page, do the thing, close the tab — your data stays yours.
+    </p>
+
+    <h2 class="text-2xl font-bold mb-3 mt-10">Why this exists</h2>
+    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+      The web is full of "free" tools that quietly upload your files, log your usage, sell your data, or wrap everything in a paywall on the third use. We thought there was a better way: a site of tools that simply <em>work</em> in the browser, with the same privacy guarantee a desktop app gives you — only without installing anything.
+    </p>
+
+    <h2 class="text-2xl font-bold mb-3 mt-10">How it works</h2>
+    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+      Every tool on Vexyn is JavaScript (and sometimes WebAssembly) that loads into your browser and runs locally on your CPU or GPU. Files you drop are processed in browser memory and never sent to a server. When you close the tab, everything is gone.
+    </p>
+
+    <h2 class="text-2xl font-bold mb-3 mt-10">What's on the roadmap</h2>
+    <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+      <li>PDF tools: merger, splitter, compressor, redactor — all client-side</li>
+      <li>Image tools: compression, conversion, EXIF stripping</li>
+      <li>WebGPU-powered AI: background removal, upscaling, transcription — running on your device</li>
+      <li>More developer utilities: regex, JWT, hash, color converters</li>
+    </ul>
+
+    <h2 class="text-2xl font-bold mb-3 mt-10">Open source</h2>
+    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+      Vexyn's code is open on <a href={SITE.github} class="text-[color:var(--color-brand-400)] hover:underline" target="_blank" rel="noopener noreferrer">GitHub</a>. Audit it, contribute, or fork it.
+    </p>
+
+    <h2 class="text-2xl font-bold mb-3 mt-10">Contact</h2>
+    <p class="text-[color:var(--color-text-mute)] leading-relaxed">
+      Tool ideas, bug reports, or just hello — open an issue on GitHub or email <a href={`mailto:${SITE.email}`} class="text-[color:var(--color-brand-400)] hover:underline">{SITE.email}</a>.
+    </p>
+  </div>
+</BaseLayout>

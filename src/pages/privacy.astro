@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Privacy" description="Vexyn's privacy policy: we don't collect, store, or transmit your data. Everything runs in your browser.">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <h1 class="text-4xl font-bold mb-6">Privacy</h1>
+
+    <p class="text-lg text-[color:var(--color-text-mute)] leading-relaxed mb-8">
+      Short version: <strong class="text-[color:var(--color-text)]">we don't collect, store, or transmit your data. Ever.</strong>
+    </p>
+
+    <h2 class="text-2xl font-bold mb-3 mt-8">What we don't do</h2>
+    <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+      <li>We don't have accounts. There is no signup.</li>
+      <li>We don't have cookies for tracking.</li>
+      <li>We don't run analytics that profile you.</li>
+      <li>We don't sell or share data — we don't have any to sell.</li>
+      <li>We don't upload your files. Tools run in your browser.</li>
+    </ul>
+
+    <h2 class="text-2xl font-bold mb-3 mt-8">What we use</h2>
+    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-3">
+      Vexyn is hosted on Cloudflare Pages. Cloudflare logs aggregate traffic stats (request counts, country, response codes) for the infrastructure — standard for any website. We use Cloudflare's privacy-friendly Web Analytics, which doesn't use cookies or fingerprint visitors.
+    </p>
+    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+      Some tools load AI models or fonts from third-party CDNs (Hugging Face, jsDelivr). The first request fetches the asset; subsequent uses come from your browser's cache.
+    </p>
+
+    <h2 class="text-2xl font-bold mb-3 mt-8">Browser storage</h2>
+    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+      We use <code class="text-[color:var(--color-brand-400)]">localStorage</code> for one thing only: remembering your dark/light theme preference. Nothing else is stored.
+    </p>
+
+    <h2 class="text-2xl font-bold mb-3 mt-8">Open source</h2>
+    <p class="text-[color:var(--color-text-mute)] leading-relaxed">
+      Don't take our word for it. The code is on GitHub. Inspect Network tab in DevTools while you use any tool — you'll see zero requests fire when processing your data.
+    </p>
+  </div>
+</BaseLayout>

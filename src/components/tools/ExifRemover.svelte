@@ -21,7 +21,21 @@
   let dragOver = $state(false);
   let fileInput: HTMLInputElement;
 
+  function onClipboardPaste(e: ClipboardEvent) {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    const files: File[] = [];
+    for (const item of items) {
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        const f = item.getAsFile();
+        if (f) files.push(f);
+      }
+    }
+    if (files.length > 0) { e.preventDefault(); addFiles(files); }
+  }
+
   onMount(async () => {
+    window.addEventListener('paste', onClipboardPaste);
     try {
       exifr = await import('exifr');
       ready = true;
@@ -29,6 +43,7 @@
       error = `Could not load EXIF reader: ${e?.message ?? e}`;
       console.error('[ExifRemover] init failed', e);
     }
+    return () => window.removeEventListener('paste', onClipboardPaste);
   });
 
   function uid() { return Math.random().toString(36).slice(2, 10); }
@@ -171,7 +186,7 @@
     <p class="font-medium text-[color:var(--color-text)]">
       {dragOver ? 'Drop your images' : 'Drop images to strip metadata'}
     </p>
-    <p class="text-xs text-[color:var(--color-text-mute)] mt-1">JPG, PNG, WebP, HEIC. GPS, camera, timestamps removed locally.</p>
+    <p class="text-xs text-[color:var(--color-text-mute)] mt-1">JPG, PNG, WebP, HEIC. Or paste from clipboard (Ctrl/Cmd + V). GPS, camera, timestamps removed locally.</p>
   </div>
   <input bind:this={fileInput} type="file" accept="image/*" multiple onchange={onPick} class="hidden" />
 </button>

@@ -82,8 +82,20 @@
     return (coarsePointer && narrow) || lowCores || lowMem;
   }
 
+  function onClipboardPaste(e: ClipboardEvent) {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        const f = item.getAsFile();
+        if (f) { e.preventDefault(); handleFile(f); return; }
+      }
+    }
+  }
+
   onMount(async () => {
     if (typeof window === 'undefined') return;
+    window.addEventListener('paste', onClipboardPaste);
     status = 'loading-model';
     try {
       lib = await import('@huggingface/transformers');
@@ -381,7 +393,7 @@
       {dragOver ? 'Drop your image' : 'Drop an image here or click to browse'}
     </p>
     <p class="text-xs text-[color:var(--color-text-mute)] mt-1">
-      JPG, PNG, WebP. Runs on your device — image never uploaded.
+      JPG, PNG, WebP. Or paste from clipboard (Ctrl/Cmd + V). Image never uploaded.
     </p>
   </div>
   <input

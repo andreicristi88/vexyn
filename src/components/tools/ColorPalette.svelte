@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
   type Swatch = { hex: string; rgb: [number, number, number]; count: number };
 
   let imageUrl = $state('');
@@ -10,6 +12,22 @@
   let dragOver = $state(false);
   let copied = $state('');
   let fileInput: HTMLInputElement;
+
+  function onClipboardPaste(e: ClipboardEvent) {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        const f = item.getAsFile();
+        if (f) { e.preventDefault(); handleFile(f); return; }
+      }
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener('paste', onClipboardPaste);
+    return () => window.removeEventListener('paste', onClipboardPaste);
+  });
 
   function onPick(e: Event) {
     const t = e.target as HTMLInputElement;
@@ -179,7 +197,7 @@
     <p class="font-medium text-[color:var(--color-text)]">
       {dragOver ? 'Drop your image' : imageUrl ? 'Drop another to replace' : 'Drop an image to extract its palette'}
     </p>
-    <p class="text-xs text-[color:var(--color-text-mute)] mt-1">JPG, PNG, WebP. Pure pixel sampling — never uploaded.</p>
+    <p class="text-xs text-[color:var(--color-text-mute)] mt-1">JPG, PNG, WebP. Or paste from clipboard (Ctrl/Cmd + V). Pure pixel sampling — never uploaded.</p>
   </div>
   <input bind:this={fileInput} type="file" accept="image/*" onchange={onPick} class="hidden" />
 </button>

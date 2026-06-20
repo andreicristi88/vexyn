@@ -25,7 +25,21 @@
 
   let fileInput: HTMLInputElement;
 
+  function onClipboardPaste(e: ClipboardEvent) {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    const files: File[] = [];
+    for (const item of items) {
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        const f = item.getAsFile();
+        if (f) files.push(f);
+      }
+    }
+    if (files.length > 0) { e.preventDefault(); addFiles(files); }
+  }
+
   onMount(async () => {
+    window.addEventListener('paste', onClipboardPaste);
     try {
       const mod = await import('browser-image-compression');
       compress = mod.default ?? mod;
@@ -34,6 +48,7 @@
       error = `Could not load compressor: ${e?.message ?? e}`;
       console.error('[ImageCompressor] import failed', e);
     }
+    return () => window.removeEventListener('paste', onClipboardPaste);
   });
 
   const totalOriginal = $derived(items.reduce((s, it) => s + it.originalSize, 0));
@@ -230,7 +245,7 @@
       {dragOver ? 'Drop your images' : 'Drop JPG / PNG / WebP / HEIC here or click'}
     </p>
     <p class="text-xs text-[color:var(--color-text-mute)] mt-1">
-      Multiple files supported. Everything runs in your browser.
+      Multiple files or paste from clipboard (Ctrl/Cmd + V). Everything runs in your browser.
     </p>
   </div>
   <input

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
   type Fmt = 'image/jpeg' | 'image/png' | 'image/webp' | 'image/avif';
   type Item = {
     id: string;
@@ -19,6 +21,24 @@
   let fileInput: HTMLInputElement;
 
   function uid() { return Math.random().toString(36).slice(2, 10); }
+
+  function onClipboardPaste(e: ClipboardEvent) {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    const files: File[] = [];
+    for (const item of items) {
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        const f = item.getAsFile();
+        if (f) files.push(f);
+      }
+    }
+    if (files.length > 0) { e.preventDefault(); addFiles(files); }
+  }
+
+  onMount(() => {
+    window.addEventListener('paste', onClipboardPaste);
+    return () => window.removeEventListener('paste', onClipboardPaste);
+  });
 
   async function addFiles(fl: FileList | File[]) {
     error = '';
@@ -178,7 +198,7 @@
     <p class="font-medium text-[color:var(--color-text)]">
       {dragOver ? 'Drop your images' : 'Drop images to convert'}
     </p>
-    <p class="text-xs text-[color:var(--color-text-mute)] mt-1">Multiple files supported. Conversion happens in your browser.</p>
+    <p class="text-xs text-[color:var(--color-text-mute)] mt-1">Multiple files or paste from clipboard (Ctrl/Cmd + V). Conversion happens in your browser.</p>
   </div>
   <input bind:this={fileInput} type="file" accept="image/*" multiple onchange={onPick} class="hidden" />
 </button>

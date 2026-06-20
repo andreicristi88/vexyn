@@ -1,6 +1,7 @@
 <script lang="ts">
-  import QRCode from 'qrcode';
+  import { onMount } from 'svelte';
 
+  let QRCode: any = $state(null);
   let text = $state('https://vexyn.app');
   let size = $state(512);
   let margin = $state(2);
@@ -10,8 +11,22 @@
   let dataUrl = $state('');
   let svgString = $state('');
   let error = $state('');
+  let ready = $state(false);
+
+  onMount(async () => {
+    try {
+      const mod = await import('qrcode');
+      QRCode = mod.default ?? mod;
+      ready = true;
+      await generate();
+    } catch (e: any) {
+      error = `Could not load QR library: ${e?.message ?? e}`;
+      console.error('[QrGenerator] import failed', e);
+    }
+  });
 
   async function generate() {
+    if (!QRCode) return;
     error = '';
     if (!text) {
       dataUrl = '';
@@ -19,31 +34,30 @@
       return;
     }
     try {
-      dataUrl = await QRCode.toDataURL(text, {
+      const opts = {
         errorCorrectionLevel: level,
-        margin,
-        width: size,
+        margin: Number(margin),
+        width: Number(size),
         color: { dark: fg, light: bg },
-      });
-      svgString = await QRCode.toString(text, {
-        type: 'svg',
-        errorCorrectionLevel: level,
-        margin,
-        width: size,
-        color: { dark: fg, light: bg },
-      });
+      };
+      dataUrl = await QRCode.toDataURL(text, opts);
+      svgString = await QRCode.toString(text, { ...opts, type: 'svg' });
     } catch (e: any) {
-      error = e.message || 'Could not generate QR code.';
+      error = e?.message ?? 'Could not generate QR code.';
+      console.error('[QrGenerator] generate failed', e);
     }
   }
 
   $effect(() => {
     void text; void size; void margin; void level; void fg; void bg;
-    generate();
+    if (ready) generate();
   });
 
   function download(type: 'png' | 'svg') {
-    const data = type === 'png' ? dataUrl : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
+    const data =
+      type === 'png'
+        ? dataUrl
+        : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
     const a = document.createElement('a');
     a.href = data;
     a.download = `qr-code.${type}`;
@@ -137,10 +151,15 @@
 
   <!-- Preview -->
   <div class="flex flex-col items-center justify-center p-8 rounded-xl bg-[color:var(--color-surface)] border border-[color:var(--color-border)] min-h-[400px]">
-    {#if dataUrl}
+    {#if !ready && !error}
+      <div class="flex flex-col items-center gap-3 text-[color:var(--color-text-dim)]">
+        <div class="w-6 h-6 rounded-full border-2 border-[color:var(--color-border-strong)] border-t-[color:var(--color-brand-500)] animate-spin"></div>
+        <p class="text-sm">Loading QR engine…</p>
+      </div>
+    {:else if dataUrl}
       <img src={dataUrl} alt="QR code preview" class="max-w-full max-h-[400px] rounded" />
     {:else if error}
-      <p class="text-sm text-[color:var(--color-danger)]">{error}</p>
+      <p class="text-sm text-[color:var(--color-danger)] text-center">{error}</p>
     {:else}
       <p class="text-sm text-[color:var(--color-text-dim)]">Enter text to generate a QR code</p>
     {/if}

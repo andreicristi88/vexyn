@@ -4,6 +4,7 @@
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: interest-cohort=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   Cache-Control: public, max-age=0, must-revalidate
 
 # Assets cu hash din build — cache infinit (Astro pune hash in filename)

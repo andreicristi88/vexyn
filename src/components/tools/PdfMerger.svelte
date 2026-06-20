@@ -47,21 +47,35 @@
       error = 'Drop PDF files (.pdf).';
       return;
     }
-    const newItems: Item[] = arr.map(file => ({ id: uid(), file, pageCount: null }));
+    const newIds: string[] = arr.map(() => uid());
+    const newItems: Item[] = arr.map((file, i) => ({ id: newIds[i], file, pageCount: null }));
     items = [...items, ...newItems];
 
+    // Wait for the PDF engine if it hasn't loaded yet
+    while (!PDFLib && !error) {
+      await new Promise((r) => setTimeout(r, 50));
+    }
     if (!PDFLib) return;
 
-    for (const it of newItems) {
+    // Mutate via the proxied array (Svelte 5 $state) so reactivity fires.
+    for (const id of newIds) {
+      const idx0 = items.findIndex((x) => x.id === id);
+      if (idx0 === -1) continue; // user removed it before we got here
+      const file = items[idx0].file;
       try {
-        const buf = await it.file.arrayBuffer();
+        const buf = await file.arrayBuffer();
         const doc = await PDFLib.PDFDocument.load(buf, { ignoreEncryption: false });
-        it.pageCount = doc.getPageCount();
+        const idx = items.findIndex((x) => x.id === id);
+        if (idx !== -1) items[idx].pageCount = doc.getPageCount();
       } catch (e: any) {
-        it.error = e?.message?.includes('encrypted') ? 'Encrypted PDF — remove password first.' : 'Could not read this PDF.';
-        it.pageCount = 0;
+        const idx = items.findIndex((x) => x.id === id);
+        if (idx === -1) continue;
+        items[idx].pageCount = 0;
+        items[idx].error = e?.message?.includes('encrypted')
+          ? 'Encrypted PDF — remove password first.'
+          : 'Could not read this PDF.';
+        console.error('[PdfMerger] read failed', file.name, e);
       }
-      items = [...items];
     }
   }
 

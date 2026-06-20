@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import ErrorDisplay from '../ui/ErrorDisplay.svelte';
 
   type Status = 'idle' | 'loading-model' | 'ready' | 'processing' | 'done' | 'error';
   type Stage = 'encoding' | 'inferring' | 'generating' | 'compositing';
@@ -415,6 +416,35 @@
       <div class="h-full bg-[color:var(--color-brand-500)] transition-all" style:width={`${loadProgress}%`}></div>
     </div>
   </div>
+
+  <!-- Skeleton preview while the model is downloading: same layout as the
+       real side-by-side so the page doesn't jump when an image is added. -->
+  <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 opacity-50 select-none pointer-events-none" aria-hidden="true">
+    <div>
+      <div class="h-4 w-20 rounded bg-[color:var(--color-surface-2)] mb-2 animate-pulse"></div>
+      <div class="rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)] aspect-video"></div>
+    </div>
+    <div>
+      <div class="h-4 w-32 rounded bg-[color:var(--color-surface-2)] mb-2 animate-pulse"></div>
+      <div
+        class="rounded-lg border border-[color:var(--color-border)] aspect-video"
+        style:background="repeating-conic-gradient(#2a2a36 0% 25%, #1c1c26 0% 50%) 50% / 24px 24px"
+      ></div>
+    </div>
+  </div>
+{/if}
+
+{#if status === 'error' && errorMsg}
+  <ErrorDisplay
+    message={errorMsg}
+    hint={errorMsg.toLowerCase().includes('webgpu') || errorMsg.toLowerCase().includes('fetch') || errorMsg.toLowerCase().includes('network')
+      ? 'Check your internet connection. The model is ~85 MB and downloaded once from huggingface.co — corporate firewalls sometimes block it.'
+      : errorMsg.toLowerCase().includes('memory') || errorMsg.toLowerCase().includes('alloc')
+      ? 'Try the Speed (512px) mode in the top-right toggle — it uses about a quarter of the memory.'
+      : 'Try refreshing the page. If it keeps failing, the GPU may be busy — try again in a moment.'}
+    onRetry={() => { if (originalUrl) process(); }}
+    issueTitle="Background Remover failed"
+  />
 {/if}
 
 {#if originalUrl}

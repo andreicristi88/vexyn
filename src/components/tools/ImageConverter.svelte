@@ -1,5 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import ErrorDisplay from '../ui/ErrorDisplay.svelte';
+  import { swipeable } from '../../lib/swipeable';
 
   type Fmt = 'image/jpeg' | 'image/png' | 'image/webp' | 'image/avif';
   type Item = {
@@ -216,7 +218,10 @@
 
   <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
     {#each items as it (it.id)}
-      <div class="rounded-lg overflow-hidden bg-[color:var(--color-surface)] border border-[color:var(--color-border)] flex flex-col">
+      <div
+        use:swipeable={{ onSwipe: () => remove(it.id) }}
+        class="rounded-lg overflow-hidden bg-[color:var(--color-surface)] border border-[color:var(--color-border)] flex flex-col touch-pan-y"
+      >
         <div class="aspect-video bg-[color:var(--color-bg)] flex items-center justify-center overflow-hidden">
           {#if it.convertedUrl}
             <img src={it.convertedUrl} alt={it.file.name} class="max-w-full max-h-full object-contain" />
@@ -255,5 +260,10 @@
 {/if}
 
 {#if error}
-  <div class="mt-4 p-3 rounded-lg bg-[color:var(--color-danger)]/10 border border-[color:var(--color-danger)]/30 text-sm text-[color:var(--color-danger)]">{error}</div>
+  <ErrorDisplay
+    message={error}
+    hint="If AVIF fails, your browser can't encode it — pick WebP instead (universal, almost the same compression)."
+    onRetry={() => { error = ''; }}
+    issueTitle="Image Converter failed"
+  />
 {/if}

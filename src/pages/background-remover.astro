@@ -52,6 +52,31 @@ const schema = combineSchemas(
 
     <BackgroundRemover client:load />
 
+    <!-- How it works -->
+    <section class="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="p-4 rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-[color:var(--color-brand-500)]/15 text-[color:var(--color-brand-400)] text-xs font-mono flex items-center justify-center">1</span>
+          <span class="text-sm font-semibold">Drop an image</span>
+        </div>
+        <p class="text-xs text-[color:var(--color-text-mute)] leading-relaxed">JPG, PNG or WebP. Or paste from clipboard. Image stays on your device.</p>
+      </div>
+      <div class="p-4 rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-[color:var(--color-brand-500)]/15 text-[color:var(--color-brand-400)] text-xs font-mono flex items-center justify-center">2</span>
+          <span class="text-sm font-semibold">RMBG-1.4 runs on your GPU</span>
+        </div>
+        <p class="text-xs text-[color:var(--color-text-mute)] leading-relaxed">First-time model download (~85 MB) then cached forever. WebGPU on supported browsers, WASM elsewhere.</p>
+      </div>
+      <div class="p-4 rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-[color:var(--color-brand-500)]/15 text-[color:var(--color-brand-400)] text-xs font-mono flex items-center justify-center">3</span>
+          <span class="text-sm font-semibold">Download as PNG</span>
+        </div>
+        <p class="text-xs text-[color:var(--color-text-mute)] leading-relaxed">Transparent background or composited over a color of your choice. Original resolution preserved.</p>
+      </div>
+    </section>
+
     <article class="prose mt-16 max-w-3xl">
       <h2 class="text-2xl font-bold mb-4">Background removal that doesn't see your photos</h2>
       <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">

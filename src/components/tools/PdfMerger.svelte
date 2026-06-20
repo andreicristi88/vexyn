@@ -1,5 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import ErrorDisplay from '../ui/ErrorDisplay.svelte';
+  import { swipeable } from '../../lib/swipeable';
 
   type Item = {
     id: string;
@@ -244,6 +246,7 @@
       </button>
     </div>
 
+    <p class="md:hidden text-xs text-[color:var(--color-text-dim)] mb-2">Tip: swipe a row left or right to remove it.</p>
     <ul class="space-y-2">
       {#each items as it, i (it.id)}
         <li
@@ -251,7 +254,8 @@
           ondragstart={(e) => onItemDragStart(e, i)}
           ondragover={onItemDragOver}
           ondrop={(e) => onItemDrop(e, i)}
-          class="flex items-center gap-3 p-3 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)] cursor-grab active:cursor-grabbing"
+          use:swipeable={{ onSwipe: () => remove(it.id) }}
+          class="flex items-center gap-3 p-3 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)] cursor-grab active:cursor-grabbing touch-pan-y"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-[color:var(--color-text-dim)] flex-shrink-0">
             <circle cx="9" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/>
@@ -282,7 +286,7 @@
               onclick={() => move(it.id, -1)}
               disabled={i === 0}
               aria-label="Move up"
-              class="w-8 h-8 rounded hover:bg-[color:var(--color-surface-2)] text-[color:var(--color-text-mute)] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+              class="w-10 h-10 sm:w-8 sm:h-8 rounded hover:bg-[color:var(--color-surface-2)] text-[color:var(--color-text-mute)] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
             </button>
@@ -290,14 +294,14 @@
               onclick={() => move(it.id, 1)}
               disabled={i === items.length - 1}
               aria-label="Move down"
-              class="w-8 h-8 rounded hover:bg-[color:var(--color-surface-2)] text-[color:var(--color-text-mute)] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+              class="w-10 h-10 sm:w-8 sm:h-8 rounded hover:bg-[color:var(--color-surface-2)] text-[color:var(--color-text-mute)] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <button
               onclick={() => remove(it.id)}
               aria-label="Remove"
-              class="w-8 h-8 rounded hover:bg-[color:var(--color-danger)]/10 text-[color:var(--color-text-mute)] hover:text-[color:var(--color-danger)] flex items-center justify-center"
+              class="w-10 h-10 sm:w-8 sm:h-8 rounded hover:bg-[color:var(--color-danger)]/10 text-[color:var(--color-text-mute)] hover:text-[color:var(--color-danger)] flex items-center justify-center"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
@@ -335,7 +339,14 @@
 {/if}
 
 {#if error}
-  <div class="mt-4 p-3 rounded-lg bg-[color:var(--color-danger)]/10 border border-[color:var(--color-danger)]/30 text-sm text-[color:var(--color-danger)]">
-    {error}
-  </div>
+  <ErrorDisplay
+    message={error}
+    hint={error.toLowerCase().includes('encrypted')
+      ? 'Open the PDF in your viewer, save a copy without the password, then drop the unprotected version here.'
+      : error.toLowerCase().includes('memory') || error.toLowerCase().includes('alloc')
+      ? 'Try merging fewer files at a time, or split your PDFs into smaller batches first.'
+      : 'If the PDF is unusual or corrupted, try opening it in a viewer and re-saving as PDF before retrying.'}
+    onRetry={() => { error = ''; if (items.length > 0) merge(); }}
+    issueTitle="PDF Merger failed"
+  />
 {/if}

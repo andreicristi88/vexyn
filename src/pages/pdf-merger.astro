@@ -45,6 +45,31 @@ const schema = combineSchemas(
 
     <PdfMerger client:load />
 
+    <!-- How it works -->
+    <section class="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="p-4 rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-[color:var(--color-brand-500)]/15 text-[color:var(--color-brand-400)] text-xs font-mono flex items-center justify-center">1</span>
+          <span class="text-sm font-semibold">Drop your PDFs</span>
+        </div>
+        <p class="text-xs text-[color:var(--color-text-mute)] leading-relaxed">Multiple files supported. Page count appears beside each file once read.</p>
+      </div>
+      <div class="p-4 rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-[color:var(--color-brand-500)]/15 text-[color:var(--color-brand-400)] text-xs font-mono flex items-center justify-center">2</span>
+          <span class="text-sm font-semibold">Reorder if needed</span>
+        </div>
+        <p class="text-xs text-[color:var(--color-text-mute)] leading-relaxed">Drag rows to reorder, or use the arrows. The output PDF will follow this order top-to-bottom.</p>
+      </div>
+      <div class="p-4 rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-[color:var(--color-brand-500)]/15 text-[color:var(--color-brand-400)] text-xs font-mono flex items-center justify-center">3</span>
+          <span class="text-sm font-semibold">Merge &amp; download</span>
+        </div>
+        <p class="text-xs text-[color:var(--color-text-mute)] leading-relaxed">Click Merge — the combined PDF is generated in your browser and offered as a download.</p>
+      </div>
+    </section>
+
     <article class="prose mt-16 max-w-3xl">
       <h2 class="text-2xl font-bold mb-4">A truly private PDF merger</h2>
       <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">

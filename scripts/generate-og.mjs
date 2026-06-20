@@ -240,6 +240,12 @@ const pages = [
     subtitle: 'Compress JPG, PNG and WebP locally. Adjustable quality. Zero uploads.',
     badge: 'Image',
   },
+  {
+    filename: 'og/background-remover.png',
+    title: 'AI Background Remover',
+    subtitle: 'WebGPU-powered background removal that runs on your device. No upload. No API.',
+    badge: 'AI · Local',
+  },
 ];
 
 console.log('[og] Generating OG images...');

@@ -15,6 +15,7 @@
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
     "@astrojs/svelte": "^8.1.2",
+    "@huggingface/transformers": "^4.2.0",
     "@tailwindcss/vite": "^4.3.1",
     "astro": "^6.4.7",
     "browser-image-compression": "^2.0.2",

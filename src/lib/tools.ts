@@ -57,11 +57,11 @@ export const TOOLS: Tool[] = [
   {
     slug: 'background-remover',
     name: 'Background Remover',
-    description: 'Remove image backgrounds locally with WebGPU AI. No upload.',
+    description: 'Remove image backgrounds locally with WebGPU AI. No upload, no API.',
     category: 'ai',
     icon: '✨',
-    keywords: ['background', 'remove', 'ai', 'webgpu'],
-    available: false,
+    keywords: ['background', 'remove', 'ai', 'webgpu', 'transparent', 'cutout'],
+    available: true,
   },
 ];
 

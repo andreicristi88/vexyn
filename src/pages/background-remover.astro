@@ -1,0 +1,101 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BackgroundRemover from '../components/tools/BackgroundRemover.svelte';
+import { SITE } from '../lib/constants';
+
+const title = 'AI Background Remover';
+const description = 'Remove image backgrounds with AI that runs entirely on your device. WebGPU-accelerated, no upload, no signup, no API. Your images stay yours.';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: `${title} — ${SITE.name}`,
+  url: `${SITE.url}/background-remover`,
+  description,
+  applicationCategory: 'MultimediaApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  featureList: [
+    'AI background removal',
+    'Runs entirely in your browser via WebGPU',
+    'No upload, no signup, no API',
+    'Transparent PNG or solid color output',
+    'Works offline once loaded',
+    'Open-source model (RMBG-1.4)',
+  ],
+};
+---
+
+<BaseLayout title={title} description={description} image="/og/background-remover.png" schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Background Remover</span>
+      </div>
+      <div class="flex items-center gap-3 mb-3">
+        <h1 class="text-4xl font-bold tracking-tight">Background Remover</h1>
+        <span class="text-xs px-2 py-1 rounded-md bg-[color:var(--color-accent-500)]/15 border border-[color:var(--color-accent-500)]/30 text-[color:var(--color-accent-400)] font-medium uppercase tracking-wider">
+          AI · Local
+        </span>
+      </div>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Remove any image background in seconds using AI that runs entirely on your device. No upload, no API, no signup. Your photos stay yours.
+      </p>
+    </header>
+
+    <BackgroundRemover client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Background removal that doesn't see your photos</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Remove.bg, Photoroom, Canva — every well-known background remover uploads your image to a remote GPU farm, runs the model there, and sends the result back. That's the only model that worked for a long time, but it also means your photos pass through someone else's infrastructure, get logged, sometimes used to train the next version of their model, and live in their caches for a while. Vexyn is different: the model runs <em>on your machine</em>, in your browser, using WebGPU. There is no server. There is no API. The image never leaves the tab.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">How it works</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-3">
+        On first load, the page downloads <a class="text-[color:var(--color-brand-400)] hover:underline" href="https://huggingface.co/briaai/RMBG-1.4" target="_blank" rel="noopener noreferrer">BRIA's RMBG-1.4</a> — an open-source background-segmentation model (~85 MB, Apache 2.0). The download happens once; the browser caches the model so the next session is instant. WebGPU then runs the model on your GPU using <a class="text-[color:var(--color-brand-400)] hover:underline" href="https://github.com/huggingface/transformers.js" target="_blank" rel="noopener noreferrer">transformers.js</a>. Each image takes 1–3 seconds on a modern laptop, 5–15 seconds on older devices or when falling back to CPU.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">What it's good for</h2>
+      <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+        <li><strong class="text-[color:var(--color-text)]">Product photos:</strong> isolate items on white or transparent backgrounds for listings.</li>
+        <li><strong class="text-[color:var(--color-text)]">Headshots:</strong> replace busy backgrounds with brand colors.</li>
+        <li><strong class="text-[color:var(--color-text)]">Stickers / cutouts:</strong> generate transparent PNGs for Discord, Telegram, Notion docs.</li>
+        <li><strong class="text-[color:var(--color-text)]">Quick comps:</strong> drag subjects onto new backgrounds in your favorite editor.</li>
+      </ul>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Browser requirements</h2>
+      <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+        <li><strong class="text-[color:var(--color-text)]">Best:</strong> Chrome, Edge, Brave, Opera, Arc — WebGPU enabled by default. Inference takes 1–3 seconds.</li>
+        <li><strong class="text-[color:var(--color-text)]">Good:</strong> Safari 18+ (macOS Sonoma+ / iOS 17+) — WebGPU stable.</li>
+        <li><strong class="text-[color:var(--color-text)]">Slow but works:</strong> Firefox on Windows — falls back to WebAssembly. 3–5× slower but still fully local.</li>
+      </ul>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
+      <div class="space-y-4">
+        <div>
+          <h3 class="font-semibold mb-1">Does it really run on my device?</h3>
+          <p class="text-[color:var(--color-text-mute)]">Yes. Open DevTools → Network: the only requests are the initial model download and asset files. After load, no requests fire when you process images. Disconnect from the internet and try — it still works.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Why is the first load slow?</h3>
+          <p class="text-[color:var(--color-text-mute)]">The model is ~85 MB. On a 50 Mbps connection that's ~15 seconds the first time. After that the browser caches it — second visit is instant.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">How does it compare to Remove.bg?</h3>
+          <p class="text-[color:var(--color-text-mute)]">RMBG-1.4 is competitive on most natural subjects. Edge cases (hair detail, transparent objects) are where commercial tools using larger models pull ahead. For 90% of real use cases, the difference isn't visible.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Why does my image look pixelated/jagged?</h3>
+          <p class="text-[color:var(--color-text-mute)]">The model processes at 1024×1024 internally then upscales the mask. Very high-resolution photos can show artifacts along edges — usually acceptable for web use.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Can I use the results commercially?</h3>
+          <p class="text-[color:var(--color-text-mute)]">Yes. The model (RMBG-1.4) is Apache 2.0 licensed. Your output is yours.</p>
+        </div>
+      </div>
+    </article>
+  </div>
+</BaseLayout>

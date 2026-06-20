@@ -144,6 +144,8 @@ Hard rules for new tools:
 - [BRIA AI](https://huggingface.co/briaai) for releasing **RMBG-1.4** under Apache 2.0.
 - [Xenova](https://github.com/xenova) for the heroic work that became `transformers.js`.
 - The [`pdf-lib`](https://github.com/Hopding/pdf-lib) maintainers for a clean, dependency-free PDF library.
+- [Mike Kovařík](https://github.com/MikeKovarik) for [`exifr`](https://github.com/MikeKovarik/exifr) — the fastest browser-native EXIF parser available.
+- [Donald](https://github.com/Donaldcwl) for [`browser-image-compression`](https://github.com/Donaldcwl/browser-image-compression) with proper Web Worker support.
 - The Astro, Svelte, and Tailwind teams for tools that make a project like this maintainable solo.
 
 ## License

@@ -1,0 +1,87 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PdfMerger from '../components/tools/PdfMerger.svelte';
+import { SITE } from '../lib/constants';
+
+const title = 'PDF Merger';
+const description = 'Free PDF merger that runs entirely in your browser. Combine multiple PDFs into one, reorder pages with drag-and-drop. Your files never get uploaded.';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: `${title} — ${SITE.name}`,
+  url: `${SITE.url}/pdf-merger`,
+  description,
+  applicationCategory: 'UtilitiesApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  featureList: [
+    'Merge multiple PDFs into one',
+    'Drag-and-drop reordering',
+    'Page counting per file',
+    'Works fully offline',
+    '100% private — nothing uploaded',
+  ],
+};
+---
+
+<BaseLayout title={title} description={description} image="/og/pdf-merger.png" schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">PDF Merger</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">PDF Merger</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Combine multiple PDFs into a single file. Drag to reorder. No uploads — your documents stay on your device the entire time.
+      </p>
+    </header>
+
+    <PdfMerger client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">A truly private PDF merger</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Most online PDF mergers — including the most popular ones — upload your files to a server, run a Python script there, and email or stream the result back. That model works, but it also means contracts, invoices, medical records, and tax returns transit through someone else's infrastructure, get processed by code you can't audit, and live (briefly or not) in their logs. Vexyn does the merge inside your browser using <a class="text-[color:var(--color-brand-400)] hover:underline" href="https://github.com/Hopding/pdf-lib" target="_blank" rel="noopener noreferrer">pdf-lib</a>. The file picker hands the PDF bytes to JavaScript, the merge happens against your CPU, and the result is offered to you as a download. Open DevTools → Network while you use it: zero requests are made.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">How to use it</h2>
+      <ol class="space-y-2 text-[color:var(--color-text-mute)] mb-6 list-decimal pl-6">
+        <li>Drop PDFs into the dashed area (or click to browse).</li>
+        <li>Reorder by dragging rows or using the up/down arrows.</li>
+        <li>Remove any file you added by mistake with the × button.</li>
+        <li>Click <strong class="text-[color:var(--color-text)]">Merge PDFs</strong>. A green Download button appears with your merged file.</li>
+      </ol>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">What it handles</h2>
+      <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+        <li><strong class="text-[color:var(--color-text)]">Any number of PDFs:</strong> limited only by your browser's memory. Hundreds of files work fine on a modern laptop.</li>
+        <li><strong class="text-[color:var(--color-text)]">Mixed page sizes:</strong> A4 + Letter + custom — each kept as-is in the output.</li>
+        <li><strong class="text-[color:var(--color-text)]">Bookmarks and annotations:</strong> preserved through the merge (pdf-lib carries them).</li>
+        <li><strong class="text-[color:var(--color-text)]">Encrypted PDFs:</strong> not supported by design — remove the password first. We flag those clearly in the list.</li>
+      </ul>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
+      <div class="space-y-4">
+        <div>
+          <h3 class="font-semibold mb-1">Is there a file size limit?</h3>
+          <p class="text-[color:var(--color-text-mute)]">Browser memory is the only limit. ~500 MB total works on most desktops. Large mobile sessions may need to merge in batches.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Will my data go anywhere?</h3>
+          <p class="text-[color:var(--color-text-mute)]">No. The tool is plain JavaScript running in your tab. Verify in DevTools' Network tab — zero requests fire when you merge.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Why are some of my PDFs marked "Encrypted"?</h3>
+          <p class="text-[color:var(--color-text-mute)]">PDFs with passwords or restrictions can't be re-saved without their key. Open them in a viewer, save a copy without the password, and try again.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Does the merger compress the output?</h3>
+          <p class="text-[color:var(--color-text-mute)]">No — the output is byte-faithful to the inputs. For compression, pair this with a dedicated PDF compressor (coming soon).</p>
+        </div>
+      </div>
+    </article>
+  </div>
+</BaseLayout>

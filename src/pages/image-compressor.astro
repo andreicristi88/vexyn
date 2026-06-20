@@ -1,0 +1,88 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ImageCompressor from '../components/tools/ImageCompressor.svelte';
+import { SITE } from '../lib/constants';
+
+const title = 'Image Compressor';
+const description = 'Free image compressor for JPG, PNG, WebP and HEIC. Adjustable quality and dimensions. Runs in your browser — no upload, no signup.';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: `${title} — ${SITE.name}`,
+  url: `${SITE.url}/image-compressor`,
+  description,
+  applicationCategory: 'MultimediaApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  featureList: [
+    'Compress JPG, PNG, WebP, HEIC',
+    'Adjustable quality slider',
+    'Resize to max dimension',
+    'Convert between formats',
+    'Batch processing',
+    '100% private — nothing uploaded',
+  ],
+};
+---
+
+<BaseLayout title={title} description={description} image="/og/image-compressor.png" schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Image Compressor</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Image Compressor</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Shrink JPG, PNG, WebP and HEIC files with adjustable quality and dimensions. Convert formats. Drop files in — everything happens locally in your browser.
+      </p>
+    </header>
+
+    <ImageCompressor client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Compress images without sending them anywhere</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Every popular online image compressor — TinyPNG, Compressor.io, the rest — works by uploading your photos to their servers, compressing there, and sending the result back. That's a privacy and bandwidth tradeoff most people accept without thinking. Vexyn doesn't make that tradeoff. The compressor uses a Web Worker to crunch your images on your own CPU and gives you the smaller files back immediately. Network tab will confirm: zero outgoing requests.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Controls</h2>
+      <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+        <li><strong class="text-[color:var(--color-text)]">Quality (10–100%):</strong> primary lever. 80% is usually visually indistinguishable from the original at half the size.</li>
+        <li><strong class="text-[color:var(--color-text)]">Max dimension (256–4096px):</strong> downscale large photos. 2048px is more than enough for blog posts and social media.</li>
+        <li><strong class="text-[color:var(--color-text)]">Output format:</strong> keep original, or convert to WebP (best compression), JPEG (universal), or PNG (lossless).</li>
+        <li><strong class="text-[color:var(--color-text)]">Recompress all:</strong> after changing controls, regenerate every file with the new settings.</li>
+      </ul>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Which format should I pick?</h2>
+      <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+        <li><strong class="text-[color:var(--color-text)]">WebP:</strong> default choice for the web in 2026. 25–35% smaller than JPEG at equivalent quality. Supported by every modern browser.</li>
+        <li><strong class="text-[color:var(--color-text)]">JPEG:</strong> photos for old systems, email attachments, or when WebP isn't an option.</li>
+        <li><strong class="text-[color:var(--color-text)]">PNG:</strong> screenshots, UI elements, or anything with transparency. Lossless — large but pixel-perfect.</li>
+        <li><strong class="text-[color:var(--color-text)]">Auto:</strong> keeps the input format. Useful when you only want to resize or recompress at lower quality.</li>
+      </ul>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
+      <div class="space-y-4">
+        <div>
+          <h3 class="font-semibold mb-1">Will it strip my photo's EXIF metadata?</h3>
+          <p class="text-[color:var(--color-text-mute)]">Yes — re-encoding through the browser canvas drops EXIF (camera, GPS, timestamp). That's a privacy plus, but means you'll lose orientation info on some old photos. Test before bulk-processing irreplaceable images.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Does it support HEIC (iPhone photos)?</h3>
+          <p class="text-[color:var(--color-text-mute)]">Modern Safari decodes HEIC natively. Chrome and Firefox do not yet, so HEIC inputs may fail in those browsers — drag them through a converter first, or open the tool in Safari.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Can I compress hundreds of images at once?</h3>
+          <p class="text-[color:var(--color-text-mute)]">Yes. Processing happens in a Web Worker so the UI stays responsive. For very large batches (200+ photos), do it in chunks to keep memory usage sane.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Is the result lossless?</h3>
+          <p class="text-[color:var(--color-text-mute)]">JPEG/WebP at any quality less than 100 are lossy. PNG is always lossless. Set quality to 100 if you want minimum loss while still re-encoding.</p>
+        </div>
+      </div>
+    </article>
+  </div>
+</BaseLayout>

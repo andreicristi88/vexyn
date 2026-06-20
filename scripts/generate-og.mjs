@@ -228,6 +228,18 @@ const pages = [
     subtitle: 'Customizable QR codes with PNG and SVG export. No redirects, no tracking pixels.',
     badge: 'Generator',
   },
+  {
+    filename: 'og/pdf-merger.png',
+    title: 'PDF Merger',
+    subtitle: 'Combine PDFs in your browser. Drag to reorder. Your files never get uploaded.',
+    badge: 'PDF',
+  },
+  {
+    filename: 'og/image-compressor.png',
+    title: 'Image Compressor',
+    subtitle: 'Compress JPG, PNG and WebP locally. Adjustable quality. Zero uploads.',
+    badge: 'Image',
+  },
 ];
 
 console.log('[og] Generating OG images...');

@@ -17,6 +17,8 @@
     "@astrojs/svelte": "^8.1.2",
     "@tailwindcss/vite": "^4.3.1",
     "astro": "^6.4.7",
+    "browser-image-compression": "^2.0.2",
+    "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.4",
     "svelte": "^5.56.3",
     "tailwindcss": "^4.3.1",

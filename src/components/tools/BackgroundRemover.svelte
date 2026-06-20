@@ -21,6 +21,22 @@
 
   let bgMode: 'transparent' | 'color' = $state('transparent');
   let bgColor = $state('#ffffff');
+
+  const PRESET_COLORS = [
+    { hex: '#ffffff', label: 'White' },
+    { hex: '#000000', label: 'Black' },
+    { hex: '#6366f1', label: 'Indigo' },
+    { hex: '#a855f7', label: 'Purple' },
+    { hex: '#10b981', label: 'Green' },
+    { hex: '#ef4444', label: 'Red' },
+    { hex: '#f59e0b', label: 'Amber' },
+    { hex: '#3b82f6', label: 'Blue' },
+  ];
+
+  function pickPreset(hex: string) {
+    bgMode = 'color';
+    bgColor = hex;
+  }
   let dragOver = $state(false);
   let fileInput: HTMLInputElement;
   let originalBitmap: ImageBitmap | null = null;
@@ -330,14 +346,15 @@
   </div>
 
   <!-- Background options + actions -->
-  <div class="mt-4 flex flex-wrap items-center gap-3 p-4 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
-    <div class="flex items-center gap-2">
-      <span class="text-xs font-medium text-[color:var(--color-text-mute)] uppercase tracking-wider">Background</span>
+  <div class="mt-4 p-4 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)] space-y-4">
+    <!-- Row 1: mode toggle -->
+    <div class="flex flex-wrap items-center gap-3">
+      <span class="text-xs font-medium text-[color:var(--color-text-mute)] uppercase tracking-wider w-24">Background</span>
       <div class="flex p-0.5 rounded-md bg-[color:var(--color-bg)] border border-[color:var(--color-border)]">
         <button
           onclick={() => bgMode = 'transparent'}
           class={[
-            'px-3 py-1 rounded text-xs font-medium transition-colors',
+            'px-3 py-1.5 rounded text-xs font-medium transition-colors',
             bgMode === 'transparent' ? 'bg-[color:var(--color-brand-500)] text-white' : 'text-[color:var(--color-text-mute)] hover:text-[color:var(--color-text)]'
           ]}
         >
@@ -346,36 +363,86 @@
         <button
           onclick={() => bgMode = 'color'}
           class={[
-            'px-3 py-1 rounded text-xs font-medium transition-colors',
+            'px-3 py-1.5 rounded text-xs font-medium transition-colors',
             bgMode === 'color' ? 'bg-[color:var(--color-brand-500)] text-white' : 'text-[color:var(--color-text-mute)] hover:text-[color:var(--color-text)]'
           ]}
         >
           Color
         </button>
       </div>
-      {#if bgMode === 'color'}
-        <input type="color" bind:value={bgColor} class="w-8 h-8 rounded border border-[color:var(--color-border)] bg-transparent cursor-pointer" aria-label="Background color" />
-      {/if}
+
+      <div class="flex items-center gap-2 ml-auto">
+        <button
+          onclick={process}
+          disabled={status === 'processing' || status === 'loading-model' || !originalUrl}
+          class="px-4 py-2 rounded-lg bg-[color:var(--color-surface-2)] border border-[color:var(--color-border)] hover:border-[color:var(--color-border-strong)] text-[color:var(--color-text)] text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Re-process
+        </button>
+        {#if outputUrl}
+          <a
+            href={outputUrl}
+            download={originalName}
+            class="px-4 py-2 rounded-lg bg-[color:var(--color-brand-500)] hover:bg-[color:var(--color-brand-600)] text-white text-sm font-medium transition-colors flex items-center gap-2"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download PNG
+          </a>
+        {/if}
+      </div>
     </div>
 
-    <div class="flex items-center gap-2 ml-auto">
-      <button
-        onclick={process}
-        disabled={status === 'processing' || status === 'loading-model' || !originalUrl}
-        class="px-4 py-2 rounded-lg bg-[color:var(--color-surface-2)] border border-[color:var(--color-border)] hover:border-[color:var(--color-border-strong)] text-[color:var(--color-text)] text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        Re-process
-      </button>
-      {#if outputUrl}
-        <a
-          href={outputUrl}
-          download={originalName}
-          class="px-4 py-2 rounded-lg bg-[color:var(--color-brand-500)] hover:bg-[color:var(--color-brand-600)] text-white text-sm font-medium transition-colors flex items-center gap-2"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download PNG
-        </a>
-      {/if}
-    </div>
+    <!-- Row 2: color selection (only when mode = color) -->
+    {#if bgMode === 'color'}
+      <div class="flex flex-wrap items-center gap-3 pt-3 border-t border-[color:var(--color-border)]">
+        <span class="text-xs font-medium text-[color:var(--color-text-mute)] uppercase tracking-wider w-24">Color</span>
+
+        <!-- Preset swatches -->
+        <div class="flex flex-wrap items-center gap-1.5">
+          {#each PRESET_COLORS as p (p.hex)}
+            <button
+              type="button"
+              onclick={() => pickPreset(p.hex)}
+              aria-label={`Set background to ${p.label}`}
+              title={p.label}
+              class={[
+                'w-7 h-7 rounded-md transition-all',
+                bgColor.toLowerCase() === p.hex.toLowerCase()
+                  ? 'ring-2 ring-offset-2 ring-offset-[color:var(--color-surface)] ring-[color:var(--color-brand-500)] scale-110'
+                  : 'ring-1 ring-[color:var(--color-border-strong)] hover:scale-110 hover:ring-[color:var(--color-text-mute)]'
+              ]}
+              style:background={p.hex}
+            ></button>
+          {/each}
+        </div>
+
+        <!-- Custom color picker with hex display -->
+        <div class="flex items-center gap-2 ml-auto">
+          <label class="relative flex items-center gap-2 cursor-pointer group" title="Pick custom color">
+            <input
+              type="color"
+              bind:value={bgColor}
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              aria-label="Custom background color"
+            />
+            <div
+              class="w-9 h-9 rounded-md ring-1 ring-[color:var(--color-border-strong)] group-hover:ring-[color:var(--color-text-mute)] transition-all flex items-center justify-center"
+              style:background={bgColor}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white mix-blend-difference">
+                <path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/>
+                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+                <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+                <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+                <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+              </svg>
+            </div>
+            <span class="text-xs font-mono text-[color:var(--color-text-mute)] group-hover:text-[color:var(--color-text)] transition-colors uppercase">
+              {bgColor}
+            </span>
+          </label>
+        </div>
+      </div>
+    {/if}
   </div>
 {/if}

@@ -1,20 +1,77 @@
+# Search engines — allow everything
 User-agent: *
 Allow: /
 
-# AI scrapers — blocked
+# --- AI training crawlers — block ---
+
+# OpenAI
 User-agent: GPTBot
 Disallow: /
 User-agent: ChatGPT-User
 Disallow: /
-User-agent: ClaudeBot
+User-agent: OAI-SearchBot
 Disallow: /
-User-agent: Google-Extended
+
+# Anthropic
+User-agent: ClaudeBot
 Disallow: /
 User-agent: anthropic-ai
 Disallow: /
+User-agent: Claude-Web
+Disallow: /
+
+# Google AI (not search — Googlebot stays allowed)
+User-agent: Google-Extended
+Disallow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Disallow: /
+User-agent: Perplexity-User
+Disallow: /
+
+# Meta / Facebook AI
+User-agent: meta-externalagent
+Disallow: /
+User-agent: FacebookBot
+Disallow: /
+
+# Amazon
+User-agent: Amazonbot
+Disallow: /
+
+# Apple AI
+User-agent: Applebot-Extended
+Disallow: /
+
+# ByteDance / TikTok
+User-agent: Bytespider
+Disallow: /
+
+# Common Crawl (feeds most LLM training data)
 User-agent: CCBot
 Disallow: /
-User-agent: PerplexityBot
+
+# DuckAssist / DuckDuckGo AI
+User-agent: DuckAssistBot
+Disallow: /
+
+# Mistral
+User-agent: MistralAI-User
+Disallow: /
+
+# Cohere
+User-agent: cohere-ai
+Disallow: /
+User-agent: cohere-training-data-crawler
+Disallow: /
+
+# Diffbot, Omgili, others
+User-agent: Diffbot
+Disallow: /
+User-agent: Omgilibot
+Disallow: /
+User-agent: Omgili
 Disallow: /
 
 Sitemap: https://vexyn.app/sitemap-index.xml

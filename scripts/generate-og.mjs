@@ -21,6 +21,20 @@ const COLORS = {
   success: '#10b981',
 };
 
+// Shield V logo, scaled to 96px for OG header
+const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="96" height="96">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#0a0a0f"/>
+  <path d="M32 7 L54.5 15 L54.5 33 C54.5 44.5 44.5 54 32 57.5 C19.5 54 9.5 44.5 9.5 33 L9.5 15 Z" fill="url(#g)"/>
+  <path d="M21.5 27.5 L32 43.5 L42.5 27.5" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>`;
+const LOGO_DATA_URI = `data:image/svg+xml;base64,${Buffer.from(LOGO_SVG).toString('base64')}`;
+
 // Load Geist fonts (.woff — satori supports woff but not woff2)
 const fontDir = resolve(root, 'node_modules/@fontsource/geist-sans/files');
 const [fontRegular, fontMedium, fontBold] = await Promise.all([
@@ -65,30 +79,20 @@ function template({ title, subtitle, badge }) {
               {
                 type: 'div',
                 props: {
-                  style: { display: 'flex', alignItems: 'center', gap: '16px' },
+                  style: { display: 'flex', alignItems: 'center', gap: '20px' },
                   children: [
                     {
-                      type: 'div',
+                      type: 'img',
                       props: {
-                        style: {
-                          width: '56px',
-                          height: '56px',
-                          borderRadius: '14px',
-                          background: `linear-gradient(135deg, ${COLORS.brand}, ${COLORS.accent})`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontSize: '34px',
-                          fontWeight: 700,
-                        },
-                        children: 'V',
+                        src: LOGO_DATA_URI,
+                        width: 72,
+                        height: 72,
                       },
                     },
                     {
                       type: 'div',
                       props: {
-                        style: { fontSize: '36px', fontWeight: 600, letterSpacing: '-0.02em' },
+                        style: { fontSize: '40px', fontWeight: 600, letterSpacing: '-0.02em' },
                         children: 'Vexyn',
                       },
                     },

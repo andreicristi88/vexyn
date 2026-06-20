@@ -1,5 +1,6 @@
 ---
 import { SITE } from '../../lib/constants';
+import Logo from '../ui/Logo.astro';
 const year = new Date().getFullYear();
 ---
 
@@ -8,9 +9,7 @@ const year = new Date().getFullYear();
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
       <div>
         <div class="flex items-center gap-2 mb-3">
-          <div class="w-7 h-7 rounded-md bg-gradient-to-br from-[color:var(--color-brand-500)] to-[color:var(--color-accent-500)] flex items-center justify-center text-white font-bold text-sm">
-            V
-          </div>
+          <Logo size={28} />
           <span class="font-semibold">{SITE.name}</span>
         </div>
         <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">

@@ -1,6 +1,7 @@
 ---
 import { SITE, NAV } from '../../lib/constants';
 import ThemeToggle from '../ui/ThemeToggle.svelte';
+import Logo from '../ui/Logo.astro';
 
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const isActive = (href: string) => {
@@ -13,9 +14,7 @@ const isActive = (href: string) => {
 <header class="sticky top-0 z-50 backdrop-blur-xl bg-[color:var(--color-bg)]/80 border-b border-[color:var(--color-border)]">
   <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between" aria-label="Main">
     <a href="/" class="flex items-center gap-2 group" aria-label={`${SITE.name} home`}>
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[color:var(--color-brand-500)] to-[color:var(--color-accent-500)] flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform">
-        V
-      </div>
+      <Logo size={32} class="group-hover:scale-110 transition-transform" />
       <span class="font-semibold text-lg tracking-tight">{SITE.name}</span>
     </a>
 

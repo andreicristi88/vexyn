@@ -199,7 +199,7 @@
   ondrop={onDrop}
   ondragover={onDragOver}
   ondragleave={() => dragOver = false}
-  class:list={[
+  class={[
     'w-full p-10 rounded-xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-3 cursor-pointer',
     dragOver
       ? 'border-[color:var(--color-brand-500)] bg-[color:var(--color-brand-500)]/5'

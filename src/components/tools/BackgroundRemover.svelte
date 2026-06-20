@@ -217,7 +217,7 @@
 <!-- Status bar -->
 <div class="mb-6 flex items-center justify-between gap-3 p-3 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
   <div class="flex items-center gap-3 text-sm">
-    <span class:list={[
+    <span class={[
       'inline-block w-2 h-2 rounded-full',
       status === 'ready' || status === 'done' ? 'bg-[color:var(--color-success)]' :
       status === 'error' ? 'bg-[color:var(--color-danger)]' :
@@ -253,7 +253,7 @@
   ondragover={onDragOver}
   ondragleave={() => dragOver = false}
   disabled={status === 'loading-model'}
-  class:list={[
+  class={[
     'w-full p-10 rounded-xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-3',
     status === 'loading-model' ? 'cursor-wait opacity-60' : 'cursor-pointer',
     dragOver
@@ -336,7 +336,7 @@
       <div class="flex p-0.5 rounded-md bg-[color:var(--color-bg)] border border-[color:var(--color-border)]">
         <button
           onclick={() => bgMode = 'transparent'}
-          class:list={[
+          class={[
             'px-3 py-1 rounded text-xs font-medium transition-colors',
             bgMode === 'transparent' ? 'bg-[color:var(--color-brand-500)] text-white' : 'text-[color:var(--color-text-mute)] hover:text-[color:var(--color-text)]'
           ]}
@@ -345,7 +345,7 @@
         </button>
         <button
           onclick={() => bgMode = 'color'}
-          class:list={[
+          class={[
             'px-3 py-1 rounded text-xs font-medium transition-colors',
             bgMode === 'color' ? 'bg-[color:var(--color-brand-500)] text-white' : 'text-[color:var(--color-text-mute)] hover:text-[color:var(--color-text)]'
           ]}

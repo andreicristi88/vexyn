@@ -59,7 +59,7 @@
 <div class="inline-flex p-1 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)] mb-4">
   <button
     onclick={() => mode = 'encode'}
-    class:list={[
+    class={[
       'px-4 py-1.5 rounded-md text-sm font-medium transition-colors',
       mode === 'encode'
         ? 'bg-[color:var(--color-brand-500)] text-white'
@@ -70,7 +70,7 @@
   </button>
   <button
     onclick={() => mode = 'decode'}
-    class:list={[
+    class={[
       'px-4 py-1.5 rounded-md text-sm font-medium transition-colors',
       mode === 'decode'
         ? 'bg-[color:var(--color-brand-500)] text-white'

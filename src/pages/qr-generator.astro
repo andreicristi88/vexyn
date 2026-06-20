@@ -2,20 +2,30 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import QrGenerator from '../components/tools/QrGenerator.svelte';
 import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
 
 const title = 'QR Code Generator';
 const description = 'Free customizable QR code generator. Choose colors, size, and error correction. Download as PNG or SVG. Everything runs in your browser.';
 
-const schema = {
-  '@context': 'https://schema.org',
-  '@type': 'WebApplication',
-  name: `${title} — ${SITE.name}`,
-  url: `${SITE.url}/qr-generator`,
-  description,
-  applicationCategory: 'UtilitiesApplication',
-  operatingSystem: 'Any',
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-};
+const faqs = [
+  { q: 'Are the QR codes tracked?', a: 'No. The QR code encodes the exact text you enter, with no redirect or shortener in the middle. Scanners go directly to your destination.' },
+  { q: 'When should I use PNG vs SVG?', a: 'SVG for printing or any case where sharpness matters at varied sizes. PNG for social media, slides, or anywhere you need a raster image.' },
+  { q: "My QR code isn't scanning — what's wrong?", a: 'Common causes: contrast too low (use dark on light), margin too small (use at least 2), or too much data (try Q/H error correction or shorten the text).' },
+  { q: 'Can I use these QR codes commercially?', a: 'Yes. The codes generated here are public domain — use them anywhere.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/qr-generator`,
+    description,
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'QR Generator', url: '/qr-generator' },
+  ]),
+  faqSchema(faqs),
+);
 ---
 
 <BaseLayout title={title} description={description} image="/og/qr-generator.png" schema={schema}>

@@ -2,20 +2,30 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Base64Tool from '../components/tools/Base64Tool.svelte';
 import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
 
 const title = 'Base64 Encoder & Decoder';
 const description = 'Free Base64 encoder and decoder with full UTF-8 support. Runs locally in your browser — nothing uploaded. No signup needed.';
 
-const schema = {
-  '@context': 'https://schema.org',
-  '@type': 'WebApplication',
-  name: `${title} — ${SITE.name}`,
-  url: `${SITE.url}/base64`,
-  description,
-  applicationCategory: 'DeveloperApplication',
-  operatingSystem: 'Any',
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-};
+const faqs = [
+  { q: 'Does it handle UTF-8?', a: 'Yes — emojis, accented characters, non-Latin scripts all work correctly. The tool encodes through UTF-8 bytes, not raw character codes.' },
+  { q: 'Can I use this with URL-safe Base64?', a: 'Standard Base64 output uses +, /, and =. URL-safe variant (RFC 4648) is on the roadmap.' },
+  { q: 'Is the data sent anywhere?', a: "No. Everything runs in your browser's JavaScript engine. No fetch calls, no telemetry, no logging." },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/base64`,
+    description,
+    category: 'DeveloperApplication',
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Base64', url: '/base64' },
+  ]),
+  faqSchema(faqs),
+);
 ---
 
 <BaseLayout title={title} description={description} image="/og/base64.png" schema={schema}>

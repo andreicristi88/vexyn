@@ -2,27 +2,31 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PdfMerger from '../components/tools/PdfMerger.svelte';
 import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
 
 const title = 'PDF Merger';
 const description = 'Free PDF merger that runs entirely in your browser. Combine multiple PDFs into one, reorder pages with drag-and-drop. Your files never get uploaded.';
 
-const schema = {
-  '@context': 'https://schema.org',
-  '@type': 'WebApplication',
-  name: `${title} — ${SITE.name}`,
-  url: `${SITE.url}/pdf-merger`,
-  description,
-  applicationCategory: 'UtilitiesApplication',
-  operatingSystem: 'Any',
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-  featureList: [
-    'Merge multiple PDFs into one',
-    'Drag-and-drop reordering',
-    'Page counting per file',
-    'Works fully offline',
-    '100% private — nothing uploaded',
-  ],
-};
+const faqs = [
+  { q: 'Is there a file size limit?', a: 'Browser memory is the only limit. ~500 MB total works on most desktops. Large mobile sessions may need to merge in batches.' },
+  { q: 'Will my data go anywhere?', a: "No. The tool is plain JavaScript running in your tab. Verify in DevTools' Network tab — zero requests fire when you merge." },
+  { q: 'Why are some of my PDFs marked "Encrypted"?', a: 'PDFs with passwords or restrictions can\'t be re-saved without their key. Open them in a viewer, save a copy without the password, and try again.' },
+  { q: 'Does the merger compress the output?', a: 'No — the output is byte-faithful to the inputs. For compression, pair this with a dedicated PDF compressor (coming soon).' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/pdf-merger`,
+    description,
+    features: ['Merge multiple PDFs into one', 'Drag-and-drop reordering', 'Page counting per file', 'Works fully offline', '100% private — nothing uploaded'],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'PDF Merger', url: '/pdf-merger' },
+  ]),
+  faqSchema(faqs),
+);
 ---
 
 <BaseLayout title={title} description={description} image="/og/pdf-merger.png" schema={schema}>

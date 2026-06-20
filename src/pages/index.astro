@@ -3,12 +3,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ToolCard from '../components/ui/ToolCard.astro';
 import { TOOLS } from '../lib/tools';
 import { SITE } from '../lib/constants';
+import { combineSchemas, itemListSchema } from '../lib/seo';
 
 const availableTools = TOOLS.filter(t => t.available);
 const comingTools = TOOLS.filter(t => !t.available);
 
-const schema = {
-  '@context': 'https://schema.org',
+const websiteSchema = {
   '@type': 'WebSite',
   name: SITE.name,
   url: SITE.url,
@@ -19,6 +19,20 @@ const schema = {
     'query-input': 'required name=search_term_string',
   },
 };
+
+const orgSchema = {
+  '@type': 'Organization',
+  name: SITE.name,
+  url: SITE.url,
+  logo: `${SITE.url}/favicon.svg`,
+  sameAs: [SITE.github],
+};
+
+const tools = itemListSchema(
+  availableTools.map((t) => ({ name: t.name, url: `/${t.slug}`, description: t.description })),
+);
+
+const schema = combineSchemas(websiteSchema, orgSchema, tools);
 ---
 
 <BaseLayout schema={schema}>

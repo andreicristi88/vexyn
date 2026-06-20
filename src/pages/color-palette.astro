@@ -2,20 +2,22 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ColorPalette from '../components/tools/ColorPalette.svelte';
 import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
 
 const title = 'Color Palette Extractor';
 const description = 'Extract dominant colors from any image. Get HEX, RGB, HSL and CSS variables ready to copy. Runs in your browser, never uploaded.';
 
-const schema = {
-  '@context': 'https://schema.org',
-  '@type': 'WebApplication',
-  name: `${title} — ${SITE.name}`,
-  url: `${SITE.url}/color-palette`,
-  description,
-  applicationCategory: 'DesignApplication',
-  operatingSystem: 'Any',
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-};
+const faqs = [
+  { q: 'How are dominant colors picked?', a: 'The tool samples pixels from a downscaled copy of your image, groups similar colors into buckets, averages each bucket and ranks by frequency. Near-duplicate colors are merged so the palette stays distinct.' },
+  { q: 'Can I get the colors as CSS variables?', a: 'Yes — use "Copy all as CSS variables" to get a block like --color-1: #abc; ready to paste into your stylesheet.' },
+  { q: 'Is my image uploaded?', a: 'No. Sampling happens in your browser canvas. The image never leaves your device.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({ name: `${title} — ${SITE.name}`, url: `${SITE.url}/color-palette`, description, category: 'DesignApplication' }),
+  breadcrumbSchema([{ name: 'Home', url: '/' }, { name: title, url: '/color-palette' }]),
+  faqSchema(faqs),
+);
 ---
 
 <BaseLayout title={title} description={description} image="/og/color-palette.png" schema={schema}>

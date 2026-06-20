@@ -2,20 +2,22 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PdfSplitter from '../components/tools/PdfSplitter.svelte';
 import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
 
 const title = 'PDF Splitter';
 const description = 'Split a PDF into single-page files or extract a custom range. Runs in your browser — your document never gets uploaded.';
 
-const schema = {
-  '@context': 'https://schema.org',
-  '@type': 'WebApplication',
-  name: `${title} — ${SITE.name}`,
-  url: `${SITE.url}/pdf-splitter`,
-  description,
-  applicationCategory: 'UtilitiesApplication',
-  operatingSystem: 'Any',
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-};
+const faqs = [
+  { q: "What's the size limit?", a: 'Browser memory is the limit. ~500 MB usually works on desktops.' },
+  { q: 'Will my data go anywhere?', a: 'No. The splitter is JavaScript running locally. Verify with DevTools — no requests fire when you split.' },
+  { q: 'Why are encrypted PDFs rejected?', a: "Encrypted PDFs can't be re-saved without their key. Open in a viewer, save a copy without password, then try again." },
+];
+
+const schema = combineSchemas(
+  webAppSchema({ name: `${title} — ${SITE.name}`, url: `${SITE.url}/pdf-splitter`, description }),
+  breadcrumbSchema([{ name: 'Home', url: '/' }, { name: title, url: '/pdf-splitter' }]),
+  faqSchema(faqs),
+);
 ---
 
 <BaseLayout title={title} description={description} image="/og/pdf-splitter.png" schema={schema}>

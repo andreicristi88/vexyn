@@ -2,20 +2,22 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ImageConverter from '../components/tools/ImageConverter.svelte';
 import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
 
 const title = 'Image Format Converter';
 const description = 'Batch convert JPG, PNG, WebP and AVIF. Pure browser tool — your images never leave your device. No signup, no quota, no ads.';
 
-const schema = {
-  '@context': 'https://schema.org',
-  '@type': 'WebApplication',
-  name: `${title} — ${SITE.name}`,
-  url: `${SITE.url}/image-converter`,
-  description,
-  applicationCategory: 'MultimediaApplication',
-  operatingSystem: 'Any',
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-};
+const faqs = [
+  { q: 'Which formats are supported?', a: 'JPG, PNG, WebP and AVIF for output. Any browser-readable image format works as input (JPG, PNG, WebP, GIF, BMP, and HEIC on Safari).' },
+  { q: 'Why does AVIF fail in my browser?', a: 'Some browsers (Safari, older Firefox) cannot encode AVIF yet. Use WebP as a near-equivalent fallback — almost the same compression with universal support.' },
+  { q: 'Does converting strip my metadata?', a: 'Yes. Canvas re-encoding drops EXIF and other metadata. For sensitive photos that\'s a privacy bonus.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({ name: `${title} — ${SITE.name}`, url: `${SITE.url}/image-converter`, description, category: 'MultimediaApplication' }),
+  breadcrumbSchema([{ name: 'Home', url: '/' }, { name: title, url: '/image-converter' }]),
+  faqSchema(faqs),
+);
 ---
 
 <BaseLayout title={title} description={description} image="/og/image-converter.png" schema={schema}>

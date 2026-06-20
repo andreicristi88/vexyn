@@ -2,20 +2,22 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ExifRemover from '../components/tools/ExifRemover.svelte';
 import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
 
 const title = 'EXIF Remover';
 const description = 'Strip GPS, camera and timestamp metadata from photos. Privacy-first, runs in your browser. See what was hidden, then remove it.';
 
-const schema = {
-  '@context': 'https://schema.org',
-  '@type': 'WebApplication',
-  name: `${title} — ${SITE.name}`,
-  url: `${SITE.url}/exif-remover`,
-  description,
-  applicationCategory: 'UtilitiesApplication',
-  operatingSystem: 'Any',
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-};
+const faqs = [
+  { q: 'What metadata gets removed?', a: 'EXIF (camera model, settings, timestamp), GPS coordinates, IPTC, XMP and most other metadata blocks. Anything embedded by the camera, phone, or editing software.' },
+  { q: 'Does my image quality change?', a: 'Re-encoding goes through your browser canvas at high quality (JPEG 92% / PNG lossless). Visually indistinguishable from the original in practice.' },
+  { q: 'Is my photo uploaded somewhere?', a: 'No. Reading metadata and re-encoding both happen in your browser. Network tab shows zero requests.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({ name: `${title} — ${SITE.name}`, url: `${SITE.url}/exif-remover`, description }),
+  breadcrumbSchema([{ name: 'Home', url: '/' }, { name: title, url: '/exif-remover' }]),
+  faqSchema(faqs),
+);
 ---
 
 <BaseLayout title={title} description={description} image="/og/exif-remover.png" schema={schema}>

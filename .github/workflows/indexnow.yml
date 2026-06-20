@@ -1,0 +1,88 @@
+name: IndexNow ping
+
+# Notifies IndexNow (Bing, Yandex, Seznam, Naver, Yep) about URLs from
+# the live sitemap whenever main is updated. Waits for Cloudflare Pages
+# to publish first.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - '.gitignore'
+      - 'LICENSE'
+  workflow_dispatch:
+
+concurrency:
+  group: indexnow-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    env:
+      HOST: vexyn.app
+      KEY: 228c5c4dd3c664d193b912fe81a7204f
+      SITEMAP_URL: https://vexyn.app/sitemap-0.xml
+    steps:
+      - name: Wait for Cloudflare Pages deploy to settle
+        run: |
+          echo "Waiting 120s for Cloudflare Pages build + propagation..."
+          sleep 120
+
+      - name: Verify key file is publicly reachable
+        run: |
+          got=$(curl -s "https://$HOST/$KEY.txt")
+          if [ "$got" != "$KEY" ]; then
+            echo "::error::Key file mismatch. Got: '$got' Expected: '$KEY'"
+            exit 1
+          fi
+          echo "Key file OK."
+
+      - name: Extract URLs from sitemap
+        id: urls
+        run: |
+          urls=$(curl -sf "$SITEMAP_URL" | grep -oP '(?<=<loc>)[^<]+')
+          if [ -z "$urls" ]; then
+            echo "::error::No URLs found in sitemap at $SITEMAP_URL"
+            exit 1
+          fi
+          count=$(echo "$urls" | wc -l)
+          echo "Found $count URLs."
+          # JSON-encode the list for the payload
+          json=$(echo "$urls" | jq -R . | jq -s -c .)
+          echo "json=$json" >> "$GITHUB_OUTPUT"
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+      - name: Submit to IndexNow
+        env:
+          URL_LIST: ${{ steps.urls.outputs.json }}
+        run: |
+          payload=$(jq -n \
+            --arg host "$HOST" \
+            --arg key "$KEY" \
+            --arg keyloc "https://$HOST/$KEY.txt" \
+            --argjson urls "$URL_LIST" \
+            '{host:$host, key:$key, keyLocation:$keyloc, urlList:$urls}')
+
+          echo "Submitting ${{ steps.urls.outputs.count }} URLs to IndexNow..."
+
+          http_code=$(curl -s -o /tmp/indexnow_response.txt -w "%{http_code}" \
+            -X POST 'https://api.indexnow.org/indexnow' \
+            -H 'Content-Type: application/json; charset=utf-8' \
+            -d "$payload")
+
+          echo "HTTP $http_code"
+          cat /tmp/indexnow_response.txt || true
+          echo ""
+
+          # IndexNow: 200 OK, 202 Accepted both fine. 4xx/5xx fail.
+          case "$http_code" in
+            200|202)
+              echo "::notice::IndexNow accepted ${{ steps.urls.outputs.count }} URLs (HTTP $http_code)."
+              ;;
+            *)
+              echo "::error::IndexNow rejected with HTTP $http_code."
+              exit 1
+              ;;
+          esac

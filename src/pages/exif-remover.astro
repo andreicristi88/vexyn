@@ -1,0 +1,80 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ExifRemover from '../components/tools/ExifRemover.svelte';
+import { SITE } from '../lib/constants';
+
+const title = 'EXIF Remover';
+const description = 'Strip GPS, camera and timestamp metadata from photos. Privacy-first, runs in your browser. See what was hidden, then remove it.';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: `${title} — ${SITE.name}`,
+  url: `${SITE.url}/exif-remover`,
+  description,
+  applicationCategory: 'UtilitiesApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+};
+---
+
+<BaseLayout title={title} description={description} image="/og/exif-remover.png" schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">EXIF Remover</span>
+      </div>
+      <div class="flex items-center gap-3 mb-3">
+        <h1 class="text-4xl font-bold tracking-tight">EXIF Remover</h1>
+        <span class="text-xs px-2 py-1 rounded-md bg-[color:var(--color-success)]/15 border border-[color:var(--color-success)]/30 text-[color:var(--color-success)] font-medium uppercase tracking-wider">
+          Privacy
+        </span>
+      </div>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Photos carry hidden metadata — exact GPS coordinates, camera serial number, timestamp, sometimes even the phone owner's name. This tool shows you what's there and removes it. Locally.
+      </p>
+    </header>
+
+    <ExifRemover client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Why this matters</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Every photo from a modern smartphone embeds an EXIF block — usually 20–50 metadata fields. The most concerning ones are GPS latitude/longitude (down to a few meters of your house), the device's unique camera serial, and the exact timestamp. Post that photo anywhere — Reddit, Discord, your blog, a marketplace listing — and anyone who downloads it can extract that data in seconds.
+      </p>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Most social platforms (Instagram, Twitter, Facebook) strip EXIF on upload. Direct image hosts (Imgur, Discord CDN, image-hosting services, sometimes even WordPress) do not. Always strip before sharing if location or device fingerprinting concerns you.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">How this tool works</h2>
+      <ol class="space-y-2 text-[color:var(--color-text-mute)] mb-6 list-decimal pl-6">
+        <li>Drop one or more images.</li>
+        <li><a class="text-[color:var(--color-brand-400)] hover:underline" href="https://github.com/MikeKovarik/exifr" target="_blank" rel="noopener noreferrer">exifr</a> parses the metadata so you can see what was there.</li>
+        <li>The image is re-encoded through a Canvas — the act of decoding pixels and re-encoding strips every metadata block (EXIF, IPTC, XMP).</li>
+        <li>Download the cleaned version.</li>
+      </ol>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
+      <div class="space-y-4">
+        <div>
+          <h3 class="font-semibold mb-1">Does the output keep the same format?</h3>
+          <p class="text-[color:var(--color-text-mute)]">PNG → PNG (lossless). Everything else → JPEG at 92% quality (visually identical to the original for most photos).</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Will it preserve color profile (ICC)?</h3>
+          <p class="text-[color:var(--color-text-mute)]">No — Canvas re-encoding drops the ICC profile. For most web/social use that's fine; for print workflows, use a dedicated tool.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Why does my image size change?</h3>
+          <p class="text-[color:var(--color-text-mute)]">Re-encoding uses different compression settings than your camera. JPEG output may be smaller (different quality table) or larger (no embedded thumbnail). PNG output depends on the encoder.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Does it really run locally?</h3>
+          <p class="text-[color:var(--color-text-mute)]">Yes. Open DevTools → Network and process an image — no requests fire.</p>
+        </div>
+      </div>
+    </article>
+  </div>
+</BaseLayout>

@@ -63,6 +63,42 @@ export const TOOLS: Tool[] = [
     keywords: ['background', 'remove', 'ai', 'webgpu', 'transparent', 'cutout'],
     available: true,
   },
+  {
+    slug: 'pdf-splitter',
+    name: 'PDF Splitter',
+    description: 'Split a PDF into single pages or extract a page range. Runs in your browser.',
+    category: 'pdf',
+    icon: '✂',
+    keywords: ['pdf', 'split', 'extract', 'pages', 'separate'],
+    available: true,
+  },
+  {
+    slug: 'exif-remover',
+    name: 'EXIF Remover',
+    description: 'Strip GPS, camera and timestamp metadata from images. Privacy-first, local-only.',
+    category: 'privacy',
+    icon: '🛡',
+    keywords: ['exif', 'metadata', 'remove', 'privacy', 'gps', 'strip'],
+    available: true,
+  },
+  {
+    slug: 'color-palette',
+    name: 'Color Palette Extractor',
+    description: 'Extract dominant colors from any image. Copy HEX, RGB, HSL. Zero uploads.',
+    category: 'generator',
+    icon: '🎨',
+    keywords: ['color', 'palette', 'extract', 'dominant', 'hex', 'designer'],
+    available: true,
+  },
+  {
+    slug: 'image-converter',
+    name: 'Image Format Converter',
+    description: 'Batch convert JPG ↔ PNG ↔ WebP ↔ AVIF. Drop, choose format, download. Local.',
+    category: 'image',
+    icon: '⇆',
+    keywords: ['image', 'convert', 'jpg', 'png', 'webp', 'avif', 'batch'],
+    available: true,
+  },
 ];
 
 export const CATEGORIES = {

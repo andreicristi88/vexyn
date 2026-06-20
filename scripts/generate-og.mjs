@@ -246,6 +246,30 @@ const pages = [
     subtitle: 'WebGPU-powered background removal that runs on your device. No upload. No API.',
     badge: 'AI · Local',
   },
+  {
+    filename: 'og/pdf-splitter.png',
+    title: 'PDF Splitter',
+    subtitle: 'Split a PDF into single pages or extract a custom range. Everything stays local.',
+    badge: 'PDF',
+  },
+  {
+    filename: 'og/exif-remover.png',
+    title: 'EXIF Remover',
+    subtitle: 'Strip GPS, camera and timestamp metadata from photos. Privacy-first, local-only.',
+    badge: 'Privacy',
+  },
+  {
+    filename: 'og/color-palette.png',
+    title: 'Color Palette Extractor',
+    subtitle: 'Pull dominant colors from any image. HEX, RGB, HSL, CSS variables. Zero uploads.',
+    badge: 'Generator',
+  },
+  {
+    filename: 'og/image-converter.png',
+    title: 'Image Format Converter',
+    subtitle: 'Batch convert JPG, PNG, WebP and AVIF in your browser. No upload, no quota.',
+    badge: 'Image',
+  },
 ];
 
 console.log('[og] Generating OG images...');

@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ColorPalette from '../components/tools/ColorPalette.svelte';
+import { SITE } from '../lib/constants';
+
+const title = 'Color Palette Extractor';
+const description = 'Extract dominant colors from any image. Get HEX, RGB, HSL and CSS variables ready to copy. Runs in your browser, never uploaded.';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: `${title} — ${SITE.name}`,
+  url: `${SITE.url}/color-palette`,
+  description,
+  applicationCategory: 'DesignApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+};
+---
+
+<BaseLayout title={title} description={description} image="/og/color-palette.png" schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Color Palette Extractor</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Color Palette Extractor</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop an image, get its dominant colors. Click any swatch to copy. Adjust how many colors you want. Export the whole palette as HEX, RGB, HSL or CSS variables.
+      </p>
+    </header>
+
+    <ColorPalette client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Designers and developers, this one's for you</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Pulling colors from a photo, a screenshot, or a reference design is a constant workflow task. Most tools that do this either need an upload (Coolors-style sites) or sit behind a paywall (Adobe Color is free but slow + heavy). This one runs in your tab — pixel-level sampling, quantization, dedup. No upload, no signup.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">How it works</h2>
+      <ol class="space-y-2 text-[color:var(--color-text-mute)] mb-6 list-decimal pl-6">
+        <li>Image is downscaled to 200px max dimension for speed (perceived colors don't change).</li>
+        <li>Pixels are bucketed into 4-bit-per-channel cells (4096 buckets total).</li>
+        <li>Buckets are averaged and sorted by frequency.</li>
+        <li>Near-duplicates are merged so the palette spans the actual color range.</li>
+        <li>Top N colors are returned with HEX, RGB and HSL.</li>
+      </ol>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
+      <div class="space-y-4">
+        <div>
+          <h3 class="font-semibold mb-1">Why are some obvious colors missing?</h3>
+          <p class="text-[color:var(--color-text-mute)]">Small accents (a button, a highlight) may be merged with their surroundings if they cover few pixels. Increase the color count or crop to the area of interest before dropping.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Can I sample a specific pixel?</h3>
+          <p class="text-[color:var(--color-text-mute)]">Not yet — point-and-click sampling is on the roadmap. Right now it's whole-image palette only.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Does it work with transparency?</h3>
+          <p class="text-[color:var(--color-text-mute)]">Yes. Fully transparent pixels are skipped; partially-transparent pixels are sampled at face value.</p>
+        </div>
+      </div>
+    </article>
+  </div>
+</BaseLayout>

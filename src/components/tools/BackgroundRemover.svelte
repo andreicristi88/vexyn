@@ -2,6 +2,14 @@
   import { onMount } from 'svelte';
 
   type Status = 'idle' | 'loading-model' | 'ready' | 'processing' | 'done' | 'error';
+  type Stage = 'encoding' | 'inferring' | 'generating' | 'compositing';
+
+  const STAGES: { id: Stage; label: string; hint: string }[] = [
+    { id: 'encoding', label: 'Encoding image', hint: 'Preparing pixels for the model.' },
+    { id: 'inferring', label: 'Running AI model', hint: 'The slow part — your GPU is doing the work.' },
+    { id: 'generating', label: 'Generating mask', hint: 'Building the transparency layer.' },
+    { id: 'compositing', label: 'Finalizing', hint: 'Compositing the result.' },
+  ];
 
   let lib: any = $state(null);
   let model: any = $state(null);
@@ -10,8 +18,12 @@
   let status: Status = $state('idle');
   let loadProgress = $state(0);
   let loadLabel = $state('');
-  let inferProgress = $state(0);
+  let currentStage = $state<Stage | null>(null);
   let errorMsg = $state('');
+
+  let resolution: 512 | 1024 = $state(1024);
+  let autoSpeed = $state(false);
+  let processorBuilding = $state(false);
 
   let originalUrl = $state('');
   let originalName = $state('image.png');
@@ -44,6 +56,32 @@
 
   const MODEL_ID = 'briaai/RMBG-1.4';
 
+  function buildProcessor(size: number) {
+    return lib.AutoProcessor.from_pretrained(MODEL_ID, {
+      config: {
+        do_normalize: true,
+        do_pad: false,
+        do_rescale: true,
+        do_resize: true,
+        image_mean: [0.5, 0.5, 0.5],
+        image_std: [1, 1, 1],
+        resample: 2,
+        rescale_factor: 0.00392156862745098,
+        size: { width: size, height: size },
+      },
+    });
+  }
+
+  function detectSlowDevice(): boolean {
+    if (typeof window === 'undefined') return false;
+    const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    const narrow = window.matchMedia('(max-width: 768px)').matches;
+    const lowCores = (navigator.hardwareConcurrency ?? 8) <= 4;
+    // @ts-ignore
+    const lowMem = (navigator.deviceMemory ?? 8) <= 4;
+    return (coarsePointer && narrow) || lowCores || lowMem;
+  }
+
   onMount(async () => {
     if (typeof window === 'undefined') return;
     status = 'loading-model';
@@ -55,6 +93,12 @@
       // Detect WebGPU
       // @ts-ignore
       device = (navigator.gpu && (await tryWebGPU())) ? 'webgpu' : 'wasm';
+
+      // Auto-pick Speed on mobile / weak devices / WASM fallback
+      if (detectSlowDevice() || device === 'wasm') {
+        resolution = 512;
+        autoSpeed = true;
+      }
 
       const progress_callback = (p: any) => {
         if (p.status === 'progress' && p.file) {
@@ -74,20 +118,7 @@
         progress_callback,
       });
 
-      processor = await lib.AutoProcessor.from_pretrained(MODEL_ID, {
-        config: {
-          do_normalize: true,
-          do_pad: false,
-          do_rescale: true,
-          do_resize: true,
-          image_mean: [0.5, 0.5, 0.5],
-          image_std: [1, 1, 1],
-          resample: 2,
-          rescale_factor: 0.00392156862745098,
-          size: { width: 1024, height: 1024 },
-        },
-      });
-
+      processor = await buildProcessor(resolution);
       status = 'ready';
     } catch (e: any) {
       console.error('[BgRemover] init failed', e);
@@ -95,6 +126,18 @@
       status = 'error';
     }
   });
+
+  async function setResolution(r: 512 | 1024) {
+    if (r === resolution || !lib) return;
+    autoSpeed = false;
+    resolution = r;
+    processorBuilding = true;
+    try {
+      processor = await buildProcessor(r);
+    } finally {
+      processorBuilding = false;
+    }
+  }
 
   async function tryWebGPU(): Promise<boolean> {
     try {
@@ -148,28 +191,33 @@
   async function process() {
     if (!model || !processor || !originalBitmap || !originalUrl) return;
     status = 'processing';
-    inferProgress = 10;
     errorMsg = '';
 
     try {
+      currentStage = 'encoding';
       const image = await lib.RawImage.fromURL(originalUrl);
-      inferProgress = 25;
       const { pixel_values } = await processor(image);
-      inferProgress = 45;
-      const { output } = await model({ input: pixel_values });
-      inferProgress = 75;
 
+      currentStage = 'inferring';
+      // Yield so the UI can paint the new stage before the GPU blocks the thread
+      await new Promise((r) => setTimeout(r, 0));
+      const { output } = await model({ input: pixel_values });
+
+      currentStage = 'generating';
       const mask = await lib.RawImage.fromTensor(
         output[0].mul(255).to('uint8'),
       ).resize(image.width, image.height);
       maskCache = { mask, w: image.width, h: image.height };
-      inferProgress = 90;
+
+      currentStage = 'compositing';
       renderOutput();
-      inferProgress = 100;
+
+      currentStage = null;
       status = 'done';
     } catch (e: any) {
       console.error('[BgRemover] inference failed', e);
       errorMsg = e?.message || 'Inference failed.';
+      currentStage = null;
       status = 'error';
     }
   }
@@ -231,34 +279,80 @@
 </script>
 
 <!-- Status bar -->
-<div class="mb-6 flex items-center justify-between gap-3 p-3 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
-  <div class="flex items-center gap-3 text-sm">
-    <span class={[
-      'inline-block w-2 h-2 rounded-full',
-      status === 'ready' || status === 'done' ? 'bg-[color:var(--color-success)]' :
-      status === 'error' ? 'bg-[color:var(--color-danger)]' :
-      'bg-[color:var(--color-warning)] animate-pulse'
-    ]}></span>
-    {#if status === 'idle'}
-      <span class="text-[color:var(--color-text-mute)]">Initializing…</span>
-    {:else if status === 'loading-model'}
-      <span class="text-[color:var(--color-text-mute)]">Loading model… <span class="font-mono text-xs">{loadLabel}</span></span>
-    {:else if status === 'ready'}
-      <span class="text-[color:var(--color-text)]">Ready</span>
-    {:else if status === 'processing'}
-      <span class="text-[color:var(--color-text-mute)]">Removing background… {inferProgress}%</span>
-    {:else if status === 'done'}
-      <span class="text-[color:var(--color-text)]">Done</span>
-    {:else if status === 'error'}
-      <span class="text-[color:var(--color-danger)]">Error: {errorMsg}</span>
-    {/if}
+<div class="mb-4 p-3 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)] space-y-3">
+  <div class="flex items-center justify-between gap-3 text-sm">
+    <div class="flex items-center gap-3 min-w-0">
+      <span class={[
+        'inline-block w-2 h-2 rounded-full flex-shrink-0',
+        status === 'ready' || status === 'done' ? 'bg-[color:var(--color-success)]' :
+        status === 'error' ? 'bg-[color:var(--color-danger)]' :
+        'bg-[color:var(--color-warning)] animate-pulse'
+      ]}></span>
+      {#if status === 'idle'}
+        <span class="text-[color:var(--color-text-mute)]">Initializing…</span>
+      {:else if status === 'loading-model'}
+        <span class="text-[color:var(--color-text-mute)] truncate">Loading model… <span class="font-mono text-xs">{loadLabel}</span></span>
+      {:else if status === 'ready'}
+        <span class="text-[color:var(--color-text)]">Ready</span>
+      {:else if status === 'processing' && currentStage}
+        {@const cur = STAGES.find((s) => s.id === currentStage)!}
+        <span class="text-[color:var(--color-text)]">{cur.label}<span class="ml-1 text-[color:var(--color-text-dim)]">— {cur.hint}</span></span>
+      {:else if status === 'done'}
+        <span class="text-[color:var(--color-text)]">Done</span>
+      {:else if status === 'error'}
+        <span class="text-[color:var(--color-danger)] truncate">{errorMsg}</span>
+      {/if}
+    </div>
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <!-- Quality / Speed toggle -->
+      <div class="flex p-0.5 rounded-md bg-[color:var(--color-bg)] border border-[color:var(--color-border)]" title="Lower resolution = faster inference, slightly softer mask">
+        <button
+          type="button"
+          onclick={() => setResolution(1024)}
+          disabled={processorBuilding}
+          class={[
+            'px-2.5 py-1 rounded text-xs font-medium transition-colors disabled:opacity-50',
+            resolution === 1024 ? 'bg-[color:var(--color-brand-500)] text-white' : 'text-[color:var(--color-text-mute)] hover:text-[color:var(--color-text)]'
+          ]}
+        >Quality</button>
+        <button
+          type="button"
+          onclick={() => setResolution(512)}
+          disabled={processorBuilding}
+          class={[
+            'px-2.5 py-1 rounded text-xs font-medium transition-colors disabled:opacity-50',
+            resolution === 512 ? 'bg-[color:var(--color-brand-500)] text-white' : 'text-[color:var(--color-text-mute)] hover:text-[color:var(--color-text)]'
+          ]}
+        >Speed</button>
+      </div>
+      <div class="text-[10px] text-[color:var(--color-text-dim)] font-mono uppercase tracking-wider">
+        {device}{#if device === 'wasm'} <span class="text-[color:var(--color-warning)]">(slow)</span>{/if}
+      </div>
+    </div>
   </div>
-  <div class="text-xs text-[color:var(--color-text-dim)] font-mono uppercase tracking-wider">
-    {device}
-    {#if device === 'wasm'}
-      <span class="ml-1 text-[color:var(--color-warning)]">(no WebGPU — slower)</span>
-    {/if}
-  </div>
+
+  <!-- Stage track during processing -->
+  {#if status === 'processing'}
+    <div class="flex items-center gap-1.5">
+      {#each STAGES as s, i}
+        {@const done = currentStage ? STAGES.findIndex((x) => x.id === currentStage) > i : false}
+        {@const active = currentStage === s.id}
+        <div class={[
+          'h-1 flex-1 rounded-full transition-colors',
+          done ? 'bg-[color:var(--color-brand-500)]' :
+          active ? 'bg-[color:var(--color-brand-500)] animate-pulse' :
+          'bg-[color:var(--color-surface-2)]'
+        ]}></div>
+      {/each}
+    </div>
+  {/if}
+
+  {#if autoSpeed && status === 'ready'}
+    <p class="text-[11px] text-[color:var(--color-text-dim)] flex items-center gap-1.5">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      Auto-picked <strong class="text-[color:var(--color-text-mute)]">Speed</strong> mode for your device. Switch to Quality for a sharper mask if you have time.
+    </p>
+  {/if}
 </div>
 
 <!-- Drop zone -->
@@ -334,9 +428,10 @@
         {#if outputUrl}
           <img src={outputUrl} alt="Background removed" class="max-w-full max-h-full object-contain" />
         {:else if status === 'processing'}
+          {@const cur = currentStage ? STAGES.find((s) => s.id === currentStage) : null}
           <div class="flex flex-col items-center gap-2">
             <div class="w-6 h-6 rounded-full border-2 border-[color:var(--color-border-strong)] border-t-[color:var(--color-brand-500)] animate-spin"></div>
-            <p class="text-xs text-[color:var(--color-text-dim)] font-mono">{inferProgress}%</p>
+            <p class="text-xs text-[color:var(--color-text-mute)]">{cur?.label ?? 'Working…'}</p>
           </div>
         {:else}
           <p class="text-xs text-[color:var(--color-text-dim)]">Waiting…</p>

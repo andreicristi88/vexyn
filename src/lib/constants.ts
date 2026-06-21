@@ -8,7 +8,7 @@ export const SITE = {
   // (e.g. Carbon Ads) or sponsorships in the future without breaking trust.
   tagline: 'Tools that stay on your device.',
   author: 'Vexyn',
-  email: 'hello@vexyn.app',
+  email: 'support.vexyn@gmail.com',
   github: 'https://github.com/andreicristi88/vexyn',
   twitter: '@vexynapp',
   keywords: [

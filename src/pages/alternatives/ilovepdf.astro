@@ -4,13 +4,13 @@ import { SITE } from '../../lib/constants';
 import { breadcrumbSchema, faqSchema, combineSchemas } from '../../lib/seo';
 
 const title = 'ILovePDF Alternative That Keeps Your Documents Local';
-const description = 'Vexyn is an ILovePDF alternative for merging and splitting PDFs that runs entirely in your browser. No upload, no signup, no daily quota, no paid tier.';
+const description = 'Vexyn is an ILovePDF alternative for merging and splitting PDFs that runs entirely in your browser. No upload, no signup, no daily quota — your documents never leave your device.';
 
 const faqs = [
   { q: 'Why would I use Vexyn over ILovePDF?', a: 'If your PDFs contain anything sensitive — contracts, statements, signed documents, medical records — Vexyn keeps them on your device. ILovePDF needs to upload them to process.' },
   { q: 'Does Vexyn have all the tools ILovePDF has?', a: 'Currently no. ILovePDF has 20+ PDF tools (compress, convert, sign, OCR, etc.). Vexyn has Merger and Splitter today, with Compressor, Rotate, Watermark, and Redactor planned. The bar is "runs entirely in the browser" — server-side tools (OCR, AI signing) are harder to bring local but on the roadmap.' },
   { q: 'Is there a file size limit?', a: 'Browser memory is the only limit — roughly 500 MB total on a typical desktop. ILovePDF has hard caps (25 MB free, 100 MB paid).' },
-  { q: 'How does Vexyn make money if everything is free?', a: 'It doesn\'t really. The site costs ~$15/year (the domain). Hosting is free, no servers process files, no API providers to pay. There\'s no growth engine that pressures a paid tier.' },
+  { q: 'How does Vexyn make money if everything is free?', a: 'It doesn\'t, currently. The site costs ~$15/year (the domain) and runs on free Cloudflare Pages. Because every tool runs on your device, there\'s no per-request server cost forcing a paywall on the existing tools. Future support (sponsorships, non-tracking referrals) would never break the architectural promises — no upload, no signup, no tracking.' },
 ];
 
 const schema = combineSchemas(
@@ -68,7 +68,7 @@ const schema = combineSchemas(
             <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">OCR / signing / advanced</td><td class="p-4">Not yet</td><td class="p-4">Yes</td></tr>
             <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Works offline</td><td class="p-4 text-[color:var(--color-success)]">Yes (after first load)</td><td class="p-4">No (requires upload)</td></tr>
             <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Open source</td><td class="p-4 text-[color:var(--color-success)]">Yes (MIT)</td><td class="p-4">No</td></tr>
-            <tr><td class="p-4 text-[color:var(--color-text)] font-medium">Price</td><td class="p-4 text-[color:var(--color-success)]">Free forever</td><td class="p-4">Free + Premium ($4–$9/mo)</td></tr>
+            <tr><td class="p-4 text-[color:var(--color-text)] font-medium">Price</td><td class="p-4 text-[color:var(--color-success)]">Free, unlimited</td><td class="p-4">Free + Premium ($4–$9/mo)</td></tr>
           </tbody>
         </table>
       </div>

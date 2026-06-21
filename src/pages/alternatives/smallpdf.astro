@@ -10,7 +10,7 @@ const faqs = [
   { q: 'Will Vexyn hit me with a 2-document-per-day cap like SmallPDF?', a: 'No. There is no quota. The tool runs on your device, so there is nothing to meter.' },
   { q: 'Does Vexyn support the same PDF formats SmallPDF does?', a: 'For merging and splitting — yes, any standard PDF. Encrypted/password-protected PDFs need their password removed first (we flag them clearly instead of failing silently).' },
   { q: 'Why is there no upload?', a: 'Vexyn uses pdf-lib, a JavaScript PDF library that runs in your browser. The file picker hands PDF bytes directly to JS, which assembles the merged/split output and offers it as a download. No server in the loop.' },
-  { q: 'Does Vexyn have a Pro tier?', a: 'No. The whole point of running on the user\'s device is that there is no scaling cost — so there is no paid tier to push.' },
+  { q: 'Does Vexyn have a Pro tier?', a: 'Not currently. Because every tool runs on your device there\'s no server cost to recover, so the existing tools stay free without a meter or signup gate.' },
 ];
 
 const schema = combineSchemas(
@@ -67,7 +67,7 @@ const schema = combineSchemas(
             <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">PDF tools available</td><td class="p-4">Merger + Splitter today</td><td class="p-4">20+ tools incl. compress, convert, sign</td></tr>
             <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Works offline</td><td class="p-4 text-[color:var(--color-success)]">Yes (after first load)</td><td class="p-4">No</td></tr>
             <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Open source</td><td class="p-4 text-[color:var(--color-success)]">Yes (MIT)</td><td class="p-4">No</td></tr>
-            <tr><td class="p-4 text-[color:var(--color-text)] font-medium">Price</td><td class="p-4 text-[color:var(--color-success)]">Free forever</td><td class="p-4">Free w/ cap + Pro ($9/mo)</td></tr>
+            <tr><td class="p-4 text-[color:var(--color-text)] font-medium">Price</td><td class="p-4 text-[color:var(--color-success)]">Free, unlimited</td><td class="p-4">Free w/ cap + Pro ($9/mo)</td></tr>
           </tbody>
         </table>
       </div>

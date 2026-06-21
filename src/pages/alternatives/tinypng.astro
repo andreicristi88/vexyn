@@ -7,7 +7,7 @@ const title = 'TinyPNG Alternative That Runs in Your Browser';
 const description = 'Vexyn is a TinyPNG alternative for image compression that runs entirely in your browser. No upload, no monthly cap, no signup, no paid tier. JPG, PNG, WebP, HEIC supported.';
 
 const faqs = [
-  { q: 'Is Vexyn really free, or is there a hidden paid tier?', a: 'Free, forever. There is no paid tier and no plan to add one. Operating cost is just the domain (~$15/year) because every tool runs on your device.' },
+  { q: 'Is Vexyn really free, or is there a hidden paid tier?', a: 'Free. The tools you see today are free to use and will stay that way — pushing existing free tools behind a paywall is exactly the pattern we built Vexyn to avoid. Operating cost is just the domain (~$15/year) because every tool runs on your device.' },
   { q: 'Does Vexyn compress as well as TinyPNG?', a: 'For most images, yes. Vexyn uses browser-image-compression at quality 80% by default, which produces JPEG/WebP output very close to TinyPNG\'s lossy compression. You can adjust quality and target format manually.' },
   { q: 'Can I batch compress like TinyPNG\'s paid tier?', a: 'Yes — drop as many files as you want at once, processed in a Web Worker so the UI stays responsive. No 20-image monthly cap.' },
   { q: 'What about TinyPNG\'s API for developers?', a: 'Vexyn doesn\'t offer an API — it\'s a browser tool only. If you need server-side compression at scale, TinyPNG\'s API or a self-hosted tool like sharp/mozjpeg is the right pick. Vexyn fits the "I have these images, compress them now" use case.' },
@@ -115,7 +115,7 @@ const schema = combineSchemas(
             </tr>
             <tr>
               <td class="p-4 text-[color:var(--color-text)] font-medium">Price</td>
-              <td class="p-4 text-[color:var(--color-success)]">Free forever</td>
+              <td class="p-4 text-[color:var(--color-success)]">Free, unlimited</td>
               <td class="p-4">Free tier + paid ($25–$99/mo)</td>
             </tr>
           </tbody>

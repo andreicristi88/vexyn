@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-a855f7?style=flat-square)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/andreicristi88/vexyn?style=flat-square&color=10b981)](https://github.com/andreicristi88/vexyn/stargazers)
 
-A growing collection of free browser tools that run **entirely on your device**. No file uploads. No signup. No tracking. No ads. The kind of tools you'd want if you treated your data the way you treat your medical history.
+A growing collection of free browser tools that run **entirely on your device**. No file uploads. No signup. No tracking. The kind of tools you'd want if you treated your data the way you treat your medical history.
 
 🌐 **[vexyn.app](https://vexyn.app)**
 
@@ -22,7 +22,7 @@ Close the tab and everything is gone.
 
 - **Privacy by architecture, not by promise.** Most online tools say "we don't store your data." We can't — there is no server to store on. Verify in your browser's Network tab.
 - **No accounts, ever.** Friction-free. Open, do the thing, close.
-- **Zero ads, zero trackers.** Cloudflare Web Analytics for traffic counts; no cookies, no fingerprinting.
+- **No trackers, no third-party cookies.** Cloudflare Web Analytics for aggregate traffic counts only — no fingerprinting, no per-user profiles.
 - **Genuine offline support.** Once a tool's assets are cached, it works on a plane.
 - **Open source.** Every line is in this repo. Audit, fork, copy.
 

@@ -1,0 +1,90 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ImageUpscaler from '../components/tools/ImageUpscaler.svelte';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'AI Image Upscaler';
+const description = 'Free AI image upscaler that runs entirely on your device via WebGPU. Drop a small or blurry image, get a sharp 2× or 4× version. No upload, no signup, no API.';
+
+const faqs = [
+  { q: 'How is this free if it uses an AI model?', a: 'The Swin2SR model (open source, MIT) is downloaded once into your browser and runs on your own GPU via WebGPU. No API call to pay for — operating cost stays at zero regardless of traffic.' },
+  { q: 'Is my image really not uploaded?', a: 'No. Inference happens inside your browser tab. Open DevTools → Network and verify — zero requests fire when you upscale (only the model file is fetched, once, on first visit).' },
+  { q: 'How does it compare to Topaz Labs or Waifu2x?', a: 'Topaz Photo AI ($99-$199) uses larger proprietary models and edges Swin2SR on extreme cases (faces, fine fur). Waifu2x is great for anime but uploads. For typical photo cleanup, Swin2SR running locally is very close to Topaz quality, with the privacy bonus.' },
+  { q: 'Why does my big photo get downscaled before upscaling?', a: 'WebGPU memory limits get hit quickly with large inputs at 4× upscale. We cap input at 1280px (2× mode) or 768px (4× mode) so the tool always finishes instead of crashing. For maximum-resolution output, downscale the original elsewhere first to fit the cap.' },
+  { q: 'Which is better, 2× or 4×?', a: '2× is gentler, faster, less memory. 4× extracts more detail from very small/blurry sources but takes longer and uses more GPU memory. Try both on the same image — the side-by-side makes the choice obvious.' },
+  { q: 'Why is it slow on my laptop?', a: 'No WebGPU = WASM fallback (CPU-only), which is significantly slower. WebGPU is supported in modern Chrome, Edge, and Safari 18+. Firefox is rolling it out.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/image-upscaler`,
+    description,
+    category: 'MultimediaApplication',
+    features: [
+      'AI super-resolution at 2× or 4×',
+      'Runs entirely on your device via WebGPU',
+      'No upload, no signup, no API',
+      'Works offline once loaded',
+      'Open-source model (Swin2SR)',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Image Upscaler', url: '/image-upscaler' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} image="/og/image-upscaler.png" schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Image Upscaler</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">AI Image Upscaler</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop a small or blurry image. Get a sharp 2× or 4× version. The model runs entirely on your device via WebGPU — your photo never leaves your browser.
+      </p>
+    </header>
+
+    <ImageUpscaler client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Super-resolution that doesn't see your photos</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        AI upscalers used to mean uploading photos to a server (Topaz cloud, Let's Enhance, Bigjpg) or installing heavy desktop software ($99–$299). Vexyn does it in the browser, with an open-source super-resolution model (<a class="text-[color:var(--color-brand-400)] hover:underline" href="https://huggingface.co/Xenova/swin2SR-realworld-sr-x4-64-bsrgan-psnr" target="_blank" rel="noopener noreferrer">Swin2SR</a>) loaded once and cached forever. Inference happens on your GPU via <a class="text-[color:var(--color-brand-400)] hover:underline" href="https://github.com/huggingface/transformers.js" target="_blank" rel="noopener noreferrer">transformers.js</a> + WebGPU. Network tab will confirm: nothing leaves your machine.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">When upscaling is worth doing</h2>
+      <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+        <li><strong class="text-[color:var(--color-text)]">Old photos / scans:</strong> 1990s digital cameras, scanned prints, screenshots from low-DPI displays</li>
+        <li><strong class="text-[color:var(--color-text)]">Profile pictures:</strong> tiny avatars that need to become hi-res banners</li>
+        <li><strong class="text-[color:var(--color-text)]">Stock photo cleanup:</strong> when the source is small and licensing the bigger version is expensive</li>
+        <li><strong class="text-[color:var(--color-text)]">Thumbnails for video / podcast cover:</strong> rescue a small square into a usable YouTube thumbnail</li>
+        <li><strong class="text-[color:var(--color-text)]">Pre-print prep:</strong> stretch a web-resolution photo for an A5 flyer without going pixelated</li>
+      </ul>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">When it won't help</h2>
+      <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+        <li><strong class="text-[color:var(--color-text)]">Already-large photos:</strong> if your input is 4000×3000, upscaling won't reveal new detail — the model invents plausible pixels, it doesn't add real information</li>
+        <li><strong class="text-[color:var(--color-text)]">Faces in tiny inputs:</strong> AI super-resolution often hallucinates face details that look "wrong" — fine for distant figures, less safe for portraits</li>
+        <li><strong class="text-[color:var(--color-text)]">Text:</strong> Swin2SR is for photos; very small text often gets smoothed in unhelpful ways. Use a vector OCR + retype instead.</li>
+      </ul>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  </div>
+</BaseLayout>

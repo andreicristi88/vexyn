@@ -253,6 +253,12 @@ const pages = [
     badge: 'AI · Local',
   },
   {
+    filename: 'og/image-upscaler.png',
+    title: 'AI Image Upscaler',
+    subtitle: 'Sharpen and enlarge images 2× or 4× with Swin2SR running on your device. No upload. No API.',
+    badge: 'AI · Local',
+  },
+  {
     filename: 'og/pdf-splitter.png',
     title: 'PDF Splitter',
     subtitle: 'Split a PDF into single pages or extract a custom range. Everything stays local.',

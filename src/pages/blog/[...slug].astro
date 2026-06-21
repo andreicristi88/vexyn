@@ -155,19 +155,19 @@ function fmtDate(d: Date): string {
     color: var(--color-brand-400);
   }
   .prose-vexyn pre {
-    background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 1rem 1.25rem;
     overflow-x: auto;
     font-size: 0.875em;
     line-height: 1.6;
+    /* background + colours come from the Shiki theme via global.css */
   }
   .prose-vexyn pre code {
     padding: 0;
     background: transparent;
     border: none;
-    color: var(--color-text);
+    /* colour comes from Shiki spans */
   }
   .prose-vexyn hr {
     border: none;

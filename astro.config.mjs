@@ -10,6 +10,18 @@ export default defineConfig({
   build: {
     format: 'file',
   },
+  markdown: {
+    // Dual-theme syntax highlighting. Shiki emits both colour sets inline;
+    // CSS in global.css picks the right one based on the .light class.
+    shikiConfig: {
+      themes: {
+        light: 'github-light',
+        dark: 'github-dark',
+      },
+      defaultColor: false,
+      wrap: true,
+    },
+  },
   integrations: [
     sitemap({
       changefreq: 'weekly',

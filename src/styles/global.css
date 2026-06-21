@@ -48,12 +48,12 @@
 /* Light mode — "Dawn Mist" palette: cool gray-blue undertone that
    complements the indigo/purple brand without going harsh-white. */
 :root.light {
-  --color-bg: #f5f6f9;
-  --color-surface: #fbfcfd;
-  --color-surface-2: #eef0f5;
-  --color-surface-3: #e0e4ec;
-  --color-border: #e1e4eb;
-  --color-border-strong: #c7cdd9;
+  --color-bg: #e8ebf1;
+  --color-surface: #f7f8fc;
+  --color-surface-2: #dee2ea;
+  --color-surface-3: #d2d7e0;
+  --color-border: #d4d8e1;
+  --color-border-strong: #b9bfcc;
 
   --color-text: #1a1d24;
   --color-text-mute: #5a626f;
@@ -201,3 +201,24 @@ body::before {
   mix-blend-mode: multiply;
 }
 :root.light body::before { opacity: 0.04; }
+
+/* Shiki dual-theme syntax highlighting (configured in astro.config.mjs).
+   Shiki inlines BOTH light + dark colour sets; we pick the active one
+   here based on the .light class. defaultColor:false in the config
+   means neither theme wins by default. */
+:root .astro-code,
+:root .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+:root.light .astro-code,
+:root.light .astro-code span {
+  color: var(--shiki-light) !important;
+  background-color: var(--shiki-light-bg) !important;
+  font-style: var(--shiki-light-font-style) !important;
+  font-weight: var(--shiki-light-font-weight) !important;
+  text-decoration: var(--shiki-light-text-decoration) !important;
+}

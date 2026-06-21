@@ -1,0 +1,185 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../lib/constants';
+import { breadcrumbSchema, combineSchemas } from '../../lib/seo';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map(post => ({
+    params: { slug: post.id.replace(/\.md$/, '') },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const url = `${SITE.url}/blog/${post.id.replace(/\.md$/, '')}`;
+
+const articleSchema = {
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.description,
+  url,
+  datePublished: post.data.pubDate.toISOString(),
+  ...(post.data.updatedDate ? { dateModified: post.data.updatedDate.toISOString() } : {}),
+  author: { '@type': 'Person', name: SITE.author, url: SITE.url },
+  publisher: {
+    '@type': 'Organization',
+    name: SITE.name,
+    url: SITE.url,
+    logo: { '@type': 'ImageObject', url: `${SITE.url}/logo-512.png` },
+  },
+  mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+};
+
+const schema = combineSchemas(
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Blog', url: '/blog' },
+    { name: post.data.title, url: `/blog/${post.id.replace(/\.md$/, '')}` },
+  ]),
+  articleSchema,
+);
+
+function fmtDate(d: Date): string {
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+---
+
+<BaseLayout title={post.data.title} description={post.data.description} schema={schema}>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-10">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <a href="/blog" class="hover:text-[color:var(--color-text)]">Blog</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)] truncate max-w-[200px] sm:max-w-none">{post.data.title}</span>
+      </div>
+
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-4 leading-tight">{post.data.title}</h1>
+
+      <div class="flex flex-wrap items-center gap-3 text-sm text-[color:var(--color-text-mute)]">
+        <time datetime={post.data.pubDate.toISOString()} class="font-mono text-xs uppercase tracking-wider">
+          {fmtDate(post.data.pubDate)}
+        </time>
+        {post.data.tags && (
+          <>
+            <span class="text-[color:var(--color-text-dim)]">•</span>
+            <div class="flex flex-wrap gap-1.5">
+              {post.data.tags.map(tag => (
+                <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-[color:var(--color-surface-2)] text-[color:var(--color-text-mute)] border border-[color:var(--color-border)]">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </header>
+
+    <article class="prose-vexyn">
+      <Content />
+    </article>
+
+    {post.data.related && post.data.related.length > 0 && (
+      <aside class="mt-12 p-5 rounded-xl bg-gradient-to-br from-[color:var(--color-brand-500)]/10 to-[color:var(--color-accent-500)]/10 border border-[color:var(--color-brand-500)]/30">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-[color:var(--color-text-mute)] mb-3">Related tools</h2>
+        <div class="flex flex-wrap gap-2">
+          {post.data.related.map(slug => (
+            <a
+              href={slug}
+              class="text-sm px-4 py-2 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)] hover:border-[color:var(--color-brand-500)] text-[color:var(--color-text)] hover:text-[color:var(--color-brand-400)] transition-colors"
+            >
+              {slug.replace(/^\//, '').replace(/-/g, ' ')} →
+            </a>
+          ))}
+        </div>
+      </aside>
+    )}
+
+    <nav class="mt-12 pt-6 border-t border-[color:var(--color-border)]">
+      <a href="/blog" class="text-sm text-[color:var(--color-brand-400)] hover:text-[color:var(--color-brand-300)] transition-colors">
+        ← All posts
+      </a>
+    </nav>
+  </div>
+</BaseLayout>
+
+<style is:global>
+  /* Prose styling for markdown content — distinctive enough to feel cared-for,
+     not a generic typography reset. */
+  .prose-vexyn {
+    color: var(--color-text);
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+  .prose-vexyn > * + * { margin-top: 1.25em; }
+  .prose-vexyn h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-top: 2.5em;
+    margin-bottom: 0.75em;
+    letter-spacing: -0.01em;
+  }
+  .prose-vexyn h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-top: 2em;
+    margin-bottom: 0.5em;
+  }
+  .prose-vexyn p { color: var(--color-text); }
+  .prose-vexyn a {
+    color: var(--color-brand-400);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-brand-400) 30%, transparent);
+    transition: border-color 0.15s;
+  }
+  .prose-vexyn a:hover {
+    border-bottom-color: var(--color-brand-400);
+  }
+  .prose-vexyn ul, .prose-vexyn ol { padding-left: 1.5rem; }
+  .prose-vexyn li { margin-top: 0.5em; }
+  .prose-vexyn ul li { list-style: disc; }
+  .prose-vexyn ol li { list-style: decimal; }
+  .prose-vexyn strong { color: var(--color-text); font-weight: 600; }
+  .prose-vexyn code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    padding: 0.15em 0.4em;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    color: var(--color-brand-400);
+  }
+  .prose-vexyn pre {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    font-size: 0.875em;
+    line-height: 1.6;
+  }
+  .prose-vexyn pre code {
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--color-text);
+  }
+  .prose-vexyn hr {
+    border: none;
+    height: 1px;
+    background: var(--color-border);
+    margin: 3em 0;
+  }
+  .prose-vexyn blockquote {
+    border-left: 3px solid var(--color-brand-500);
+    padding-left: 1rem;
+    margin-left: 0;
+    color: var(--color-text-mute);
+    font-style: italic;
+  }
+</style>

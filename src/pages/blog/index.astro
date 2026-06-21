@@ -1,0 +1,84 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../lib/constants';
+import { breadcrumbSchema, combineSchemas } from '../../lib/seo';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const title = 'Blog';
+const description = 'Articles on privacy-first browser tools, local AI, and the technical patterns behind running everything client-side.';
+
+const schema = combineSchemas(
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Blog', url: '/blog' },
+  ]),
+  {
+    '@type': 'Blog',
+    name: `${SITE.name} Blog`,
+    url: `${SITE.url}/blog`,
+    description,
+    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  },
+);
+
+function fmtDate(d: Date): string {
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-10">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Blog</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Blog</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)]">
+        Notes on privacy-first browser tools, local AI, and what it actually takes to run everything client-side.
+      </p>
+    </header>
+
+    {posts.length === 0 ? (
+      <p class="text-[color:var(--color-text-mute)]">No posts yet.</p>
+    ) : (
+      <ul class="space-y-6">
+        {posts.map(post => (
+          <li class="group">
+            <a
+              href={`/blog/${post.id.replace(/\.md$/, '')}`}
+              class="block p-5 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] hover:border-[color:var(--color-brand-500)]/50 transition-colors"
+            >
+              <time
+                datetime={post.data.pubDate.toISOString()}
+                class="text-xs text-[color:var(--color-text-dim)] font-mono uppercase tracking-wider"
+              >
+                {fmtDate(post.data.pubDate)}
+              </time>
+              <h2 class="text-xl font-semibold mt-1.5 mb-2 group-hover:text-[color:var(--color-brand-400)] transition-colors">
+                {post.data.title}
+              </h2>
+              <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">
+                {post.data.description}
+              </p>
+              {post.data.tags && (
+                <div class="flex flex-wrap gap-1.5 mt-3">
+                  {post.data.tags.map(tag => (
+                    <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-[color:var(--color-surface-2)] text-[color:var(--color-text-mute)] border border-[color:var(--color-border)]">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</BaseLayout>

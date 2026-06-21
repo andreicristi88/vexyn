@@ -25,6 +25,7 @@ export const SITE = {
 
 export const NAV = [
   { label: 'Tools', href: '/#tools', external: false },
+  { label: 'Blog', href: '/blog', external: false },
   { label: 'About', href: '/about', external: false },
   { label: 'GitHub', href: 'https://github.com/andreicristi88/vexyn', external: true },
 ];

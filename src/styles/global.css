@@ -13,6 +13,7 @@
   --color-accent-500: #a855f7;
   --color-accent-600: #9333ea;
 
+  /* Dark mode (default) — near-black with cool tint */
   --color-bg: #0a0a0f;
   --color-surface: #13131a;
   --color-surface-2: #1c1c26;
@@ -28,20 +29,56 @@
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
 
+  /* Hero atmosphere tint — adapted per theme by .light override below */
+  --hero-glow-a: rgba(99, 102, 241, 0.18);
+  --hero-glow-b: rgba(168, 85, 247, 0.10);
+
+  /* Card depth — flat on dark, subtle shadow on light */
+  --card-shadow: none;
+  --card-shadow-hover: none;
+
+  /* Drop zone bg tint — empty state hint */
+  --dropzone-bg: var(--color-surface);
+  --dropzone-bg-hover: color-mix(in srgb, var(--color-brand-500) 4%, var(--color-surface));
+
   --font-sans: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'Geist Mono', 'JetBrains Mono', 'Fira Code', monospace;
 }
 
+/* Light mode — "Dawn Mist" palette: cool gray-blue undertone that
+   complements the indigo/purple brand without going harsh-white. */
 :root.light {
-  --color-bg: #ffffff;
-  --color-surface: #fafafa;
-  --color-surface-2: #f4f4f5;
-  --color-surface-3: #e9e9ec;
-  --color-border: #e4e4e7;
-  --color-border-strong: #d4d4d8;
-  --color-text: #18181b;
-  --color-text-mute: #52525b;
-  --color-text-dim: #a1a1aa;
+  --color-bg: #f5f6f9;
+  --color-surface: #fbfcfd;
+  --color-surface-2: #eef0f5;
+  --color-surface-3: #e0e4ec;
+  --color-border: #e1e4eb;
+  --color-border-strong: #c7cdd9;
+
+  --color-text: #1a1d24;
+  --color-text-mute: #5a626f;
+  --color-text-dim: #9099a8;
+
+  /* Brand colors tuned slightly deeper for contrast on light backgrounds.
+     6366f1 reads as a touch hot on near-white; 5856d6 sits more calmly. */
+  --color-brand-400: #6d6fec;
+  --color-brand-500: #5b5fd8;
+  --color-brand-600: #4a4cbf;
+
+  --color-accent-400: #b070f0;
+  --color-accent-500: #9b4fe0;
+
+  /* Hero glow softened on light — strong indigo wash is jarring on near-white */
+  --hero-glow-a: rgba(91, 95, 216, 0.08);
+  --hero-glow-b: rgba(155, 79, 224, 0.06);
+
+  /* Cards get subtle depth on light mode where pure-white-on-white loses
+     hierarchy. On dark the bg-surface contrast does the same work. */
+  --card-shadow: 0 1px 2px rgba(20, 25, 40, 0.04), 0 1px 1px rgba(20, 25, 40, 0.03);
+  --card-shadow-hover: 0 4px 12px rgba(20, 25, 40, 0.08), 0 2px 4px rgba(20, 25, 40, 0.04);
+
+  --dropzone-bg: var(--color-surface);
+  --dropzone-bg-hover: color-mix(in srgb, var(--color-brand-500) 5%, var(--color-surface));
 }
 
 * { box-sizing: border-box; }
@@ -61,6 +98,11 @@ body {
   color: var(--color-text);
   min-height: 100vh;
 }
+
+/* Heading hierarchy — stronger weight steps on light mode so the eye
+   has anchors. On dark, the bg contrast does the work. */
+:root.light h1 { letter-spacing: -0.022em; }
+:root.light h2 { letter-spacing: -0.015em; }
 
 @font-face {
   font-family: 'Geist';
@@ -98,14 +140,16 @@ body {
   color: white;
 }
 
-::-webkit-scrollbar { width: 12px; height: 12px; }
-::-webkit-scrollbar-track { background: var(--color-bg); }
+/* Scrollbar — thinner + matches the surface palette on both modes */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
   background: var(--color-border-strong);
-  border-radius: 6px;
-  border: 3px solid var(--color-bg);
+  border-radius: 999px;
+  border: 2px solid var(--color-bg);
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-text-dim); }
+* { scrollbar-color: var(--color-border-strong) transparent; scrollbar-width: thin; }
 
 :focus-visible {
   outline: 2px solid var(--color-brand-500);
@@ -113,8 +157,12 @@ body {
   border-radius: 4px;
 }
 
+/* Hero atmosphere — two stacked radial blooms instead of one flat wash.
+   Reads as mesh-like depth without an actual gradient mesh. */
 .glow {
-  background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15), transparent 60%);
+  background:
+    radial-gradient(ellipse 80% 50% at 30% 0%, var(--hero-glow-a), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 75% 10%, var(--hero-glow-b), transparent 55%);
 }
 
 .gradient-text {
@@ -123,3 +171,33 @@ body {
   background-clip: text;
   color: transparent;
 }
+
+/* Card depth utility — opt-in via class. Cards that use bg-surface +
+   border get a subtle shadow on light, nothing extra on dark. */
+.card-depth {
+  box-shadow: var(--card-shadow);
+  transition: box-shadow 200ms ease, transform 200ms ease;
+}
+.card-depth:hover {
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* Drop zone tint on hover — pairs with existing Tailwind drag-over styles */
+.dropzone-tint:hover {
+  background: var(--dropzone-bg-hover);
+}
+
+/* Body grain texture — barely-there noise overlay for tactile depth.
+   Both modes get it; opacity tuned for each via the inline rgba. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.5'/></svg>");
+  background-size: 160px 160px;
+  opacity: 0.025;
+  mix-blend-mode: multiply;
+}
+:root.light body::before { opacity: 0.04; }

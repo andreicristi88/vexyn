@@ -41,6 +41,7 @@
   let loadProgress = $state(0);
   let loadLabel = $state('');
   let transcribeProgress = $state(0);
+  let transcribeElapsed = $state(0);
   let language = $state('auto');
   let task: 'transcribe' | 'translate' = $state('transcribe');
   let errorMsg = $state('');
@@ -177,15 +178,17 @@
 
     // Pseudo-progress while inference runs. transformers.js v4 dropped the
     // v3 callback_function / chunk_callback options for ASR; without them
-    // the bar would freeze at 5% even though work is happening. We tick
-    // toward 92% on a wall-clock estimate so the user sees motion, then
-    // jump to 100 when the real result lands.
+    // the bar would freeze at 5% even though work is happening. Tick toward
+    // 95% on a wall-clock estimate so the user sees motion, then jump to
+    // 100 when the real result lands.
     const startTime = performance.now();
-    const expectedSeconds = Math.max(audioDuration * 0.3, 5);
+    // Realistic factor: WebGPU q8 ~0.5x realtime, WASM q8 ~1.5x realtime
+    const expectedSeconds = Math.max(audioDuration * (device === 'webgpu' ? 0.5 : 1.5), 5);
     const tickHandle = window.setInterval(() => {
-      const elapsed = (performance.now() - startTime) / 1000;
-      const ratio = Math.min(0.92, elapsed / expectedSeconds);
-      transcribeProgress = Math.max(transcribeProgress, Math.round(ratio * 92));
+      const elapsedSec = (performance.now() - startTime) / 1000;
+      transcribeElapsed = Math.round(elapsedSec);
+      const ratio = Math.min(0.95, elapsedSec / expectedSeconds);
+      transcribeProgress = Math.max(transcribeProgress, Math.round(ratio * 100));
     }, 200);
 
     try {
@@ -366,7 +369,7 @@
     {:else if status === 'ready'}
       <span class="text-[color:var(--color-text)]">Ready</span>
     {:else if status === 'transcribing'}
-      <span class="text-[color:var(--color-text)]">Transcribing… {transcribeProgress}%</span>
+      <span class="text-[color:var(--color-text)]">Transcribing… {transcribeProgress}% <span class="text-[color:var(--color-text-dim)] font-mono text-xs ml-1">({transcribeElapsed}s)</span></span>
     {:else if status === 'done'}
       <span class="text-[color:var(--color-text)]">Done</span>
     {:else if status === 'error'}

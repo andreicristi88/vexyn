@@ -85,16 +85,21 @@
     }
   }
 
-  async function loadModel(scale: Scale) {
+  let activeDevice: 'webgpu' | 'wasm' = $state('webgpu');
+
+  async function loadModel(scale: Scale, forceDevice?: 'webgpu' | 'wasm') {
     if (!lib) return;
-    if (pipeline && currentScale === scale) return;
+    const targetDevice = forceDevice ?? (device === 'webgpu' ? 'webgpu' : 'wasm');
+    if (pipeline && currentScale === scale && activeDevice === targetDevice) return;
     status = 'loading-model';
     loadProgress = 0;
     loadLabel = '';
     try {
+      // Always use q8 quantization — Swin2SR fp32 weights are far too big for
+      // most consumer WebGPU contexts (1-2 GB cap on integrated GPUs).
       pipeline = await lib.pipeline('image-to-image', MODELS[scale].id, {
-        device,
-        dtype: device === 'webgpu' ? 'fp32' : 'q8',
+        device: targetDevice,
+        dtype: 'q8',
         progress_callback: (p: any) => {
           if (p.status === 'progress' && p.file) {
             loadProgress = Math.round(p.progress ?? 0);
@@ -107,6 +112,7 @@
         },
       });
       currentScale = scale;
+      activeDevice = targetDevice;
       status = 'ready';
     } catch (e: any) {
       console.error('[Upscaler] model load failed', e);
@@ -248,10 +254,46 @@
       }
     }
 
+    // WebGPU retries exhausted. If we were on WebGPU, fall back to WASM (CPU)
+    // and try the largest cap once — WASM uses virtual memory and almost
+    // always finishes, just slower.
+    if (activeDevice === 'webgpu' && device === 'webgpu') {
+      console.warn('[Upscaler] WebGPU exhausted, falling back to WASM');
+      errorMsg = '';
+      await loadModel(pendingScale, 'wasm');
+      if (status === 'error') return;
+      status = 'processing';
+      const { bitmap: inputBitmap, wasDownscaled } = await fitWithinCap(
+        originalBitmap,
+        pendingScale === 4 ? MAX_INPUT_DIM_4X : MAX_INPUT_DIM_2X,
+      );
+      downscaled = wasDownscaled;
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = inputBitmap.width;
+        canvas.height = inputBitmap.height;
+        canvas.getContext('2d')!.drawImage(inputBitmap, 0, 0);
+        const blob: Blob = await new Promise((res) => canvas.toBlob((b) => res(b!), 'image/png'));
+        const url = URL.createObjectURL(blob);
+        const result = await pipeline(url);
+        URL.revokeObjectURL(url);
+        const outBitmap = await rawImageToBlobUrl(result);
+        if (outputUrl) URL.revokeObjectURL(outputUrl);
+        outputUrl = outBitmap.url;
+        outputWidth = outBitmap.width;
+        outputHeight = outBitmap.height;
+        status = 'done';
+        return;
+      } catch (e2: any) {
+        console.error('[Upscaler] WASM fallback also failed', e2);
+        lastError = e2;
+      }
+    }
+
     console.error('[Upscaler] exhausted retries', lastError);
     errorMsg = pendingScale === 4
-      ? 'Out of GPU memory even at the smallest tile. Switch to 2× mode (top-right) for less memory pressure, or try this on a desktop with a discrete GPU.'
-      : 'Out of GPU memory. Your device cannot fit this image. Try a much smaller source, or a desktop with a discrete GPU.';
+      ? 'Could not upscale this image, even on the CPU fallback. Try 2× mode (top-right) or a much smaller source image.'
+      : 'Could not upscale this image, even on the CPU fallback. Try a much smaller source image (e.g. resize to ~500px first).';
     status = 'error';
   }
 

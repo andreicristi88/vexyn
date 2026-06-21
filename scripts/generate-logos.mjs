@@ -1,0 +1,47 @@
+import { Resvg } from '@resvg/resvg-js';
+import fs from 'node:fs';
+import path from 'node:path';
+
+const OUT = 'public';
+const SIZES = [256, 512, 1024];
+
+// 1. With dark background (matches site bg) — for directory listings,
+//    social cards, anywhere the host bg is light or unknown.
+const LOGO_DARK_BG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#0a0a0f"/>
+  <path d="M32 7 L54.5 15 L54.5 33 C54.5 44.5 44.5 54 32 57.5 C19.5 54 9.5 44.5 9.5 33 L9.5 15 Z" fill="url(#g)"/>
+  <path d="M21.5 27.5 L32 43.5 L42.5 27.5" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>`;
+
+// 2. Transparent background — shield only — for places where the host
+//    paints the background and we just need the mark.
+const LOGO_TRANSPARENT = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+  </defs>
+  <path d="M32 7 L54.5 15 L54.5 33 C54.5 44.5 44.5 54 32 57.5 C19.5 54 9.5 44.5 9.5 33 L9.5 15 Z" fill="url(#g)"/>
+  <path d="M21.5 27.5 L32 43.5 L42.5 27.5" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>`;
+
+function render(svg, size, file) {
+  const resvg = new Resvg(svg, { fitTo: { mode: 'width', value: size } });
+  const png = resvg.render().asPng();
+  fs.writeFileSync(path.join(OUT, file), png);
+  console.log(`  ${file} (${(png.length / 1024).toFixed(1)} KB)`);
+}
+
+console.log('[logos] Generating PNG logos...');
+for (const s of SIZES) {
+  render(LOGO_DARK_BG, s, `logo-${s}.png`);
+  render(LOGO_TRANSPARENT, s, `logo-shield-${s}.png`);
+}
+console.log('[logos] Done.');

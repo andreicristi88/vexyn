@@ -56,8 +56,8 @@
   --color-border-strong: #b9bfcc;
 
   --color-text: #1a1d24;
-  --color-text-mute: #5a626f;
-  --color-text-dim: #9099a8;
+  --color-text-mute: #4d5460;
+  --color-text-dim: #7a8499;
 
   /* Brand colors tuned slightly deeper for contrast on light backgrounds.
      6366f1 reads as a touch hot on near-white; 5856d6 sits more calmly. */
@@ -180,6 +180,16 @@ body {
 }
 .card-depth:hover {
   box-shadow: var(--card-shadow-hover);
+}
+
+/* Auto-apply card depth on light mode to any rounded surface card with a
+   solid border. This catches FAQ panels, ErrorDisplay, info cards, blog
+   post cards and similar across the site without editing every file.
+   :not(.border-dashed) excludes drop zones (shadow on dashed = ugly).
+   :not(.border-2) further excludes the heavier drop-zone borders.   */
+:root.light .rounded-lg.bg-\[color\:var\(--color-surface\)\]:not(.border-dashed):not(.border-2),
+:root.light .rounded-xl.bg-\[color\:var\(--color-surface\)\]:not(.border-dashed):not(.border-2) {
+  box-shadow: var(--card-shadow);
 }
 
 /* Drop zone tint on hover — pairs with existing Tailwind drag-over styles */

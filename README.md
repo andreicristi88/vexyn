@@ -42,6 +42,7 @@ All run client-side. None upload anything.
 | [**EXIF Remover**](https://vexyn.app/exif-remover) | Strip GPS and camera metadata. |
 | [**Color Palette Extractor**](https://vexyn.app/color-palette) | Dominant colors as HEX/RGB/HSL/CSS. |
 | [**AI Background Remover**](https://vexyn.app/background-remover) | RMBG-1.4 via WebGPU. **No API.** |
+| [**AI Audio Transcriber**](https://vexyn.app/audio-transcriber) | OpenAI Whisper via WebGPU, 99+ languages. **No API.** |
 
 More tools land regularly. See the [issues](https://github.com/andreicristi88/vexyn/issues) tab for what's planned.
 

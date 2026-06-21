@@ -73,15 +73,6 @@ export const TOOLS: Tool[] = [
     available: true,
   },
   {
-    slug: 'image-upscaler',
-    name: 'Image Upscaler',
-    description: 'AI super-resolution 2× or 4× via WebGPU. Sharpen and enlarge photos. No upload, no API.',
-    category: 'ai',
-    icon: '⇱',
-    keywords: ['upscaler', 'super resolution', 'enhance', 'ai', 'webgpu', 'enlarge', 'sharpen'],
-    available: true,
-  },
-  {
     slug: 'pdf-splitter',
     name: 'PDF Splitter',
     description: 'Split a PDF into single pages or extract a page range. Runs in your browser.',

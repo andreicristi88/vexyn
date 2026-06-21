@@ -37,7 +37,10 @@
   let transcriber: any = $state(null);
   let device: 'webgpu' | 'wasm' = $state('wasm');
   let status: Status = $state('idle');
-  let modelSize: ModelSize = $state('tiny');
+  // Base is the safer default — Tiny hallucinates badly on music and on
+  // non-English speech where auto language detection fails. The extra
+  // ~70 MB first-download cost is worth the dramatic accuracy gain.
+  let modelSize: ModelSize = $state('base');
   let loadProgress = $state(0);
   let loadLabel = $state('');
   let transcribeProgress = $state(0);
@@ -402,6 +405,16 @@
       {device}{#if device === 'wasm'} <span class="text-[color:var(--color-warning)]">(slow)</span>{/if}
     </div>
   </div>
+</div>
+
+<!-- Speech-only / language hint -->
+<div class="mb-4 p-3 rounded-lg bg-[color:var(--color-brand-500)]/5 border border-[color:var(--color-brand-500)]/20 flex items-start gap-2.5 text-xs text-[color:var(--color-text-mute)]">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[color:var(--color-brand-400)] flex-shrink-0 mt-0.5">
+    <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+  </svg>
+  <p>
+    Whisper is trained on <strong class="text-[color:var(--color-text)]">spoken voice</strong> — best on podcasts, meetings, voice memos, interviews. Music with lyrics is unreliable. For non-English audio, pick the language manually below rather than leaving it on Auto-detect — small models guess poorly on the first few seconds.
+  </p>
 </div>
 
 <!-- Language + task -->

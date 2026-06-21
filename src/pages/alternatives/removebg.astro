@@ -1,0 +1,123 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../lib/constants';
+import { breadcrumbSchema, faqSchema, combineSchemas } from '../../lib/seo';
+
+const title = 'Remove.bg Alternative That Runs on Your Device';
+const description = 'Vexyn is a Remove.bg alternative that runs an AI background removal model entirely on your device via WebGPU. No upload, no API, no account, no per-image cost.';
+
+const faqs = [
+  { q: 'How can a free tool do AI background removal?', a: 'Vexyn uses RMBG-1.4 (Apache 2.0, released by BRIA AI for unrestricted commercial use). The model is downloaded once into your browser and runs on your own GPU via WebGPU. No API calls, no per-request cost.' },
+  { q: 'Is it as good as Remove.bg?', a: 'For most subjects (people, objects, animals on simple backgrounds), the result is very close. Remove.bg uses a proprietary, larger model and edges Vexyn out on tricky hair detail and translucent objects. For "good enough" everyday use, Vexyn is the better trade — free, unlimited, private.' },
+  { q: 'How long does the first load take?', a: 'About 5–30 seconds depending on your connection — the model file is ~85 MB. After that it\'s cached forever, so subsequent visits are instant.' },
+  { q: 'What about output resolution?', a: 'Vexyn produces a transparent PNG at the full original resolution. Remove.bg\'s free tier caps at low resolution unless you pay; the high-res download requires credits.' },
+  { q: 'Is my image really not uploaded?', a: 'Confirmed by opening DevTools → Network: zero requests fire when you process an image (the model fetch happens once at startup, then nothing).' },
+];
+
+const schema = combineSchemas(
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Alternatives', url: '/alternatives' },
+    { name: 'Remove.bg', url: '/alternatives/removebg' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-10">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <a href="/alternatives" class="hover:text-[color:var(--color-text)]">Alternatives</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Remove.bg</span>
+      </div>
+      <p class="text-xs font-medium text-[color:var(--color-text-dim)] uppercase tracking-wider mb-2">Alternative to Remove.bg</p>
+      <h1 class="text-4xl font-bold tracking-tight mb-4">A Remove.bg alternative where the AI runs on your device</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-3xl leading-relaxed">
+        Remove.bg made AI background removal mainstream, but it requires uploading your image to their servers and charges per high-resolution download. Vexyn runs an open-source AI model (RMBG-1.4) entirely in your browser via WebGPU. No upload, no credits, no signup.
+      </p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a href="/background-remover" class="px-5 py-2.5 rounded-lg bg-[color:var(--color-brand-500)] hover:bg-[color:var(--color-brand-600)] text-white font-medium transition-colors inline-flex items-center gap-2">
+          Open Background Remover
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </header>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold mb-5">Side-by-side</h2>
+      <div class="overflow-x-auto rounded-xl border border-[color:var(--color-border)]">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-[color:var(--color-surface)] border-b border-[color:var(--color-border)]">
+              <th class="text-left p-4 font-medium text-[color:var(--color-text-mute)]"></th>
+              <th class="text-left p-4 font-semibold text-[color:var(--color-brand-400)]">Vexyn</th>
+              <th class="text-left p-4 font-semibold">Remove.bg</th>
+            </tr>
+          </thead>
+          <tbody class="text-[color:var(--color-text-mute)]">
+            <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Where AI runs</td><td class="p-4">Your GPU (WebGPU) or CPU (WASM)</td><td class="p-4">Their GPU servers</td></tr>
+            <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Image uploaded?</td><td class="p-4 text-[color:var(--color-success)]">No</td><td class="p-4">Yes</td></tr>
+            <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Account required?</td><td class="p-4 text-[color:var(--color-success)]">No</td><td class="p-4">Yes for HD downloads</td></tr>
+            <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Output resolution</td><td class="p-4 text-[color:var(--color-success)]">Full original resolution</td><td class="p-4">Preview free; HD costs credits</td></tr>
+            <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">First-time setup</td><td class="p-4">~85 MB model download, cached after</td><td class="p-4">None — but every image uploads</td></tr>
+            <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Subsequent uses</td><td class="p-4 text-[color:var(--color-success)]">Zero network</td><td class="p-4">Full upload each time</td></tr>
+            <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Pricing</td><td class="p-4 text-[color:var(--color-success)]">Free, unlimited</td><td class="p-4">Free preview; ~$0.20–$2 per HD</td></tr>
+            <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Works offline</td><td class="p-4 text-[color:var(--color-success)]">Yes (after first load)</td><td class="p-4">No</td></tr>
+            <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Model license</td><td class="p-4">RMBG-1.4, Apache 2.0</td><td class="p-4">Proprietary</td></tr>
+            <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Quality on hair/fine detail</td><td class="p-4">Good for everyday use</td><td class="p-4">Best in class</td></tr>
+            <tr><td class="p-4 text-[color:var(--color-text)] font-medium">API for developers</td><td class="p-4">No</td><td class="p-4">Yes (paid)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-[color:var(--color-text-dim)] mt-3">
+        Based on publicly available information from <a href="https://www.remove.bg" target="_blank" rel="noopener noreferrer" class="hover:text-[color:var(--color-text-mute)] underline">remove.bg</a> as of June 2026.
+      </p>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold mb-4">When to pick which</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+          <h3 class="font-semibold text-[color:var(--color-brand-400)] mb-2">Pick Vexyn when…</h3>
+          <ul class="text-sm text-[color:var(--color-text-mute)] space-y-1.5 list-disc list-inside">
+            <li>The photo is personal, contains identifiable people, or is internal</li>
+            <li>You need many removals and don't want to pay per image</li>
+            <li>You want full-resolution output without a paywall</li>
+            <li>You prefer to avoid creating accounts</li>
+            <li>You want the result reproducible offline</li>
+          </ul>
+        </div>
+        <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+          <h3 class="font-semibold mb-2">Pick Remove.bg when…</h3>
+          <ul class="text-sm text-[color:var(--color-text-mute)] space-y-1.5 list-disc list-inside">
+            <li>You need the absolute best edge quality (fine hair, fur, transparency)</li>
+            <li>You're integrating background removal into a product via API</li>
+            <li>You're on a device too weak for browser-side AI</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold mb-4">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="p-6 rounded-xl bg-gradient-to-br from-[color:var(--color-brand-500)]/10 to-[color:var(--color-accent-500)]/10 border border-[color:var(--color-brand-500)]/30">
+      <h2 class="text-xl font-bold mb-2">Try the AI background remover</h2>
+      <p class="text-sm text-[color:var(--color-text-mute)] mb-4">First load downloads the ~85 MB model. After that, every removal is instant and entirely local.</p>
+      <a href="/background-remover" class="px-5 py-2.5 rounded-lg bg-[color:var(--color-brand-500)] hover:bg-[color:var(--color-brand-600)] text-white font-medium transition-colors inline-block">Open Background Remover</a>
+    </section>
+  </div>
+</BaseLayout>

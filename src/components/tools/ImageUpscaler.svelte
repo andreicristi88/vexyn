@@ -9,9 +9,15 @@
     4: { id: 'Xenova/swin2SR-realworld-sr-x4-64-bsrgan-psnr', size: '~55 MB', label: '4× (max detail)' },
   };
 
-  // Safety caps so we don't OOM the GPU on giant photos
-  const MAX_INPUT_DIM_2X = 1280;
-  const MAX_INPUT_DIM_4X = 768;
+  // Safety caps so we don't OOM the GPU on giant photos. Tuned conservatively
+  // because Swin2SR peak memory grows roughly with input * output * channels;
+  // a 1280px input at 2x easily exceeds the 2 GB cap most WebGPU contexts get.
+  const MAX_INPUT_DIM_2X = 768;
+  const MAX_INPUT_DIM_4X = 384;
+
+  // Minimum dimensions on the auto-retry chain; anything below this is too
+  // small to be worth upscaling.
+  const MIN_INPUT_DIM = 192;
 
   // Swin2SR uses 64x64 attention windows; input must be a multiple of 64
   // on both dimensions, otherwise ONNX Runtime fails inside the encoder.
@@ -178,6 +184,11 @@
     }
   }
 
+  function isOomError(e: any): boolean {
+    const m = String(e?.message || e);
+    return /memory|alloc|OrtRun|destination buffer is smaller|exceeds the maximum/i.test(m);
+  }
+
   async function runUpscale() {
     if (!lib || !originalBitmap) return;
     errorMsg = '';
@@ -190,39 +201,58 @@
 
     status = 'processing';
 
-    const cap = pendingScale === 4 ? MAX_INPUT_DIM_4X : MAX_INPUT_DIM_2X;
-    const { bitmap: inputBitmap, wasDownscaled } = await fitWithinCap(originalBitmap, cap);
-    downscaled = wasDownscaled;
+    const initialCap = pendingScale === 4 ? MAX_INPUT_DIM_4X : MAX_INPUT_DIM_2X;
+    let cap = initialCap;
+    let attempt = 0;
+    let lastError: any = null;
 
-    try {
-      // Convert bitmap to canvas → data URL → RawImage
-      const canvas = document.createElement('canvas');
-      canvas.width = inputBitmap.width;
-      canvas.height = inputBitmap.height;
-      canvas.getContext('2d')!.drawImage(inputBitmap, 0, 0);
-      const blob: Blob = await new Promise((res) => canvas.toBlob((b) => res(b!), 'image/png'));
-      const url = URL.createObjectURL(blob);
+    while (cap >= MIN_INPUT_DIM) {
+      const { bitmap: inputBitmap, wasDownscaled } = await fitWithinCap(originalBitmap, cap);
+      downscaled = wasDownscaled;
 
-      const result = await pipeline(url);
-      URL.revokeObjectURL(url);
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = inputBitmap.width;
+        canvas.height = inputBitmap.height;
+        canvas.getContext('2d')!.drawImage(inputBitmap, 0, 0);
+        const blob: Blob = await new Promise((res) => canvas.toBlob((b) => res(b!), 'image/png'));
+        const url = URL.createObjectURL(blob);
 
-      // result is a RawImage (Hugging Face transformers.js)
-      const outBitmap = await rawImageToBlobUrl(result);
-      if (outputUrl) URL.revokeObjectURL(outputUrl);
-      outputUrl = outBitmap.url;
-      outputWidth = outBitmap.width;
-      outputHeight = outBitmap.height;
-      status = 'done';
-    } catch (e: any) {
-      console.error('[Upscaler] inference failed', e);
-      const m = String(e?.message || e);
-      if (/memory|alloc/i.test(m)) {
-        errorMsg = 'Out of GPU memory. Try a smaller image, or switch to 2× mode.';
-      } else {
-        errorMsg = m || 'Upscale failed.';
+        const result = await pipeline(url);
+        URL.revokeObjectURL(url);
+
+        const outBitmap = await rawImageToBlobUrl(result);
+        if (outputUrl) URL.revokeObjectURL(outputUrl);
+        outputUrl = outBitmap.url;
+        outputWidth = outBitmap.width;
+        outputHeight = outBitmap.height;
+        status = 'done';
+        return;
+      } catch (e: any) {
+        lastError = e;
+        if (!isOomError(e)) {
+          console.error('[Upscaler] inference failed (non-OOM)', e);
+          errorMsg = e?.message || 'Upscale failed.';
+          status = 'error';
+          return;
+        }
+        // OOM — halve the cap and try again
+        attempt++;
+        const nextCap = snap(Math.floor(cap * 0.66), SWIN_WINDOW);
+        if (nextCap >= cap) {
+          // No progress possible
+          break;
+        }
+        console.warn(`[Upscaler] OOM at cap=${cap}, retrying at cap=${nextCap} (attempt ${attempt + 1})`);
+        cap = nextCap;
       }
-      status = 'error';
     }
+
+    console.error('[Upscaler] exhausted retries', lastError);
+    errorMsg = pendingScale === 4
+      ? 'Out of GPU memory even at the smallest tile. Switch to 2× mode (top-right) for less memory pressure, or try this on a desktop with a discrete GPU.'
+      : 'Out of GPU memory. Your device cannot fit this image. Try a much smaller source, or a desktop with a discrete GPU.';
+    status = 'error';
   }
 
   async function rawImageToBlobUrl(raw: any): Promise<{ url: string; width: number; height: number }> {

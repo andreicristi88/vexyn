@@ -92,7 +92,9 @@
         MODELS[modelSize].id,
         {
           device,
-          dtype: device === 'webgpu' ? 'fp32' : 'q8',
+          // q8 keeps memory pressure low on integrated GPUs and is plenty
+          // accurate for speech recognition. fp32 routinely OOMs in WebGPU.
+          dtype: 'q8',
           progress_callback: (p: any) => {
             if (p.status === 'progress' && p.file) {
               loadProgress = Math.round(p.progress ?? 0);
@@ -173,55 +175,48 @@
     transcript = '';
     chunks = [];
 
-    const totalSamples = audioSamples.length;
-    let lastUpdate = 0;
+    // Pseudo-progress while inference runs. transformers.js v4 dropped the
+    // v3 callback_function / chunk_callback options for ASR; without them
+    // the bar would freeze at 5% even though work is happening. We tick
+    // toward 92% on a wall-clock estimate so the user sees motion, then
+    // jump to 100 when the real result lands.
+    const startTime = performance.now();
+    const expectedSeconds = Math.max(audioDuration * 0.3, 5);
+    const tickHandle = window.setInterval(() => {
+      const elapsed = (performance.now() - startTime) / 1000;
+      const ratio = Math.min(0.92, elapsed / expectedSeconds);
+      transcribeProgress = Math.max(transcribeProgress, Math.round(ratio * 92));
+    }, 200);
 
     try {
+      console.log(`[Whisper] starting transcription on ${device} (${MODELS[modelSize].label}, q8) — ${audioDuration.toFixed(1)}s audio`);
       const result = await transcriber(audioSamples, {
         language: language === 'auto' ? undefined : language,
         task,
         return_timestamps: true,
         chunk_length_s: 30,
         stride_length_s: 5,
-        callback_function: (beam: any) => {
-          // Streams partial decoded output — update progress + text on the fly
-          if (beam?.[0]?.output_token_ids) {
-            const text = transcriber.tokenizer.decode(beam[0].output_token_ids, {
-              skip_special_tokens: true,
-            });
-            transcript = text;
-          }
-          // Best-effort progress bump
-          const now = performance.now();
-          if (now - lastUpdate > 200) {
-            transcribeProgress = Math.min(95, transcribeProgress + 1);
-            lastUpdate = now;
-          }
-        },
-        chunk_callback: (chunk: any) => {
-          if (chunk?.timestamp) {
-            chunks = [...chunks, { timestamp: chunk.timestamp, text: chunk.text ?? '' }];
-            transcribeProgress = Math.min(
-              95,
-              Math.round(((chunk.timestamp[1] ?? audioDuration) / audioDuration) * 95),
-            );
-          }
-        },
       });
 
       transcript = (result?.text ?? '').trim();
-      if (result?.chunks?.length) {
+      if (Array.isArray(result?.chunks) && result.chunks.length > 0) {
         chunks = result.chunks.map((c: any) => ({
           timestamp: c.timestamp,
           text: (c.text ?? '').trim(),
         }));
       }
+      console.log(`[Whisper] done in ${((performance.now() - startTime) / 1000).toFixed(1)}s — ${transcript.length} chars, ${chunks.length} chunks`);
       transcribeProgress = 100;
       status = 'done';
     } catch (e: any) {
       console.error('[Whisper] transcribe failed', e);
-      errorMsg = e?.message || 'Transcription failed.';
+      const m = String(e?.message || e);
+      errorMsg = /memory|alloc/i.test(m)
+        ? 'Out of GPU memory. Try the Tiny model (top-right) or a shorter audio clip.'
+        : m || 'Transcription failed.';
       status = 'error';
+    } finally {
+      window.clearInterval(tickHandle);
     }
   }
 

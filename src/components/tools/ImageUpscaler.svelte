@@ -13,6 +13,10 @@
   const MAX_INPUT_DIM_2X = 1280;
   const MAX_INPUT_DIM_4X = 768;
 
+  // Swin2SR uses 64x64 attention windows; input must be a multiple of 64
+  // on both dimensions, otherwise ONNX Runtime fails inside the encoder.
+  const SWIN_WINDOW = 64;
+
   let lib: any = $state(null);
   let pipeline: any = $state(null);
   let currentScale: Scale = $state(2);
@@ -105,21 +109,46 @@
     }
   }
 
+  /** Round down to the nearest multiple of `m`, but never below `m` itself. */
+  function snap(value: number, m: number): number {
+    return Math.max(m, Math.floor(value / m) * m);
+  }
+
   async function fitWithinCap(bitmap: ImageBitmap, cap: number): Promise<{ bitmap: ImageBitmap; wasDownscaled: boolean }> {
-    const longest = Math.max(bitmap.width, bitmap.height);
-    if (longest <= cap) return { bitmap, wasDownscaled: false };
-    const scale = cap / longest;
-    const w = Math.round(bitmap.width * scale);
-    const h = Math.round(bitmap.height * scale);
+    // First clamp to cap if needed
+    let targetW = bitmap.width;
+    let targetH = bitmap.height;
+    const longest = Math.max(targetW, targetH);
+    const overCap = longest > cap;
+    if (overCap) {
+      const scale = cap / longest;
+      targetW = Math.round(targetW * scale);
+      targetH = Math.round(targetH * scale);
+    }
+
+    // Then snap dimensions DOWN to multiples of SWIN_WINDOW so the model can
+    // actually process the input. Without this, ONNX Runtime fails inside the
+    // first attention block with a non-zero status code.
+    const snappedW = snap(targetW, SWIN_WINDOW);
+    const snappedH = snap(targetH, SWIN_WINDOW);
+
+    const dimensionsChanged = snappedW !== bitmap.width || snappedH !== bitmap.height;
+    if (!dimensionsChanged) {
+      return { bitmap, wasDownscaled: false };
+    }
+
     const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
+    canvas.width = snappedW;
+    canvas.height = snappedH;
     const ctx = canvas.getContext('2d')!;
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(bitmap, 0, 0, w, h);
+    ctx.drawImage(bitmap, 0, 0, snappedW, snappedH);
     const newBitmap = await createImageBitmap(canvas);
-    return { bitmap: newBitmap, wasDownscaled: true };
+    // Treat as "downscaled" only if we actually shrank below the original
+    // (so the warning only shows for real shrinkage, not minor snap-to-grid).
+    const wasDownscaled = overCap || snappedW < bitmap.width || snappedH < bitmap.height;
+    return { bitmap: newBitmap, wasDownscaled };
   }
 
   async function handleFile(file: File) {

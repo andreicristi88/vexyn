@@ -247,6 +247,12 @@ const pages = [
     badge: 'AI · Local',
   },
   {
+    filename: 'og/audio-transcriber.png',
+    title: 'AI Audio Transcriber',
+    subtitle: 'OpenAI Whisper, running in your browser. 99+ languages. No upload. No API. No signup.',
+    badge: 'AI · Local',
+  },
+  {
     filename: 'og/pdf-splitter.png',
     title: 'PDF Splitter',
     subtitle: 'Split a PDF into single pages or extract a custom range. Everything stays local.',

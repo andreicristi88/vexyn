@@ -64,6 +64,15 @@ export const TOOLS: Tool[] = [
     available: true,
   },
   {
+    slug: 'audio-transcriber',
+    name: 'Audio Transcriber',
+    description: 'Speech-to-text via Whisper, running on your device. 99+ languages. No upload, no API.',
+    category: 'ai',
+    icon: '🎤',
+    keywords: ['transcription', 'speech to text', 'whisper', 'ai', 'subtitles', 'webgpu'],
+    available: true,
+  },
+  {
     slug: 'pdf-splitter',
     name: 'PDF Splitter',
     description: 'Split a PDF into single pages or extract a page range. Runs in your browser.',

@@ -3,6 +3,11 @@
 This is the authoritative pattern for every article on `vexyn.app/blog/`.
 Modelled on the folositor.ro guide structure, which has proven SEO traction.
 
+> For the technical SEO infrastructure that every page (not just blog
+> posts) must respect — schema, headings, OG images, internal linking,
+> Cloudflare deploy gotcha — see [`seo-checklist.md`](./seo-checklist.md).
+> This document focuses on editorial structure and voice.
+
 ## Why this structure
 
 Google in 2026 rewards:

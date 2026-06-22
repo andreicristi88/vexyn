@@ -1,12 +1,17 @@
 ---
 import { SITE } from '../../lib/constants';
 import Logo from '../ui/Logo.astro';
+import { getCollection } from 'astro:content';
+
 const year = new Date().getFullYear();
+const latestPosts = (await getCollection('blog'))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .slice(0, 4);
 ---
 
 <footer class="border-t border-[color:var(--color-border)] mt-24">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
       <div>
         <div class="flex items-center gap-2 mb-3">
           <Logo size={28} />
@@ -31,6 +36,22 @@ const year = new Date().getFullYear();
           <li><a href="/image-converter" class="hover:text-[color:var(--color-text)]">Image Converter</a></li>
           <li><a href="/color-palette" class="hover:text-[color:var(--color-text)]">Color Palette</a></li>
           <li><a href="/exif-remover" class="hover:text-[color:var(--color-text)]">EXIF Remover</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-sm font-semibold mb-3">Latest articles</h3>
+        <ul class="space-y-2 text-sm text-[color:var(--color-text-mute)]">
+          {latestPosts.map((post) => (
+            <li>
+              <a href={`/blog/${post.id.replace(/\.md$/, '')}`} class="hover:text-[color:var(--color-text)] line-clamp-2 leading-snug">
+                {post.data.title.replace(/ — 2026 step-by-step guide$/, '')}
+              </a>
+            </li>
+          ))}
+          <li class="pt-1">
+            <a href="/blog" class="text-[color:var(--color-brand-400)] hover:text-[color:var(--color-brand-300)] text-xs uppercase tracking-wider">All articles →</a>
+          </li>
         </ul>
       </div>
 

@@ -48,7 +48,7 @@ function fmtDate(d: Date): string {
 }
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description} schema={schema}>
+<BaseLayout title={post.data.title} description={post.data.description} image={`/og/blog/${post.id.replace(/\.md$/, '')}.png`} schema={schema}>
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <header class="mb-10">
       <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">

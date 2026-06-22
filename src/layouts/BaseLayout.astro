@@ -38,7 +38,6 @@ const fullTitle = title === SITE.title ? title : `${title} — ${SITE.name}`;
 
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <meta name="keywords" content={SITE.keywords.join(', ')} />
     <meta name="author" content={SITE.author} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
 

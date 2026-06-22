@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BackgroundRemover from '../components/tools/BackgroundRemover.svelte';
 import { SITE } from '../lib/constants';
+import RelatedReading from '../components/ui/RelatedReading.astro';
 import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
 
 const title = 'AI Background Remover';
@@ -102,6 +103,11 @@ const schema = combineSchemas(
         <li><strong class="text-[color:var(--color-text)]">Good:</strong> Safari 18+ (macOS Sonoma+ / iOS 17+) — WebGPU stable.</li>
         <li><strong class="text-[color:var(--color-text)]">Slow but works:</strong> Firefox on Windows — falls back to WebAssembly. 3–5× slower but still fully local.</li>
       </ul>
+
+      <RelatedReading articles={[
+        { href: '/blog/how-to-remove-background-from-images-without-uploading', title: 'How to remove backgrounds from images without uploading', description: 'Step-by-step guide: model choice, edge artefacts, hair and fur, and exporting transparent PNG.' },
+        { href: '/blog/webgpu-explained-ai-in-the-browser', title: 'WebGPU explained — running AI in the browser', description: 'How RMBG-1.4 runs locally via WebGPU, why it matters, and the honest limits in 2026.' },
+      ]} />
 
       <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
       <div class="space-y-4">

@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PdfMerger from '../components/tools/PdfMerger.svelte';
 import { SITE } from '../lib/constants';
+import RelatedReading from '../components/ui/RelatedReading.astro';
 import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
 
 const title = 'PDF Merger';
@@ -91,6 +92,11 @@ const schema = combineSchemas(
         <li><strong class="text-[color:var(--color-text)]">Bookmarks and annotations:</strong> preserved through the merge (pdf-lib carries them).</li>
         <li><strong class="text-[color:var(--color-text)]">Encrypted PDFs:</strong> not supported by design — remove the password first. We flag those clearly in the list.</li>
       </ul>
+
+      <RelatedReading articles={[
+        { href: '/blog/how-to-merge-pdfs-without-uploading', title: 'How to merge PDFs without uploading them', description: 'Step-by-step guide with three concrete methods, page-ordering tricks, and what to verify after merging.' },
+        { href: '/blog/best-privacy-first-pdf-tools-2026', title: 'Best privacy-first PDF tools in 2026', description: 'Roundup of five tools that process documents locally — browser, command line, and desktop.' },
+      ]} />
 
       <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
       <div class="space-y-4">

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import WhisperTranscriber from '../components/tools/WhisperTranscriber.svelte';
+import RelatedReading from '../components/ui/RelatedReading.astro';
 import { SITE } from '../lib/constants';
 import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
 
@@ -90,6 +91,11 @@ const schema = combineSchemas(
         <li><strong class="text-[color:var(--color-text)]">Interviews:</strong> journalist / research interviews, off the record</li>
         <li><strong class="text-[color:var(--color-text)]">Language learning:</strong> use translate mode to turn foreign-language audio into English text</li>
       </ul>
+
+      <RelatedReading articles={[
+        { href: '/blog/how-to-transcribe-audio-for-free-without-uploading', title: 'How to transcribe audio for free without uploading', description: 'Step-by-step guide: three concrete methods, language detection pitfalls, exporting as SRT or VTT.' },
+        { href: '/blog/webgpu-explained-ai-in-the-browser', title: 'WebGPU explained — running AI in the browser', description: 'How Whisper runs locally, why it matters for privacy and cost, and the honest limits in 2026.' },
+      ]} />
 
       <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
       <div class="space-y-4">

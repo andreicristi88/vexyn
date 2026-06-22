@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ImageConverter from '../components/tools/ImageConverter.svelte';
 import { SITE } from '../lib/constants';
+import RelatedReading from '../components/ui/RelatedReading.astro';
 import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
 
 const title = 'Image Format Converter';
@@ -49,6 +50,10 @@ const schema = combineSchemas(
         <li><strong class="text-[color:var(--color-text)]">JPEG:</strong> universal, ancient. Use for email or when receiver runs old software.</li>
         <li><strong class="text-[color:var(--color-text)]">PNG:</strong> lossless, large. Use for screenshots, UI assets, anything with transparency or sharp edges.</li>
       </ul>
+
+      <RelatedReading articles={[
+        { href: '/blog/webp-vs-avif-vs-jpeg-which-format-in-2026', title: 'WebP vs AVIF vs JPEG — which format to use in 2026', description: 'Honest comparison with real numbers, when each format wins, and what to never use them for.' },
+      ]} />
 
       <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
       <div class="space-y-4">

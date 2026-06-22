@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ExifRemover from '../components/tools/ExifRemover.svelte';
 import { SITE } from '../lib/constants';
+import RelatedReading from '../components/ui/RelatedReading.astro';
 import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
 
 const title = 'EXIF Remover';
@@ -57,6 +58,10 @@ const schema = combineSchemas(
         <li>The image is re-encoded through a Canvas — the act of decoding pixels and re-encoding strips every metadata block (EXIF, IPTC, XMP).</li>
         <li>Download the cleaned version.</li>
       </ol>
+
+      <RelatedReading articles={[
+        { href: '/blog/what-is-exif-metadata-and-how-to-remove-it', title: 'What is EXIF metadata and how to remove it', description: 'Step-by-step guide: what EXIF leaks (GPS, camera, timestamps), how to strip it, and per-platform quirks.' },
+      ]} />
 
       <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
       <div class="space-y-4">

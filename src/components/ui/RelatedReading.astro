@@ -1,0 +1,33 @@
+---
+interface Article {
+  href: string;
+  title: string;
+  description: string;
+}
+
+interface Props {
+  articles: Article[];
+  heading?: string;
+}
+
+const { articles, heading = 'Related reading' } = Astro.props;
+---
+
+<section class="mt-12 mb-4">
+  <h2 class="text-2xl font-bold mb-4">{heading}</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    {articles.map((a) => (
+      <a
+        href={a.href}
+        class="group block p-5 rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] hover:border-[color:var(--color-brand-500)] hover:-translate-y-0.5 transition-all"
+      >
+        <div class="flex items-center gap-2 text-xs text-[color:var(--color-text-dim)] mb-2 uppercase tracking-wider">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Guide
+        </div>
+        <h3 class="font-semibold mb-2 text-[color:var(--color-text)] group-hover:text-[color:var(--color-brand-400)] transition-colors">{a.title}</h3>
+        <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{a.description}</p>
+      </a>
+    ))}
+  </div>
+</section>

@@ -4,9 +4,14 @@ import ToolCard from '../components/ui/ToolCard.astro';
 import { TOOLS } from '../lib/tools';
 import { SITE } from '../lib/constants';
 import { combineSchemas, itemListSchema } from '../lib/seo';
+import { getCollection } from 'astro:content';
 
 const availableTools = TOOLS.filter(t => t.available);
 const comingTools = TOOLS.filter(t => !t.available);
+
+const latestPosts = (await getCollection('blog'))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .slice(0, 3);
 
 const websiteSchema = {
   '@type': 'WebSite',
@@ -101,6 +106,39 @@ const schema = combineSchemas(websiteSchema, orgSchema, tools);
       {availableTools.map(tool => <ToolCard tool={tool} />)}
       {comingTools.map(tool => <ToolCard tool={tool} />)}
     </div>
+  </section>
+
+  <!-- Latest from the blog -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="flex items-end justify-between mb-8">
+      <div>
+        <h2 class="text-3xl font-bold tracking-tight mb-2">From the blog</h2>
+        <p class="text-[color:var(--color-text-mute)]">Practical guides on running tools locally — privacy, AI in the browser, file workflows.</p>
+      </div>
+      <a href="/blog" class="hidden sm:flex items-center gap-1 text-sm text-[color:var(--color-brand-400)] hover:underline">
+        All articles
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {latestPosts.map((post) => (
+        <a
+          href={`/blog/${post.id}`}
+          class="group block p-6 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] hover:border-[color:var(--color-brand-500)] hover:-translate-y-0.5 transition-all card-depth"
+        >
+          <div class="flex items-center gap-2 text-xs text-[color:var(--color-text-dim)] mb-3 uppercase tracking-wider">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Guide
+          </div>
+          <h3 class="font-semibold mb-2 text-[color:var(--color-text)] group-hover:text-[color:var(--color-brand-400)] transition-colors leading-snug">{post.data.title}</h3>
+          <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed line-clamp-3">{post.data.description}</p>
+        </a>
+      ))}
+    </div>
+    <a href="/blog" class="sm:hidden mt-6 flex items-center gap-1 text-sm text-[color:var(--color-brand-400)] hover:underline">
+      All articles
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
   </section>
 
   <!-- Why -->

@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PdfSplitter from '../components/tools/PdfSplitter.svelte';
 import { SITE } from '../lib/constants';
+import RelatedReading from '../components/ui/RelatedReading.astro';
 import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
 
 const title = 'PDF Splitter';
@@ -47,6 +48,11 @@ const schema = combineSchemas(
         <li><strong class="text-[color:var(--color-text)]">Split each page (ZIP):</strong> get N separate <code class="text-[color:var(--color-brand-400)]">page-001.pdf</code>, <code class="text-[color:var(--color-brand-400)]">page-002.pdf</code> files bundled in a ZIP.</li>
         <li><strong class="text-[color:var(--color-text)]">Extract range:</strong> specify pages and ranges like <code class="text-[color:var(--color-brand-400)]">1-3, 5, 7-9</code> to get a single merged PDF with just those pages.</li>
       </ul>
+
+      <RelatedReading articles={[
+        { href: '/blog/how-to-split-a-pdf-into-separate-pages', title: 'How to split a PDF into separate pages', description: 'Step-by-step guide: range syntax, encrypted PDFs, common silent-failure modes, and verification.' },
+        { href: '/blog/best-privacy-first-pdf-tools-2026', title: 'Best privacy-first PDF tools in 2026', description: 'Five picks for merging, splitting, and cleaning PDFs locally without uploading.' },
+      ]} />
 
       <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
       <div class="space-y-4">

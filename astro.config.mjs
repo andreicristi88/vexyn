@@ -4,12 +4,16 @@ import sitemap from '@astrojs/sitemap';
 import svelte from '@astrojs/svelte';
 import tailwindcss from '@tailwindcss/vite';
 
+import cloudflare from '@astrojs/cloudflare';
+
 export default defineConfig({
   site: 'https://vexyn.app',
   trailingSlash: 'never',
+
   build: {
     format: 'file',
   },
+
   markdown: {
     // Dual-theme syntax highlighting. Shiki emits both colour sets inline;
     // CSS in global.css picks the right one based on the .light class.
@@ -22,6 +26,7 @@ export default defineConfig({
       wrap: true,
     },
   },
+
   integrations: [
     sitemap({
       changefreq: 'weekly',
@@ -40,11 +45,15 @@ export default defineConfig({
     }),
     svelte(),
   ],
+
   vite: {
     plugins: [tailwindcss()],
   },
+
   prefetch: {
     prefetchAll: true,
     defaultStrategy: 'viewport',
   },
+
+  adapter: cloudflare(),
 });

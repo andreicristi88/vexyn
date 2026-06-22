@@ -1,0 +1,10 @@
+name = "vexyn"
+compatibility_date = "2024-11-01"
+
+# Vexyn is a fully static Astro site — no SSR, no Functions, no Workers
+# runtime code. Workers Static Assets serves the built /dist directory
+# directly. This setup mirrors Cloudflare Pages behaviour while staying
+# inside the Workers product where this project was provisioned.
+[assets]
+directory = "./dist"
+not_found_handling = "404-page"

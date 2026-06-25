@@ -4,7 +4,7 @@ import { SITE } from '../../lib/constants';
 import { breadcrumbSchema, combineSchemas } from '../../lib/seo';
 
 const title = 'Alternatives to Popular Online Tools';
-const description = 'Privacy-first alternatives to TinyPNG, ILovePDF, Remove.bg, SmallPDF and other popular online tools. No uploads, no signup, runs in your browser.';
+const description = 'Privacy-first alternatives to TinyPNG, ILovePDF, Remove.bg, Otter.ai, Descript, PDF24 and other popular online tools. No uploads, no signup, runs in your browser.';
 
 const alternatives = [
   {
@@ -31,6 +31,42 @@ const alternatives = [
     vexynTools: ['PDF Merger', 'PDF Splitter'],
     angle: 'PDF tools without the daily-limit paywall or account requirement.',
   },
+  {
+    competitor: 'Otter.ai',
+    slug: 'otter',
+    vexynTools: ['Audio Transcriber'],
+    angle: 'Whisper transcription on your device. 99+ languages, no minute cap.',
+  },
+  {
+    competitor: 'Descript',
+    slug: 'descript',
+    vexynTools: ['Audio Transcriber'],
+    angle: 'Local Whisper transcription for podcast and interview audio.',
+  },
+  {
+    competitor: 'Convertio',
+    slug: 'convertio',
+    vexynTools: ['Image Format Converter'],
+    angle: 'Image conversion without upload, daily cap, or watermark.',
+  },
+  {
+    competitor: 'CloudConvert',
+    slug: 'cloudconvert',
+    vexynTools: ['Image Format Converter'],
+    angle: 'Instant browser conversion — no upload queue, no daily minute limit.',
+  },
+  {
+    competitor: 'PDF24',
+    slug: 'pdf24',
+    vexynTools: ['PDF Merger', 'PDF Splitter'],
+    angle: 'PDF merge and split without an installer. Works on Mac, Linux, mobile.',
+  },
+  {
+    competitor: 'Sejda',
+    slug: 'sejda',
+    vexynTools: ['PDF Merger', 'PDF Splitter'],
+    angle: 'PDF tools without the 3-tasks-per-hour or 50-page free cap.',
+  },
 ];
 
 const schema = combineSchemas(
@@ -51,7 +87,7 @@ const schema = combineSchemas(
       </div>
       <h1 class="text-4xl font-bold tracking-tight mb-4">Privacy-first alternatives to popular online tools</h1>
       <p class="text-lg text-[color:var(--color-text-mute)] max-w-3xl leading-relaxed">
-        Most popular online tools — TinyPNG, ILovePDF, Remove.bg, SmallPDF — work by uploading your files to their servers. That's fine for public content, but for contracts, IDs, internal screenshots, customer data, or anything sensitive, you probably don't want it transiting through someone else's infrastructure. Vexyn does the same jobs entirely in your browser.
+        Most popular online tools — TinyPNG, ILovePDF, Remove.bg, Otter.ai, Convertio, PDF24 — work by uploading your files to their servers. That's fine for public content, but for contracts, IDs, internal screenshots, customer data, or anything sensitive, you probably don't want it transiting through someone else's infrastructure. Vexyn does the same jobs entirely in your browser.
       </p>
     </header>
 

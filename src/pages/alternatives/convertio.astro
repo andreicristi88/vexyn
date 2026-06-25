@@ -1,0 +1,169 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { breadcrumbSchema, faqSchema, combineSchemas } from '../../lib/seo';
+
+const title = 'Convertio Alternative That Runs in Your Browser';
+const description = 'Vexyn is a Convertio alternative for image format conversion that runs entirely in your browser. No upload, no daily limit, no watermark. JPG, PNG, WebP, AVIF supported.';
+
+const faqs = [
+  { q: 'Does Vexyn support as many formats as Convertio?', a: 'No. Convertio supports 300+ formats including obscure document, ebook, and CAD formats. Vexyn focuses on the everyday image formats people actually convert (JPG, PNG, WebP, AVIF, HEIC input). For 95% of consumer conversions, those cover it.' },
+  { q: 'Is there a file size limit?', a: 'Vexyn is limited by your browser memory — typically up to ~500 MB total on a desktop. Convertio free is limited to 100 MB per file. For files larger than 500 MB or batch conversions in the gigabytes, a server-side service is more appropriate.' },
+  { q: 'Does Convertio actually delete uploaded files?', a: "Their policy states 24-hour retention. That's a policy, not a technical guarantee — uploaded files are processed and stored on their servers during that window. Vexyn doesn't have the option to retain anything because files never leave the browser." },
+  { q: 'Can I convert images on mobile?', a: 'Yes — Vexyn runs in mobile browsers. Mobile devices have lower memory, so for very large files or huge batches, desktop is more reliable. Convertio also has a mobile web interface.' },
+];
+
+const schema = combineSchemas(
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Alternatives', url: '/alternatives' },
+    { name: 'Convertio', url: '/alternatives/convertio' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-10">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <a href="/alternatives" class="hover:text-[color:var(--color-text)]">Alternatives</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Convertio</span>
+      </div>
+
+      <p class="text-xs font-medium text-[color:var(--color-text-dim)] uppercase tracking-wider mb-2">Alternative to Convertio</p>
+      <h1 class="text-4xl font-bold tracking-tight mb-4">A Convertio alternative that doesn't upload your files</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-3xl leading-relaxed">
+        Convertio supports 300+ formats but every file goes to their cloud. For everyday image conversion (JPG ↔ PNG ↔ WebP ↔ AVIF), Vexyn does the same job in your browser — no upload, no daily limit, no watermark.
+      </p>
+
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a href="/image-converter" class="px-5 py-2.5 rounded-lg bg-[color:var(--color-brand-500)] hover:bg-[color:var(--color-brand-600)] text-white font-medium transition-colors inline-flex items-center gap-2">
+          Open Image Converter
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a href="/image-compressor" class="px-5 py-2.5 rounded-lg border border-[color:var(--color-border)] hover:border-[color:var(--color-border-strong)] bg-[color:var(--color-surface)] text-[color:var(--color-text)] font-medium transition-colors">
+          Or compress images
+        </a>
+      </div>
+    </header>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold mb-5">Side-by-side</h2>
+      <div class="overflow-x-auto rounded-xl border border-[color:var(--color-border)]">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-[color:var(--color-surface)] border-b border-[color:var(--color-border)]">
+              <th class="text-left p-4 font-medium text-[color:var(--color-text-mute)]"></th>
+              <th class="text-left p-4 font-semibold text-[color:var(--color-brand-400)]">Vexyn</th>
+              <th class="text-left p-4 font-semibold">Convertio</th>
+            </tr>
+          </thead>
+          <tbody class="text-[color:var(--color-text-mute)]">
+            <tr class="border-b border-[color:var(--color-border)]">
+              <td class="p-4 text-[color:var(--color-text)] font-medium">Where files are processed</td>
+              <td class="p-4">In your browser</td>
+              <td class="p-4">Convertio cloud</td>
+            </tr>
+            <tr class="border-b border-[color:var(--color-border)]">
+              <td class="p-4 text-[color:var(--color-text)] font-medium">Files uploaded?</td>
+              <td class="p-4 text-[color:var(--color-success)]">No</td>
+              <td class="p-4">Yes (24h retention claimed)</td>
+            </tr>
+            <tr class="border-b border-[color:var(--color-border)]">
+              <td class="p-4 text-[color:var(--color-text)] font-medium">Account required</td>
+              <td class="p-4 text-[color:var(--color-success)]">No</td>
+              <td class="p-4">Optional for free; required for paid</td>
+            </tr>
+            <tr class="border-b border-[color:var(--color-border)]">
+              <td class="p-4 text-[color:var(--color-text)] font-medium">Free tier limit</td>
+              <td class="p-4 text-[color:var(--color-success)]">Unlimited</td>
+              <td class="p-4">100 MB/file, 10 conversions/day</td>
+            </tr>
+            <tr class="border-b border-[color:var(--color-border)]">
+              <td class="p-4 text-[color:var(--color-text)] font-medium">Supported formats</td>
+              <td class="p-4">JPG, PNG, WebP, AVIF, HEIC input</td>
+              <td class="p-4 text-[color:var(--color-success)]">300+ (docs, ebooks, CAD, etc.)</td>
+            </tr>
+            <tr class="border-b border-[color:var(--color-border)]">
+              <td class="p-4 text-[color:var(--color-text)] font-medium">Batch conversion</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes (limited by RAM)</td>
+              <td class="p-4">Free: per-day cap; paid: more</td>
+            </tr>
+            <tr class="border-b border-[color:var(--color-border)]">
+              <td class="p-4 text-[color:var(--color-text)] font-medium">EXIF metadata</td>
+              <td class="p-4 text-[color:var(--color-success)]">Stripped on conversion</td>
+              <td class="p-4">Often preserved</td>
+            </tr>
+            <tr class="border-b border-[color:var(--color-border)]">
+              <td class="p-4 text-[color:var(--color-text)] font-medium">Cloud Drive integration</td>
+              <td class="p-4">No</td>
+              <td class="p-4 text-[color:var(--color-success)]">Google Drive, Dropbox, OneDrive</td>
+            </tr>
+            <tr class="border-b border-[color:var(--color-border)]">
+              <td class="p-4 text-[color:var(--color-text)] font-medium">Works offline</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes (after first load)</td>
+              <td class="p-4">No</td>
+            </tr>
+            <tr>
+              <td class="p-4 text-[color:var(--color-text)] font-medium">Price</td>
+              <td class="p-4 text-[color:var(--color-success)]">Free, unlimited</td>
+              <td class="p-4">Free tier + $9.99–$25.99/mo</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-[color:var(--color-text-dim)] mt-3">
+        Based on publicly available information from <a href="https://convertio.co" target="_blank" rel="noopener noreferrer" class="hover:text-[color:var(--color-text-mute)] underline">convertio.co</a> as of June 2026. Verify before relying on a specific number.
+      </p>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold mb-4">When to pick which</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+          <h3 class="font-semibold text-[color:var(--color-brand-400)] mb-2">Pick Vexyn when…</h3>
+          <ul class="text-sm text-[color:var(--color-text-mute)] space-y-1.5 list-disc list-inside">
+            <li>Converting images (JPG, PNG, WebP, AVIF, HEIC)</li>
+            <li>Files may contain sensitive data (screenshots, IDs, scans)</li>
+            <li>You hit Convertio's 10/day free limit often</li>
+            <li>You want EXIF stripped on conversion</li>
+            <li>You prefer no account, no waiting in cloud queue</li>
+          </ul>
+        </div>
+        <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+          <h3 class="font-semibold mb-2">Pick Convertio when…</h3>
+          <ul class="text-sm text-[color:var(--color-text-mute)] space-y-1.5 list-disc list-inside">
+            <li>Format isn't in Vexyn's list (CAD, ebooks, rare docs)</li>
+            <li>Files exceed browser memory (huge videos, multi-GB)</li>
+            <li>You need Google Drive / Dropbox integration</li>
+            <li>You need an OCR step as part of conversion</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold mb-4">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="p-6 rounded-xl bg-gradient-to-br from-[color:var(--color-brand-500)]/10 to-[color:var(--color-accent-500)]/10 border border-[color:var(--color-brand-500)]/30">
+      <h2 class="text-xl font-bold mb-2">Try the converter</h2>
+      <p class="text-sm text-[color:var(--color-text-mute)] mb-4">Drop images. Pick a format. No upload, no daily limit, no watermark.</p>
+      <div class="flex flex-wrap gap-3">
+        <a href="/image-converter" class="px-5 py-2.5 rounded-lg bg-[color:var(--color-brand-500)] hover:bg-[color:var(--color-brand-600)] text-white font-medium transition-colors">Open Image Converter</a>
+        <a href="/blog/webp-vs-avif-vs-jpeg-which-format-in-2026" class="px-5 py-2.5 rounded-lg border border-[color:var(--color-border)] hover:border-[color:var(--color-border-strong)] bg-[color:var(--color-surface)] text-[color:var(--color-text)] font-medium transition-colors">Which format to pick →</a>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

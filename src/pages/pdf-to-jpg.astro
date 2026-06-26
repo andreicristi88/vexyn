@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PdfToJpg from '../components/tools/PdfToJpg.svelte';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'PDF to JPG';
+const description = 'Convert every PDF page to JPG, PNG, or WebP. Pick resolution and quality, download as a ZIP. Runs in your browser — your document never leaves your device.';
+
+const faqs = [
+  { q: 'What resolution should I pick?', a: 'For email or social, 1× is fine (~72 DPI equivalent). For print or detailed work, 3× or 4× (~216-288 DPI). Higher means larger files and slower processing.' },
+  { q: 'Why does the output come as a ZIP?', a: 'A PDF with many pages produces many images. Bundling them in a single ZIP saves you from clicking "Save as" dozens of times. Most operating systems extract ZIPs natively.' },
+  { q: 'JPG, PNG, or WebP — which to use?', a: 'JPG for photos and most everyday cases (smallest with good quality). PNG for screenshots and pages with sharp edges (lossless). WebP for the smallest files at decent quality if the destination supports it.' },
+  { q: 'Is anything uploaded?', a: 'No. PDF.js renders each page to a canvas in your browser; canvas.toBlob() produces the image; JSZip bundles them. Zero network requests during conversion.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/pdf-to-jpg`,
+    description,
+    features: ['JPG, PNG, WebP output', 'Adjustable scale (1×-4×)', 'Quality slider for JPG / WebP', 'ZIP bundle download', '100% local'],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'PDF to JPG', url: '/pdf-to-jpg' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">PDF to JPG</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">PDF to JPG</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Convert each PDF page to an image. JPG, PNG or WebP, at the resolution you want. Output bundled as a ZIP.
+      </p>
+    </header>
+
+    <PdfToJpg client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  </div>
+</BaseLayout>

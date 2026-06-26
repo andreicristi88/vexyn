@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PdfUnlocker from '../components/tools/PdfUnlocker.svelte';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'PDF Unlocker';
+const description = 'Remove a password from a PDF when you know the password. Runs entirely in your browser — the password is typed locally and never sent anywhere.';
+
+const faqs = [
+  { q: 'Will it crack PDFs I don\'t have the password for?', a: 'No — and we won\'t help with that. The tool requires the password as input. It removes the encryption when given the correct password. Cracking unknown passwords is a different problem with serious legal implications.' },
+  { q: 'Is my password sent to any server?', a: 'No. Decryption happens in your browser using @cantoo/pdf-lib (an open-source fork with encryption support). Open DevTools → Network and watch — no requests fire while unlocking.' },
+  { q: 'Why does it sometimes say "wrong password"?', a: 'Either the password really is wrong, or the PDF uses an encryption mode that requires the owner password (not the user password). Try both if you have them.' },
+  { q: 'What kinds of PDF encryption are supported?', a: 'Standard PDF encryption (RC4-40, RC4-128, AES-128, AES-256). Some very old or non-standard encryption variants may fail — those are rare.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/pdf-unlocker`,
+    description,
+    features: ['Removes password from PDFs you can open', 'Supports AES-128, AES-256, RC4', 'Password typed locally only', '100% local'],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'PDF Unlocker', url: '/pdf-unlocker' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">PDF Unlocker</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">PDF Unlocker</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop the PDF, type the password, get an unencrypted copy. Everything stays in your browser — the password never leaves your device.
+      </p>
+    </header>
+
+    <PdfUnlocker client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  </div>
+</BaseLayout>

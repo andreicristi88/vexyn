@@ -1,0 +1,76 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PdfCompressor from '../components/tools/PdfCompressor.svelte';
+import RelatedReading from '../components/ui/RelatedReading.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'PDF Compressor';
+const description = 'Free PDF compressor that shrinks file size entirely in your browser. Strong mode re-renders pages as JPEG for up to 90% reduction. Keep-text mode preserves searchable text with a lighter compression.';
+
+const faqs = [
+  { q: 'How much smaller will my PDF be?', a: 'Strong mode (image-based) typically reduces image-heavy PDFs by 60-90%. Text-heavy PDFs see less benefit — Keep-text mode usually saves 10-30% by re-deflating streams. The lower the quality slider, the smaller the file.' },
+  { q: "What's the trade-off with Strong mode?", a: 'Every page is re-rendered as a JPEG and embedded in a new PDF. The result looks the same but loses selectable text and accessibility metadata. If searchability matters, use Keep-text mode instead.' },
+  { q: 'Is the file uploaded?', a: 'No. Compression is plain JavaScript running in your browser. Open DevTools → Network — zero requests fire while compressing.' },
+  { q: "What's the largest PDF I can compress?", a: 'Browser memory is the limit. Up to ~500 MB works on a desktop with 16 GB RAM. Mobile devices and weaker machines hit lower ceilings for Strong mode (which renders pages to canvas).' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/pdf-compressor`,
+    description,
+    features: ['Image-based and stream-deflate compression modes', 'Quality slider', 'Original-to-output size comparison', '100% local', 'Works offline'],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'PDF Compressor', url: '/pdf-compressor' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">PDF Compressor</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">PDF Compressor</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Shrink a PDF in your browser. Pick Strong mode for the biggest reduction (re-renders pages as JPEG) or Keep-text mode to preserve searchable text.
+      </p>
+    </header>
+
+    <PdfCompressor client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">A PDF compressor that doesn't upload your file</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Almost every online "compress PDF" tool works by uploading your file to a server, running ghostscript or qpdf there, and streaming the result back. Fine for public marketing PDFs; not great for contracts, statements, signed documents, or anything with personal data. Vexyn does the work in your browser using <a class="text-[color:var(--color-brand-400)] hover:underline" href="https://github.com/Hopding/pdf-lib" target="_blank" rel="noopener noreferrer">pdf-lib</a> plus PDF.js for page rendering. Zero requests fire while compressing.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Strong vs Keep-text — which to pick</h2>
+      <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+        <li><strong class="text-[color:var(--color-text)]">Strong</strong> — re-renders every page as JPEG at your chosen quality, embeds in a new PDF. Best for image-heavy documents (scans, photo-rich reports). Loses selectable text.</li>
+        <li><strong class="text-[color:var(--color-text)]">Keep text</strong> — saves the PDF with re-deflated object streams. Modest reduction (10-30%) but text stays selectable and searchable. Best for text-heavy PDFs.</li>
+      </ul>
+
+      <RelatedReading articles={[
+        { href: '/blog/best-privacy-first-pdf-tools-2026', title: 'Best privacy-first PDF tools in 2026', description: 'Roundup of five tools that process documents locally — browser, command line, and desktop.' },
+      ]} />
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  </div>
+</BaseLayout>

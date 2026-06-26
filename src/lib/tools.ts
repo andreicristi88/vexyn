@@ -3,6 +3,8 @@ export type Tool = {
   name: string;
   description: string;
   category: 'developer' | 'image' | 'pdf' | 'ai' | 'privacy' | 'generator';
+  /** Hub pages this tool should ALSO appear on (in addition to its primary category). */
+  secondaryCategories?: Array<'developer' | 'image' | 'pdf' | 'ai' | 'privacy' | 'generator'>;
   icon: string;
   keywords: string[];
   available: boolean;
@@ -32,6 +34,7 @@ export const TOOLS: Tool[] = [
     name: 'QR Code Generator',
     description: 'Generate customizable QR codes. Download as PNG or SVG.',
     category: 'generator',
+    secondaryCategories: ['developer'],
     icon: '▣',
     keywords: ['qr code', 'generator', 'png', 'svg'],
     available: true,
@@ -59,6 +62,7 @@ export const TOOLS: Tool[] = [
     name: 'Background Remover',
     description: 'Remove image backgrounds locally with WebGPU AI. No upload, no API.',
     category: 'ai',
+    secondaryCategories: ['image'],
     icon: '✨',
     keywords: ['background', 'remove', 'ai', 'webgpu', 'transparent', 'cutout'],
     available: true,
@@ -86,6 +90,7 @@ export const TOOLS: Tool[] = [
     name: 'EXIF Remover',
     description: 'Strip GPS, camera and timestamp metadata from images. Privacy-first, local-only.',
     category: 'privacy',
+    secondaryCategories: ['image'],
     icon: '🛡',
     keywords: ['exif', 'metadata', 'remove', 'privacy', 'gps', 'strip'],
     available: true,
@@ -95,6 +100,7 @@ export const TOOLS: Tool[] = [
     name: 'Color Palette Extractor',
     description: 'Extract dominant colors from any image. Copy HEX, RGB, HSL. Zero uploads.',
     category: 'generator',
+    secondaryCategories: ['image'],
     icon: '🎨',
     keywords: ['color', 'palette', 'extract', 'dominant', 'hex', 'designer'],
     available: true,
@@ -176,6 +182,7 @@ export const TOOLS: Tool[] = [
     name: 'PDF OCR',
     description: 'Make scanned PDFs searchable with Tesseract, or extract plain text. 8 languages, runs in your browser.',
     category: 'ai',
+    secondaryCategories: ['pdf'],
     icon: '👁',
     keywords: ['ocr', 'pdf', 'searchable', 'tesseract', 'scan', 'text recognition'],
     available: true,

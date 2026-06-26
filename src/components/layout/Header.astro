@@ -5,10 +5,12 @@ import Logo from '../ui/Logo.astro';
 
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const isActive = (href: string) => {
-  if (href.startsWith('http') || href.startsWith('#')) return false;
+  if (href.startsWith('http') || href.startsWith('#') || href.includes('#')) return false;
   if (href === '/') return path === '/';
   return path === href || path.startsWith(href + '/');
 };
+const isAnyChildActive = (children?: Array<{ href: string }>) =>
+  !!children?.some((c) => isActive(c.href));
 ---
 
 <header class="sticky top-0 z-50 backdrop-blur-xl bg-[color:var(--color-bg)]/80 border-b border-[color:var(--color-border)]">
@@ -20,7 +22,51 @@ const isActive = (href: string) => {
 
     <div class="flex items-center gap-0.5 sm:gap-1">
       {NAV.map((item) => {
-        const active = isActive(item.href);
+        const active = isActive(item.href) || isAnyChildActive(item.children);
+
+        if (item.children) {
+          return (
+            <details class="vexyn-dropdown relative">
+              <summary
+                class:list={[
+                  'px-2 sm:px-3 py-2 text-sm font-medium transition-colors rounded-md cursor-pointer flex items-center gap-1 list-none',
+                  active
+                    ? 'text-[color:var(--color-text)] bg-[color:var(--color-surface)]'
+                    : 'text-[color:var(--color-text-mute)] hover:text-[color:var(--color-text)] hover:bg-[color:var(--color-surface)]'
+                ]}
+                aria-haspopup="menu"
+              >
+                {item.label}
+                <svg class="vexyn-chev w-3 h-3 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </summary>
+              <div class="vexyn-menu absolute right-0 sm:right-auto sm:left-0 top-full mt-1 w-72 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-2xl shadow-black/30 overflow-hidden">
+                {item.children.map((c) => {
+                  const childActive = isActive(c.href);
+                  return (
+                    <a
+                      href={c.href}
+                      aria-current={childActive ? 'page' : undefined}
+                      class:list={[
+                        'block px-4 py-3 text-sm transition-colors',
+                        childActive
+                          ? 'bg-[color:var(--color-surface-2)] text-[color:var(--color-text)]'
+                          : 'hover:bg-[color:var(--color-surface-2)] text-[color:var(--color-text)]'
+                      ]}
+                    >
+                      <div class="font-medium">{c.label}</div>
+                      {c.description && (
+                        <div class="text-xs text-[color:var(--color-text-mute)] mt-0.5">{c.description}</div>
+                      )}
+                    </a>
+                  );
+                })}
+              </div>
+            </details>
+          );
+        }
+
         if (item.external) {
           return (
             <a
@@ -59,3 +105,35 @@ const isActive = (href: string) => {
     </div>
   </nav>
 </header>
+
+<style is:global>
+  /* Hide default details marker — we draw our own chevron */
+  details.vexyn-dropdown > summary::-webkit-details-marker { display: none; }
+  details.vexyn-dropdown > summary { list-style: none; }
+  details.vexyn-dropdown[open] .vexyn-chev { transform: rotate(180deg); }
+</style>
+
+<script>
+  // Close other open dropdowns when one opens; close on outside click + Escape.
+  document.addEventListener('click', (e) => {
+    const target = e.target as Element;
+    document.querySelectorAll<HTMLDetailsElement>('details.vexyn-dropdown[open]').forEach((d) => {
+      if (!d.contains(target)) d.removeAttribute('open');
+    });
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll<HTMLDetailsElement>('details.vexyn-dropdown[open]').forEach((d) => d.removeAttribute('open'));
+    }
+  });
+  // Single-open dropdowns
+  document.querySelectorAll<HTMLDetailsElement>('details.vexyn-dropdown').forEach((d) => {
+    d.addEventListener('toggle', () => {
+      if (d.open) {
+        document.querySelectorAll<HTMLDetailsElement>('details.vexyn-dropdown[open]').forEach((other) => {
+          if (other !== d) other.removeAttribute('open');
+        });
+      }
+    });
+  });
+</script>

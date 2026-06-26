@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HubGrid from '../components/ui/HubGrid.astro';
+import { HUBS, toolsForHub } from '../lib/categories';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, combineSchemas, itemListSchema } from '../lib/seo';
+
+const hub = HUBS.developer;
+const tools = toolsForHub('developer');
+
+const schema = combineSchemas(
+  {
+    '@type': 'CollectionPage',
+    name: hub.seoTitle,
+    url: `${SITE.url}/${hub.slug}`,
+    description: hub.seoDescription,
+  },
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: hub.label, url: `/${hub.slug}` },
+  ]),
+  itemListSchema(
+    tools.map((t) => ({ name: t.name, url: `/${t.slug}`, description: t.description })),
+  ),
+);
+---
+
+<BaseLayout title={hub.seoTitle} description={hub.seoDescription} schema={schema}>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-10">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">{hub.label}</span>
+      </div>
+
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-3xl font-mono" aria-hidden="true">{hub.icon}</span>
+        <h1 class="text-4xl font-bold tracking-tight">{hub.tagline}</h1>
+      </div>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-3xl leading-relaxed">
+        {hub.intro}
+      </p>
+      <p class="mt-4 text-sm text-[color:var(--color-text-mute)]">
+        <span class="font-semibold text-[color:var(--color-text)]">{tools.length}</span> utilities, all client-side, no ads.
+      </p>
+    </header>
+
+    <HubGrid hub="developer" />
+
+    <section class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Why these instead of the usual top-search-result tools</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Search "json formatter" or "base64 decoder" and the first ten results are interchangeable ad-laden sites that all upload your input to a backend. For real dev work — debugging a JWT, validating a webhook payload, generating a QR for an internal admin link — the input often contains tokens, API keys, or production data. Vexyn's developer utilities are JavaScript running in your tab. No telemetry, no ads, no upload, no signup. Same job, none of the noise.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">What we cover</h2>
+      <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+        <li><strong class="text-[color:var(--color-text)]">JSON Formatter</strong> — format, validate, minify. Handles deeply nested objects.</li>
+        <li><strong class="text-[color:var(--color-text)]">Base64 Encoder</strong> — encode/decode strings and files. UTF-8 safe.</li>
+        <li><strong class="text-[color:var(--color-text)]">QR Code Generator</strong> — text, URLs, vCards. PNG or SVG output.</li>
+      </ul>
+
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed">
+        More developer utilities arrive incrementally — the goal is "small, focused, no nonsense" rather than a swiss-army-knife dev hub.
+      </p>
+    </section>
+  </div>
+</BaseLayout>

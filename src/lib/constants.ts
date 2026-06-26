@@ -23,9 +23,26 @@ export const SITE = {
   ],
 };
 
-export const NAV = [
-  { label: 'Tools', href: '/#tools', external: false },
-  { label: 'Blog', href: '/blog', external: false },
-  { label: 'About', href: '/about', external: false },
+export type NavItem = {
+  label: string;
+  href: string;
+  external?: boolean;
+  children?: Array<{ label: string; href: string; description?: string }>;
+};
+
+export const NAV: NavItem[] = [
+  {
+    label: 'Tools',
+    href: '/#tools',
+    children: [
+      { label: 'PDF Tools', href: '/pdf-tools', description: '13 tools — merge, split, compress, OCR, more' },
+      { label: 'Image Tools', href: '/image-tools', description: '6 tools — compress, convert, BG remove, EXIF, palette' },
+      { label: 'AI Tools', href: '/ai-tools', description: '3 tools — transcription, BG remove, OCR — all on-device' },
+      { label: 'Developer Tools', href: '/developer-tools', description: '3 tools — JSON, Base64, QR' },
+      { label: 'All tools', href: '/#tools', description: 'The complete list' },
+    ],
+  },
+  { label: 'Blog', href: '/blog' },
+  { label: 'About', href: '/about' },
   { label: 'GitHub', href: 'https://github.com/andreicristi88/vexyn', external: true },
 ];

@@ -1,0 +1,74 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HubGrid from '../components/ui/HubGrid.astro';
+import { HUBS, toolsForHub } from '../lib/categories';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, combineSchemas, itemListSchema } from '../lib/seo';
+
+const hub = HUBS.image;
+const tools = toolsForHub('image');
+
+const schema = combineSchemas(
+  {
+    '@type': 'CollectionPage',
+    name: hub.seoTitle,
+    url: `${SITE.url}/${hub.slug}`,
+    description: hub.seoDescription,
+  },
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: hub.label, url: `/${hub.slug}` },
+  ]),
+  itemListSchema(
+    tools.map((t) => ({ name: t.name, url: `/${t.slug}`, description: t.description })),
+  ),
+);
+---
+
+<BaseLayout title={hub.seoTitle} description={hub.seoDescription} schema={schema}>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-10">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">{hub.label}</span>
+      </div>
+
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-3xl" aria-hidden="true">{hub.icon}</span>
+        <h1 class="text-4xl font-bold tracking-tight">{hub.tagline}</h1>
+      </div>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-3xl leading-relaxed">
+        {hub.intro}
+      </p>
+      <p class="mt-4 text-sm text-[color:var(--color-text-mute)]">
+        <span class="font-semibold text-[color:var(--color-text)]">{tools.length}</span> tools, all client-side, no upload.
+      </p>
+    </header>
+
+    <HubGrid hub="image" />
+
+    <section class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">What "no upload" actually buys you</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Photos hold more than the picture. Smartphone JPEGs carry EXIF metadata that includes GPS coordinates of the location they were taken, the device's unique camera serial, and the exact timestamp. Screenshots may contain the app you were using, sometimes window contents you didn't mean to share. Vexyn's image tools handle that data locally — re-encoding strips EXIF by default; the Background Remover and Color Palette never see your image. Open DevTools → Network and confirm zero outgoing requests while you work.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">When to use what</h2>
+      <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+        <li><strong class="text-[color:var(--color-text)]">Compressor</strong> — shrink for upload to email, social, or storage limits</li>
+        <li><strong class="text-[color:var(--color-text)]">Converter</strong> — JPG ↔ PNG ↔ WebP ↔ AVIF for web optimisation or compatibility</li>
+        <li><strong class="text-[color:var(--color-text)]">EXIF Remover</strong> — before posting anywhere your location matters</li>
+        <li><strong class="text-[color:var(--color-text)]">Background Remover</strong> — product photos, profile pictures, transparent PNGs</li>
+        <li><strong class="text-[color:var(--color-text)]">Color Palette</strong> — design references, brand colour extraction</li>
+      </ul>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Related guides on the blog</h2>
+      <ul class="text-[color:var(--color-text-mute)] space-y-2">
+        <li><a href="/blog/what-is-exif-metadata-and-how-to-remove-it" class="text-[color:var(--color-brand-400)] hover:underline">What is EXIF metadata and how to remove it</a></li>
+        <li><a href="/blog/how-to-remove-background-from-images-without-uploading" class="text-[color:var(--color-brand-400)] hover:underline">How to remove backgrounds without uploading</a></li>
+        <li><a href="/blog/webp-vs-avif-vs-jpeg-which-format-in-2026" class="text-[color:var(--color-brand-400)] hover:underline">WebP vs AVIF vs JPEG — which to use in 2026</a></li>
+      </ul>
+    </section>
+  </div>
+</BaseLayout>

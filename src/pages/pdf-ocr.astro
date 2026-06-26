@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PdfOcr from '../components/tools/PdfOcr.svelte';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'PDF OCR';
+const description = 'Make scanned PDFs searchable, or extract text from images of pages. Runs Tesseract entirely in your browser. 8 languages, no upload, no signup.';
+
+const faqs = [
+  { q: 'What does "searchable PDF" mean exactly?', a: 'The output looks identical to the original but has an invisible text layer aligned with each word. You can select, copy, and Ctrl+F search inside it like any normal PDF.' },
+  { q: 'How accurate is the OCR?', a: 'Tesseract reaches 95-98% word accuracy on clean printed text in supported languages. Handwriting, low-resolution scans, faded fonts, or unusual layouts drop accuracy considerably. Always spot-check.' },
+  { q: 'Why does the first run take so long?', a: 'Tesseract downloads ~3-10 MB of language data the first time you pick a language. It is cached after — subsequent runs in the same language start fast.' },
+  { q: 'Is the PDF uploaded?', a: 'No. PDF.js renders pages locally, Tesseract.js processes locally, pdf-lib builds the output locally. Open DevTools → Network and confirm.' },
+  { q: 'How long does OCR take per page?', a: 'Typically 5-20 seconds per page on a modern laptop. Multi-page documents add up quickly. Don\'t close the tab while it runs.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/pdf-ocr`,
+    description,
+    features: ['Searchable PDF output (invisible text layer)', 'Plain text export', '8 languages', '100% local — Tesseract.js + PDF.js + pdf-lib', 'No upload'],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'PDF OCR', url: '/pdf-ocr' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">PDF OCR</span>
+      </div>
+      <div class="flex items-center gap-3 mb-3">
+        <h1 class="text-4xl font-bold tracking-tight">PDF OCR</h1>
+        <span class="text-xs px-2 py-1 rounded-md bg-[color:var(--color-accent-500)]/15 border border-[color:var(--color-accent-500)]/30 text-[color:var(--color-accent-400)] font-medium uppercase tracking-wider">AI · Local</span>
+      </div>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Recognise text in scanned PDFs and embed it as an invisible searchable layer. Or just extract plain text. Tesseract runs in your browser — your documents never leave.
+      </p>
+    </header>
+
+    <PdfOcr client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">OCR that doesn't see your documents</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Most online OCR services upload scanned PDFs to their servers, run their AI there, and send the result back. For scans of contracts, IDs, medical records, or anything sensitive, that's a privacy trade-off most people accept without thinking. Vexyn uses <a class="text-[color:var(--color-brand-400)] hover:underline" href="https://github.com/naptha/tesseract.js" target="_blank" rel="noopener noreferrer">Tesseract.js</a> (the JavaScript port of the canonical open-source OCR engine) directly in your browser. PDF.js renders each page, Tesseract recognises the words, pdf-lib stitches an invisible text layer over the original image.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  </div>
+</BaseLayout>

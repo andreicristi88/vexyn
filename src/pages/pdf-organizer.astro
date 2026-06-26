@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PdfOrganizer from '../components/tools/PdfOrganizer.svelte';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'PDF Organizer';
+const description = 'Reorder, delete, and reorganize PDF pages with visual thumbnails. Runs entirely in your browser. No upload, no signup.';
+
+const faqs = [
+  { q: 'How does this differ from PDF Splitter?', a: "Splitter extracts a contiguous range or single pages to separate files. Organizer reorders and selectively keeps pages within a single PDF — drag thumbnails to rearrange, click × to skip a page, build one output document." },
+  { q: 'Why does it render thumbnails?', a: "Working blind on page numbers is error-prone. Thumbnails make it obvious which page you're moving or deleting. They are rendered at low resolution to keep memory in check." },
+  { q: 'What happens to bookmarks and form fields?', a: "Bookmarks pointing to removed pages become dangling. Form fields on kept pages stay functional. pdf-lib's copyPages preserves both during the rearrange." },
+  { q: 'How many pages can it handle?', a: 'Up to ~100 pages comfortably on a desktop. Beyond that, thumbnail rendering eats memory. For 500+ page documents, use the command-line tool qpdf with explicit page ranges.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/pdf-organizer`,
+    description,
+    features: ['Visual thumbnail grid', 'Drag-style reorder with arrow buttons', 'Per-page keep/delete toggle', 'Preserves form fields', '100% local'],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'PDF Organizer', url: '/pdf-organizer' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">PDF Organizer</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">PDF Organizer</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Reorder pages, skip the ones you don't need, build a new PDF. Visual thumbnails so you can see what you're doing.
+      </p>
+    </header>
+
+    <PdfOrganizer client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  </div>
+</BaseLayout>

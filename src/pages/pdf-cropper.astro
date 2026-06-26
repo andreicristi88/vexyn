@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PdfCropper from '../components/tools/PdfCropper.svelte';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'PDF Cropper';
+const description = 'Crop margins off every page of a PDF. Enter trim values in percent or points. Runs entirely in your browser. No upload.';
+
+const faqs = [
+  { q: 'Does it actually delete the cropped content?', a: 'No — it adjusts the CropBox so viewers display only the kept region. Hidden content is still in the file. To physically remove it, run the result through the PDF Compressor in Strong mode, which re-renders each page to image.' },
+  { q: 'Why two units?', a: 'Percent is intuitive when you don\'t know exact page dimensions ("trim 5% off every side"). Points (1pt = 1/72 inch) are precise when you do ("trim exactly 36 points = 0.5 inch").' },
+  { q: 'Same crop on every page — what if pages have different sizes?', a: 'Percent mode handles this gracefully (5% of a small page is less than 5% of a big page). Point mode uses absolute values which may over-crop smaller pages.' },
+  { q: 'Is anything uploaded?', a: 'No. pdf-lib does the box manipulation in your browser. DevTools → Network confirms zero traffic.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/pdf-cropper`,
+    description,
+    features: ['Trim margins in percent or points', 'Independent top/right/bottom/left values', 'Applies to every page', '100% local'],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'PDF Cropper', url: '/pdf-cropper' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">PDF Cropper</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">PDF Cropper</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Trim margins off every page. Percent or points. Same crop applies to the whole document.
+      </p>
+    </header>
+
+    <PdfCropper client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  </div>
+</BaseLayout>

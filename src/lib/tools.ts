@@ -171,6 +171,42 @@ export const TOOLS: Tool[] = [
     keywords: ['pdf', 'watermark', 'text', 'confidential', 'draft'],
     available: true,
   },
+  {
+    slug: 'pdf-ocr',
+    name: 'PDF OCR',
+    description: 'Make scanned PDFs searchable with Tesseract, or extract plain text. 8 languages, runs in your browser.',
+    category: 'ai',
+    icon: '👁',
+    keywords: ['ocr', 'pdf', 'searchable', 'tesseract', 'scan', 'text recognition'],
+    available: true,
+  },
+  {
+    slug: 'pdf-organizer',
+    name: 'PDF Organizer',
+    description: 'Reorder, delete, and reorganize PDF pages with visual thumbnails. Local-only.',
+    category: 'pdf',
+    icon: '⫴',
+    keywords: ['pdf', 'organize', 'reorder', 'delete pages', 'rearrange'],
+    available: true,
+  },
+  {
+    slug: 'pdf-page-numbers',
+    name: 'PDF Page Numbers',
+    description: 'Add page numbers to every page. Format, position, color, starting number — all configurable.',
+    category: 'pdf',
+    icon: '#',
+    keywords: ['pdf', 'page numbers', 'numbering', 'pagination'],
+    available: true,
+  },
+  {
+    slug: 'pdf-cropper',
+    name: 'PDF Cropper',
+    description: 'Trim margins off every page. Percent or points. Runs in your browser.',
+    category: 'pdf',
+    icon: '✂',
+    keywords: ['pdf', 'crop', 'trim', 'margins'],
+    available: true,
+  },
 ];
 
 export const CATEGORIES = {

@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PdfPageNumbers from '../components/tools/PdfPageNumbers.svelte';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'PDF Page Numbers';
+const description = 'Add page numbers to every page of a PDF. Choose format, position, color, font size, starting number. Skip the cover page if needed. Runs in your browser.';
+
+const faqs = [
+  { q: 'Can I number only some pages?', a: 'The "Skip first page" option covers the most-common case (don\'t number the cover). For more granular control, split the PDF first, number just the part you want, then merge back.' },
+  { q: 'What positions are supported?', a: 'Six positions: bottom-right (default), bottom-left, bottom-center, top-right, top-left, top-center. Each is offset 30 points from the edges.' },
+  { q: 'Does this preserve original content?', a: 'Yes. The number is drawn on top of existing content. Original text, links, form fields, and images stay intact.' },
+  { q: 'Can I start numbering from a number other than 1?', a: 'Yes — set "Start at" to any positive integer. Useful when your document is a chapter in a larger book and should start at page 247.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/pdf-page-numbers`,
+    description,
+    features: ['Three formats: 1, 1/N, Page 1 of N', '6 positions', 'Optional prefix', 'Skip first page option', '100% local'],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'PDF Page Numbers', url: '/pdf-page-numbers' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">PDF Page Numbers</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">PDF Page Numbers</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Add page numbers to a PDF. Pick the format, position, color, and starting number. All in your browser.
+      </p>
+    </header>
+
+    <PdfPageNumbers client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  </div>
+</BaseLayout>

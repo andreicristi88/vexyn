@@ -29,6 +29,7 @@
     "satori-html": "^0.3.2",
     "svelte": "^5.56.3",
     "tailwindcss": "^4.3.1",
+    "tesseract.js": "^7.0.0",
     "typescript": "^6.0.3"
   },
   "devDependencies": {

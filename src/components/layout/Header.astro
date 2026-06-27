@@ -127,7 +127,7 @@ const isAnyChildActive = (children?: Array<{ href: string }>) =>
 ></div>
 <aside
   id="vexyn-mobile-drawer"
-  class="vexyn-drawer fixed top-0 right-0 z-50 h-[100dvh] w-[85%] max-w-sm bg-[color:var(--color-bg)] border-l border-[color:var(--color-border)] shadow-2xl translate-x-full transition-transform duration-250 ease-out sm:hidden flex flex-col"
+  class="vexyn-drawer fixed top-0 right-0 z-50 h-[100dvh] w-[85%] max-w-sm bg-[color:var(--color-bg)] border-l border-[color:var(--color-border)] shadow-2xl sm:hidden flex flex-col"
   role="dialog"
   aria-modal="true"
   aria-label="Site menu"
@@ -212,13 +212,13 @@ const isAnyChildActive = (children?: Array<{ href: string }>) =>
   details.vexyn-dropdown > summary { list-style: none; }
   details.vexyn-dropdown[open] .vexyn-chev { transform: rotate(180deg); }
 
-  /* Mobile drawer states */
+  /* Mobile drawer — uses the CSS `translate` property directly so the
+     animation works under Tailwind 4 (which exposes translate-x via the
+     `translate` property, not `transform`). */
   .vexyn-drawer[hidden] { display: none; }
-  .vexyn-drawer.open { transform: translateX(0); }
+  .vexyn-drawer { translate: 100% 0; transition: translate 250ms ease-out; }
+  .vexyn-drawer.open { translate: 0 0; }
   .vexyn-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
-
-  /* Custom duration (Tailwind doesn't expose duration-250 by default) */
-  .duration-250 { transition-duration: 250ms; }
 </style>
 
 <script>

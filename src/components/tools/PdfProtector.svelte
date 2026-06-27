@@ -63,8 +63,8 @@
     revoke();
     try {
       const buf = await file.arrayBuffer();
-      const doc = await CantooPDFLib.PDFDocument.load(buf, { ignoreEncryption: false });
-      const bytes = await doc.save({
+      const doc = await CantooPDFLib.PDFDocument.load(buf, { ignoreEncryption: true });
+      doc.encrypt({
         userPassword: password,
         ownerPassword: password,
         permissions: {
@@ -77,10 +77,12 @@
           documentAssembly: false,
         },
       });
+      const bytes = await doc.save();
       const blob = new Blob([bytes], { type: 'application/pdf' });
       downloadUrl = URL.createObjectURL(blob);
     } catch (e: any) {
       error = `Encryption failed: ${e?.message ?? e}`;
+      console.error('[PdfProtector] failed', e);
     } finally {
       working = false;
     }

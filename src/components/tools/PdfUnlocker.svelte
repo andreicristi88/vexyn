@@ -54,14 +54,21 @@
     revoke();
     try {
       const buf = await file.arrayBuffer();
-      const doc = await CantooPDFLib.PDFDocument.load(buf, { password, ignoreEncryption: false });
+      // Load with the supplied password. @cantoo/pdf-lib uses LoadOptions.password
+      // to decrypt the document into memory; saving without further encrypt()
+      // produces an unencrypted output.
+      const doc = await CantooPDFLib.PDFDocument.load(buf, {
+        password,
+        ignoreEncryption: false,
+      });
       const bytes = await doc.save();
       const blob = new Blob([bytes], { type: 'application/pdf' });
       downloadUrl = URL.createObjectURL(blob);
     } catch (e: any) {
       const msg = e?.message ?? String(e);
-      if (msg.toLowerCase().includes('password')) {
-        error = 'Wrong password — or this PDF uses an encryption method that requires the owner password.';
+      console.error('[PdfUnlocker] failed', e);
+      if (/password|encrypt|decrypt/i.test(msg)) {
+        error = 'Wrong password — or this PDF uses an encryption method we cannot handle. Try the owner password if you have one.';
       } else {
         error = `Unlock failed: ${msg}`;
       }

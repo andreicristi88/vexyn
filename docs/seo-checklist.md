@@ -251,7 +251,45 @@ have an `alt=` attribute.
 
 ---
 
-## 11. Don't name competitors in general prose
+## 11. Don't claim 'no ads'
+
+Vexyn may add non-tracking ad networks (Carbon Ads, EthicalAds) or
+sponsorship slots in the future. Promising "no ads" anywhere on the
+site closes that door and burns trust if we later add anything that
+looks like an ad.
+
+What we CAN safely promise (architectural guarantees, not policy):
+- **No upload** — files run through client-side code; verifiable in
+  DevTools Network tab
+- **No signup** — no auth code in the site
+- **No tracking** — no analytics, no fingerprinting, no third-party
+  pixels
+- **No telemetry** — no usage data sent anywhere
+
+What we do NOT promise:
+- "No ads" — leaves no room for future monetisation
+- "No watermarks" — same reason
+- "Forever free for this feature" — same reason
+
+Replacement phrasings:
+
+| Don't write | Write instead |
+|---|---|
+| "No ads, no signup, no tracking" | "No signup, no tracking, no upload" |
+| "tools without ads or telemetry" | "tools without telemetry or upload" |
+| "ad-laden online tools" | "upload-based online tools" |
+| "You want a no-ads experience" | "You want a minimal, no-signup experience" |
+
+This rule is **also documented in `src/lib/constants.ts`** as a top-of-
+file comment so anyone editing the SITE description doesn't reintroduce
+the claim by accident.
+
+Audit: `grep -irE 'no ads|no-ads|ad-free|ad-laden|without ads|zero ads' src/ docs/`
+should return only this checklist plus the constants.ts note.
+
+---
+
+## 12. Don't name competitors in general prose
 
 Competitor names (ILovePDF, SmallPDF, PDF24, TinyPNG, Remove.bg,
 Otter.ai, Descript, Convertio, CloudConvert, Sejda, ClipDrop, Adobe
@@ -307,7 +345,7 @@ review trigger.
 
 ---
 
-## 12. Don't add useless meta tags
+## 13. Don't add useless meta tags
 
 The following tags are **NOT** to be added:
 
@@ -321,7 +359,7 @@ The following tags are **NOT** to be added:
 
 ---
 
-## 13. Pre-commit checklist
+## 14. Pre-commit checklist
 
 Before pushing a new page, verify:
 
@@ -336,14 +374,17 @@ Before pushing a new page, verify:
 - [ ] `npm run build` passes with no warnings
 - [ ] After deploy: `curl -s https://vexyn.app/<route> | grep -E 'og:image|<title>|description'`
   shows correct values
-- [ ] **No competitor names in body prose** (section 11) — only on
+- [ ] **No 'no ads' claim** (section 11) — Vexyn may monetize later.
+  Audit: `grep -irE 'no ads|no-ads|ad-free|ad-laden|without ads' src/`
+  should return only the constants.ts note.
+- [ ] **No competitor names in body prose** (section 12) — only on
   `/alternatives/*` and the honest-content `/pdf-to-word` style pages.
   Quick audit: `grep -rE 'ILovePDF|SmallPDF|PDF24|TinyPNG|Remove\\.bg|Otter|Descript|Convertio|CloudConvert|Sejda|ClipDrop' src/pages/ src/content/blog/`
   should only flag the allowed files.
 
 ---
 
-## 14. Cloudflare deploy gotcha (current setup)
+## 15. Cloudflare deploy gotcha (current setup)
 
 Vexyn deploys as a **Cloudflare Worker** (Workers Static Assets serving
 `./dist`), not Cloudflare Pages. Three files keep this working:

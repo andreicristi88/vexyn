@@ -48,12 +48,12 @@ export const HUBS: Record<HubKey, {
     slug: 'developer-tools',
     label: 'Developer Tools',
     icon: '{ }',
-    tagline: 'Tiny dev tools without ads or telemetry',
+    tagline: 'Tiny dev tools without telemetry or upload',
     intro:
-      "JSON formatting, Base64 encoding, QR code generation — the boring everyday utilities that pop up in dev work. Vexyn's versions are zero-tracker alternatives to the usual ad-laden online tools. Everything runs client-side, fast, with a clean UI.",
+      "JSON formatting, Base64 encoding, QR code generation — the boring everyday utilities that pop up in dev work. Vexyn's versions are zero-tracker alternatives to the usual upload-based online tools. Everything runs client-side, fast, with a clean UI.",
     seoTitle: 'Free Developer Tools That Run in Your Browser',
     seoDescription:
-      '3 privacy-first developer utilities: JSON formatter, Base64 encoder, QR code generator. No ads, no signup, no tracking — clean browser tools that respect your time.',
+      '3 privacy-first developer utilities: JSON formatter, Base64 encoder, QR code generator. No signup, no tracking, no upload — clean browser tools that respect your time.',
   },
 };
 

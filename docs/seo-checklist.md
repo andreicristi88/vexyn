@@ -251,7 +251,63 @@ have an `alt=` attribute.
 
 ---
 
-## 11. Don't add useless meta tags
+## 11. Don't name competitors in general prose
+
+Competitor names (ILovePDF, SmallPDF, PDF24, TinyPNG, Remove.bg,
+Otter.ai, Descript, Convertio, CloudConvert, Sejda, ClipDrop, Adobe
+Acrobat online, etc.) belong **only** on `/alternatives/<slug>` pages
+and on the `/pdf-to-word` / `/edit-pdf` / `/pdf-to-excel` / `/pdf-to-
+powerpoint` / `/sign-pdf` honest-content pages where we explicitly
+recommend a specific desktop tool (LibreOffice, Adobe Acrobat Pro).
+
+Anywhere else — tool pages, hub pages, blog posts, homepage — use
+**generic phrasing**:
+
+| Don't write | Write instead |
+|---|---|
+| "ILovePDF, SmallPDF, PDF24 work by uploading…" | "Most popular online PDF tools work by uploading…" |
+| "Otter.ai, Rev, Descript, Trint upload your audio…" | "Most paid commercial transcription services upload your audio…" |
+| "Remove.bg, ClipDrop, Photoroom upload images…" | "Most online background removers upload images…" |
+| "TinyPNG limits free users to 20 images/month" | "Most online compressors have monthly caps on the free tier" |
+| "compared to Otter.ai or Rev" (FAQ heading) | "compared to paid commercial services" |
+
+**Why:** competitor pricing, retention policies, feature sets, and free-
+tier limits change. A blog post claiming "Service X retains files for 24
+hours" becomes false the moment they update the policy. Maintaining
+those claims across the whole site is impossible. The `/alternatives/*`
+pages are the bounded surface where we *do* make explicit comparisons —
+each one has a clearly visible "verify before relying" disclaimer under
+the side-by-side table, and the maintenance contract is "review when
+the competitor materially changes."
+
+**What is OK to name anywhere:**
+
+- Open-source projects and libraries we use or recommend (pdf-lib,
+  PDF.js, Tesseract, Whisper, RMBG-1.4, mozjpeg, guetzli, LibreOffice,
+  qpdf, ExifTool) — factual references, not commercial claims
+- Browser names when discussing feature support (Chrome, Firefox,
+  Safari, Edge) — these are technical facts that change slowly and
+  are independently verifiable
+- AI model providers when discussing the underlying technology
+  (OpenAI Whisper, BRIA RMBG-1.4) — model names, not service comparisons
+- Operating systems (Windows, macOS, Linux, iOS, Android) — same
+  reason as browsers
+- Tools the user pairs with our output (Photoshop, GIMP, Figma, Canva,
+  Word, Excel) when listing what they'd use alongside Vexyn — these
+  are workflow companions, not competitive comparisons
+
+**When you must name a competitor outside `/alternatives/`:**
+
+If a tool page absolutely needs to mention a competitor by name (e.g.
+the user explicitly asks "is this the same as X?"), add a date disclaimer
+in the same paragraph: "as of <month year>, <claim>". And add a note in
+the page frontmatter or a comment: `<!-- review competitor claims by
+<date+6mo> -->`. This makes the staleness explicit and creates a
+review trigger.
+
+---
+
+## 12. Don't add useless meta tags
 
 The following tags are **NOT** to be added:
 
@@ -265,7 +321,7 @@ The following tags are **NOT** to be added:
 
 ---
 
-## 12. Pre-commit checklist
+## 13. Pre-commit checklist
 
 Before pushing a new page, verify:
 
@@ -280,10 +336,14 @@ Before pushing a new page, verify:
 - [ ] `npm run build` passes with no warnings
 - [ ] After deploy: `curl -s https://vexyn.app/<route> | grep -E 'og:image|<title>|description'`
   shows correct values
+- [ ] **No competitor names in body prose** (section 11) — only on
+  `/alternatives/*` and the honest-content `/pdf-to-word` style pages.
+  Quick audit: `grep -rE 'ILovePDF|SmallPDF|PDF24|TinyPNG|Remove\\.bg|Otter|Descript|Convertio|CloudConvert|Sejda|ClipDrop' src/pages/ src/content/blog/`
+  should only flag the allowed files.
 
 ---
 
-## 13. Cloudflare deploy gotcha (current setup)
+## 14. Cloudflare deploy gotcha (current setup)
 
 Vexyn deploys as a **Cloudflare Worker** (Workers Static Assets serving
 `./dist`), not Cloudflare Pages. Three files keep this working:

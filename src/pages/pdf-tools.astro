@@ -54,9 +54,9 @@ const schema = combineSchemas(
         PDFs hold a lot of life — signed contracts, bank statements, medical records, tax returns, ID scans. The common pattern of uploading them to a server to do a 30-second operation (merge, split, compress) means the file passes through someone else's infrastructure, gets processed by code you can't audit, and lives briefly in their logs. Vexyn does the same operations with libraries like <a href="https://github.com/Hopding/pdf-lib" class="text-[color:var(--color-brand-400)] hover:underline" target="_blank" rel="noopener noreferrer">pdf-lib</a> and <a href="https://github.com/mozilla/pdf.js" class="text-[color:var(--color-brand-400)] hover:underline" target="_blank" rel="noopener noreferrer">PDF.js</a> running inside your browser. Open DevTools → Network and confirm: zero requests fire while you use any of these tools.
       </p>
 
-      <h2 class="text-2xl font-bold mb-4 mt-10">What we cover vs ILovePDF / SmallPDF</h2>
+      <h2 class="text-2xl font-bold mb-4 mt-10">What we cover (and what we deliberately don't)</h2>
       <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-3">
-        We ship the 13 most-googled operations that can be done well in a browser. We explicitly don't ship server-only features — PDF to Word, PDF to Excel, AI summarization, text editing with reflow — because doing them locally either requires shipping a 200 MB AI model or produces low-quality output. When you need those, LibreOffice or Adobe Acrobat handle them locally without uploading.
+        We ship the 13 most-googled operations that can be done well in a browser. We explicitly don't ship server-only features — PDF to Word, PDF to Excel, AI summarization, text editing with reflow — because doing them locally either requires shipping a 200 MB AI model or produces low-quality output. When you need those, desktop office suites handle them locally without uploading.
       </p>
 
       <h2 class="text-2xl font-bold mb-4 mt-10">Related guides on the blog</h2>

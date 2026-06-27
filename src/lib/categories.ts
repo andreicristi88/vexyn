@@ -17,7 +17,7 @@ export const HUBS: Record<HubKey, {
     icon: '📄',
     tagline: 'Privacy-first PDF tools in your browser',
     intro:
-      "Every popular online PDF site — ILovePDF, SmallPDF, PDF24 — works by uploading your file to their servers. For contracts, statements, IDs, or anything sensitive, that's a real trade-off. Vexyn covers the 13 most-used PDF operations entirely client-side. Drop a file, it never leaves your device.",
+      "Most popular online PDF tools work by uploading your file to their servers. For contracts, statements, IDs, or anything sensitive, that's a real trade-off. Vexyn covers the 13 most-used PDF operations entirely client-side. Drop a file, it never leaves your device.",
     seoTitle: 'Free PDF Tools That Run in Your Browser',
     seoDescription:
       '13 privacy-first PDF tools: merge, split, compress, rotate, convert, OCR, unlock, protect, watermark, organize, page numbers, crop. All run in your browser — no upload, no signup, no daily limit.',
@@ -28,7 +28,7 @@ export const HUBS: Record<HubKey, {
     icon: '🖼',
     tagline: 'Image tools that stay on your device',
     intro:
-      "Compress, convert, strip metadata, remove backgrounds, extract colors — all without uploading. Vexyn's image tools run as JavaScript and WebAssembly in your browser. The same job as TinyPNG, Remove.bg, or Convertio, with the file staying on your machine.",
+      "Compress, convert, strip metadata, remove backgrounds, extract colors — all without uploading. Vexyn's image tools run as JavaScript and WebAssembly in your browser. Same job as the popular upload-based services, with the file staying on your machine.",
     seoTitle: 'Free Image Tools That Run in Your Browser',
     seoDescription:
       '6 privacy-first image tools: compress, format convert, EXIF strip, AI background removal, color palette extraction. No upload, no signup, no monthly cap.',

@@ -81,7 +81,7 @@ const schema = combineSchemas(
     <article class="prose mt-16 max-w-3xl">
       <h2 class="text-2xl font-bold mb-4">Background removal that doesn't see your photos</h2>
       <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
-        Remove.bg, Photoroom, Canva — every well-known background remover uploads your image to a remote GPU farm, runs the model there, and sends the result back. That's the only model that worked for a long time, but it also means your photos pass through someone else's infrastructure, get logged, sometimes used to train the next version of their model, and live in their caches for a while. Vexyn is different: the model runs <em>on your machine</em>, in your browser, using WebGPU. There is no server. There is no API. The image never leaves the tab.
+        Every well-known background remover uploads your image to a remote GPU farm, runs the model there, and sends the result back. That's the only model that worked for a long time, but it also means your photos pass through someone else's infrastructure, get logged, sometimes used to train the next version of their model, and live in their caches for a while. Vexyn is different: the model runs <em>on your machine</em>, in your browser, using WebGPU. There is no server. There is no API. The image never leaves the tab.
       </p>
 
       <h2 class="text-2xl font-bold mb-4 mt-10">How it works</h2>
@@ -120,7 +120,7 @@ const schema = combineSchemas(
           <p class="text-[color:var(--color-text-mute)]">The model is ~85 MB. On a 50 Mbps connection that's ~15 seconds the first time. After that the browser caches it — second visit is instant.</p>
         </div>
         <div>
-          <h3 class="font-semibold mb-1">How does it compare to Remove.bg?</h3>
+          <h3 class="font-semibold mb-1">How does it compare to popular online removers?</h3>
           <p class="text-[color:var(--color-text-mute)]">RMBG-1.4 is competitive on most natural subjects. Edge cases (hair detail, transparent objects) are where commercial tools using larger models pull ahead. For 90% of real use cases, the difference isn't visible.</p>
         </div>
         <div>

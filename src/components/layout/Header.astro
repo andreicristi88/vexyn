@@ -13,7 +13,7 @@ const isAnyChildActive = (children?: Array<{ href: string }>) =>
   !!children?.some((c) => isActive(c.href));
 ---
 
-<header class="sticky top-0 z-50 backdrop-blur-xl bg-[color:var(--color-bg)]/80 border-b border-[color:var(--color-border)]">
+<header class="sticky top-0 z-40 backdrop-blur-xl bg-[color:var(--color-bg)]/80 border-b border-[color:var(--color-border)]">
   <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between" aria-label="Main">
     <a href="/" class="flex items-center gap-2 group" aria-label={`${SITE.name} home`}>
       <Logo size={32} class="group-hover:scale-110 transition-transform" />
@@ -109,84 +109,102 @@ const isAnyChildActive = (children?: Array<{ href: string }>) =>
         aria-expanded="false"
         aria-controls="vexyn-mobile-drawer"
       >
-        <svg class="vexyn-hamburger-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <line x1="3" y1="6" x2="21" y2="6" />
           <line x1="3" y1="12" x2="21" y2="12" />
           <line x1="3" y1="18" x2="21" y2="18" />
         </svg>
-        <svg class="vexyn-close-icon w-5 h-5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
       </button>
     </div>
   </nav>
-
-  <!-- Mobile drawer -->
-  <div
-    id="vexyn-mobile-drawer"
-    class="vexyn-mobile-drawer sm:hidden border-t border-[color:var(--color-border)] bg-[color:var(--color-bg)]"
-    hidden
-  >
-    <nav class="max-w-7xl mx-auto px-4 py-4 space-y-4" aria-label="Mobile">
-      {NAV.map((item) => {
-        if (item.children) {
-          return (
-            <div>
-              <p class="text-xs font-semibold uppercase tracking-wider text-[color:var(--color-text-dim)] mb-2 px-3">{item.label}</p>
-              <div class="space-y-0.5">
-                {item.children.map((c) => {
-                  const childActive = isActive(c.href);
-                  return (
-                    <a
-                      href={c.href}
-                      aria-current={childActive ? 'page' : undefined}
-                      class:list={[
-                        'block px-3 py-3 rounded-lg text-sm transition-colors',
-                        childActive
-                          ? 'bg-[color:var(--color-surface-2)] text-[color:var(--color-text)]'
-                          : 'text-[color:var(--color-text)] hover:bg-[color:var(--color-surface)]'
-                      ]}
-                    >
-                      <div class="font-medium">{c.label}</div>
-                      {c.description && (
-                        <div class="text-xs text-[color:var(--color-text-mute)] mt-0.5">{c.description}</div>
-                      )}
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        }
-        const active = isActive(item.href);
-        return (
-          <a
-            href={item.href}
-            target={item.external ? '_blank' : undefined}
-            rel={item.external ? 'noopener noreferrer' : undefined}
-            aria-current={active ? 'page' : undefined}
-            class:list={[
-              'flex items-center justify-between px-3 py-3 rounded-lg text-sm font-medium transition-colors',
-              active
-                ? 'bg-[color:var(--color-surface-2)] text-[color:var(--color-text)]'
-                : 'text-[color:var(--color-text)] hover:bg-[color:var(--color-surface)]'
-            ]}
-          >
-            <span>{item.label}</span>
-            {item.external && (
-              <svg class="w-3.5 h-3.5 text-[color:var(--color-text-mute)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                <polyline points="15 3 21 3 21 9" />
-                <line x1="10" y1="14" x2="21" y2="3" />
-              </svg>
-            )}
-          </a>
-        );
-      })}
-    </nav>
-  </div>
 </header>
+
+<!-- Mobile drawer + backdrop. Lives outside the sticky header so the
+     panel can be fixed to the viewport edge regardless of header height. -->
+<div
+  class="vexyn-drawer-backdrop fixed inset-0 z-40 bg-black/50 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200 sm:hidden"
+  aria-hidden="true"
+></div>
+<aside
+  id="vexyn-mobile-drawer"
+  class="vexyn-drawer fixed top-0 right-0 z-50 h-[100dvh] w-[85%] max-w-sm bg-[color:var(--color-bg)] border-l border-[color:var(--color-border)] shadow-2xl translate-x-full transition-transform duration-250 ease-out sm:hidden flex flex-col"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Site menu"
+  hidden
+>
+  <div class="flex items-center justify-between h-16 px-4 border-b border-[color:var(--color-border)] flex-shrink-0">
+    <span class="font-semibold text-base">Menu</span>
+    <button
+      type="button"
+      class="vexyn-drawer-close w-10 h-10 flex items-center justify-center rounded-md text-[color:var(--color-text-mute)] hover:text-[color:var(--color-text)] hover:bg-[color:var(--color-surface)] transition-colors"
+      aria-label="Close menu"
+    >
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
+  </div>
+
+  <nav class="flex-1 overflow-y-auto px-4 py-4 space-y-4" aria-label="Mobile">
+    {NAV.map((item) => {
+      if (item.children) {
+        return (
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-[color:var(--color-text-dim)] mb-2 px-3">{item.label}</p>
+            <div class="space-y-0.5">
+              {item.children.map((c) => {
+                const childActive = isActive(c.href);
+                return (
+                  <a
+                    href={c.href}
+                    aria-current={childActive ? 'page' : undefined}
+                    class:list={[
+                      'block px-3 py-3 rounded-lg text-sm transition-colors',
+                      childActive
+                        ? 'bg-[color:var(--color-surface-2)] text-[color:var(--color-text)]'
+                        : 'text-[color:var(--color-text)] hover:bg-[color:var(--color-surface)]'
+                    ]}
+                  >
+                    <div class="font-medium">{c.label}</div>
+                    {c.description && (
+                      <div class="text-xs text-[color:var(--color-text-mute)] mt-0.5">{c.description}</div>
+                    )}
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        );
+      }
+      const active = isActive(item.href);
+      return (
+        <a
+          href={item.href}
+          target={item.external ? '_blank' : undefined}
+          rel={item.external ? 'noopener noreferrer' : undefined}
+          aria-current={active ? 'page' : undefined}
+          class:list={[
+            'flex items-center justify-between px-3 py-3 rounded-lg text-sm font-medium transition-colors',
+            active
+              ? 'bg-[color:var(--color-surface-2)] text-[color:var(--color-text)]'
+              : 'text-[color:var(--color-text)] hover:bg-[color:var(--color-surface)]'
+          ]}
+        >
+          <span>{item.label}</span>
+          {item.external && (
+            <svg class="w-3.5 h-3.5 text-[color:var(--color-text-mute)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+          )}
+        </a>
+      );
+    })}
+  </nav>
+</aside>
 
 <style is:global>
   /* Desktop dropdown */
@@ -194,13 +212,17 @@ const isAnyChildActive = (children?: Array<{ href: string }>) =>
   details.vexyn-dropdown > summary { list-style: none; }
   details.vexyn-dropdown[open] .vexyn-chev { transform: rotate(180deg); }
 
-  /* Mobile drawer animation */
-  .vexyn-mobile-drawer { transform-origin: top; }
-  .vexyn-mobile-drawer[hidden] { display: none; }
+  /* Mobile drawer states */
+  .vexyn-drawer[hidden] { display: none; }
+  .vexyn-drawer.open { transform: translateX(0); }
+  .vexyn-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+
+  /* Custom duration (Tailwind doesn't expose duration-250 by default) */
+  .duration-250 { transition-duration: 250ms; }
 </style>
 
 <script>
-  // Desktop dropdown — outside click + escape + single-open
+  // Desktop dropdown
   document.addEventListener('click', (e) => {
     const target = e.target as Element;
     document.querySelectorAll<HTMLDetailsElement>('details.vexyn-dropdown[open]').forEach((d) => {
@@ -210,7 +232,7 @@ const isAnyChildActive = (children?: Array<{ href: string }>) =>
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       document.querySelectorAll<HTMLDetailsElement>('details.vexyn-dropdown[open]').forEach((d) => d.removeAttribute('open'));
-      closeMobileDrawer();
+      closeDrawer();
     }
   });
   document.querySelectorAll<HTMLDetailsElement>('details.vexyn-dropdown').forEach((d) => {
@@ -225,55 +247,56 @@ const isAnyChildActive = (children?: Array<{ href: string }>) =>
 
   // Mobile drawer
   const hamburger = document.querySelector<HTMLButtonElement>('.vexyn-hamburger');
-  const drawer = document.getElementById('vexyn-mobile-drawer');
-  const openIcon = hamburger?.querySelector<SVGElement>('.vexyn-hamburger-icon');
-  const closeIcon = hamburger?.querySelector<SVGElement>('.vexyn-close-icon');
+  const drawer = document.querySelector<HTMLElement>('.vexyn-drawer');
+  const backdrop = document.querySelector<HTMLElement>('.vexyn-drawer-backdrop');
+  const closeBtn = document.querySelector<HTMLButtonElement>('.vexyn-drawer-close');
 
-  function setDrawer(open: boolean) {
-    if (!hamburger || !drawer || !openIcon || !closeIcon) return;
-    hamburger.setAttribute('aria-expanded', String(open));
-    hamburger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-    if (open) {
-      drawer.removeAttribute('hidden');
-      openIcon.classList.add('hidden');
-      closeIcon.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
-    } else {
-      drawer.setAttribute('hidden', '');
-      openIcon.classList.remove('hidden');
-      closeIcon.classList.add('hidden');
-      document.body.style.overflow = '';
+  function openDrawer() {
+    if (!drawer || !backdrop || !hamburger) return;
+    drawer.removeAttribute('hidden');
+    // Force reflow so the transition from translate-x-full plays
+    void drawer.offsetWidth;
+    drawer.classList.add('open');
+    backdrop.classList.add('open');
+    hamburger.setAttribute('aria-expanded', 'true');
+    hamburger.setAttribute('aria-label', 'Close menu');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDrawer() {
+    if (!drawer || !backdrop || !hamburger) return;
+    const wasOpen = drawer.classList.contains('open');
+    drawer.classList.remove('open');
+    backdrop.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+    hamburger.setAttribute('aria-label', 'Open menu');
+    document.body.style.overflow = '';
+    if (wasOpen) {
+      // Wait for transition to finish before hiding from a11y tree
+      setTimeout(() => {
+        if (!drawer.classList.contains('open')) drawer.setAttribute('hidden', '');
+      }, 260);
     }
   }
-  function closeMobileDrawer() { setDrawer(false); }
 
-  hamburger?.addEventListener('click', (e) => {
-    e.stopPropagation();
+  hamburger?.addEventListener('click', () => {
     const open = hamburger.getAttribute('aria-expanded') === 'true';
-    setDrawer(!open);
+    if (open) closeDrawer(); else openDrawer();
   });
+  backdrop?.addEventListener('click', () => closeDrawer());
+  closeBtn?.addEventListener('click', () => closeDrawer());
 
-  // Close drawer when clicking outside the header
-  document.addEventListener('click', (e) => {
-    if (!hamburger || !drawer) return;
-    const target = e.target as Element;
-    const inHeader = target.closest('header');
-    if (!inHeader && hamburger.getAttribute('aria-expanded') === 'true') {
-      closeMobileDrawer();
-    }
-  });
-
-  // Close drawer when navigating
+  // Close on link tap inside drawer
   drawer?.querySelectorAll('a').forEach((a) => {
-    a.addEventListener('click', () => closeMobileDrawer());
+    a.addEventListener('click', () => closeDrawer());
   });
 
-  // Reset on viewport resize across breakpoint (640px)
+  // Reset across breakpoint
   let lastIsMobile = window.matchMedia('(max-width: 639px)').matches;
   window.addEventListener('resize', () => {
     const isMobile = window.matchMedia('(max-width: 639px)').matches;
     if (lastIsMobile !== isMobile) {
-      closeMobileDrawer();
+      closeDrawer();
       lastIsMobile = isMobile;
     }
   });

@@ -1,0 +1,160 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, combineSchemas } from '../lib/seo';
+
+const title = 'PDF to PowerPoint — what actually works in 2026';
+const description = 'An honest guide. PDF to PowerPoint conversion is harder than PDF to Word — and most free tools produce slides that look right but are useless to edit. LibreOffice Impress and Adobe Acrobat Pro handle this — here is how.';
+
+const faqs = [
+  { q: 'Why is PDF to PowerPoint conversion so often broken?', a: 'PowerPoint slides are made of structured shapes — title boxes, body text boxes, images, with semantic roles. PDF is just positioned text and images. Conversion requires guessing which text on a page was originally the title, which were bullet points, which were footnotes. Free tools rarely guess well. The output usually looks like the original (because images and text are at the right positions) but is unusable for editing — every word is in its own text box, no structure, no master slides.' },
+  { q: 'What\'s the best free option?', a: 'LibreOffice Impress can open PDFs and save as .pptx. Quality is comparable to free online tools but runs locally with no upload. For slides made from text-heavy PDFs (reports, papers), the output is usable as a starting point. For visually complex slides (infographics, diagrams), expect significant cleanup.' },
+  { q: 'When is Adobe Acrobat Pro worth it for this?', a: 'When the source PDF was originally a PowerPoint export (round-trip), Acrobat reconstructs the slide structure better than any free tool. For other PDFs (academic papers, reports), even Acrobat struggles to produce editable slides — the source just doesn\'t have that structure to begin with.' },
+  { q: 'Should I just rebuild the slides from scratch?', a: 'Often, yes. For a 10-15 slide presentation where you only need the content, copying the text into a fresh PowerPoint template is faster than fighting with broken conversion output. Conversion makes sense for batch jobs or when slide design must be preserved exactly.' },
+  { q: 'What about Google Slides?', a: 'Google Slides can import PDF — uploads your file to Google\'s servers. Quality is mid-tier and the privacy trade-off matters for sensitive content. For internal company slide decks, LibreOffice is more private.' },
+];
+
+const schema = combineSchemas(
+  {
+    '@type': 'Article',
+    headline: title,
+    description,
+    url: `${SITE.url}/pdf-to-powerpoint`,
+    author: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url, logo: { '@type': 'ImageObject', url: `${SITE.url}/logo-512.png` } },
+    datePublished: '2026-06-22',
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE.url}/pdf-to-powerpoint` },
+  },
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'PDF to PowerPoint', url: '/pdf-to-powerpoint' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-10">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">PDF to PowerPoint</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-4 leading-tight">PDF to PowerPoint — what actually works in 2026</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] leading-relaxed">
+        An honest guide: why this conversion is the hardest of the PDF-to-Office trio, and the realistic options that produce slides you can actually edit.
+      </p>
+    </header>
+
+    <div class="p-5 mb-10 rounded-xl bg-gradient-to-br from-[color:var(--color-brand-500)]/10 to-[color:var(--color-accent-500)]/10 border border-[color:var(--color-brand-500)]/30">
+      <p class="text-sm font-semibold uppercase tracking-wider text-[color:var(--color-brand-400)] mb-2">TL;DR</p>
+      <ul class="space-y-2 text-sm text-[color:var(--color-text)]">
+        <li>• <strong>Best free option:</strong> <a href="https://www.libreoffice.org" target="_blank" rel="noopener noreferrer" class="text-[color:var(--color-brand-400)] hover:underline">LibreOffice Impress</a> — opens PDFs locally, exports .pptx. Quality is mid-tier but private and free.</li>
+        <li>• <strong>Best paid option:</strong> Adobe Acrobat Pro — best results, especially if the source was originally a PowerPoint export. ~$15-20/mo, 7-day trial.</li>
+        <li>• <strong>Most practical for many PDFs:</strong> rebuild the slides from scratch. For 10-15 slides where you just need the content, this is often faster than fighting conversion output.</li>
+        <li>• <strong>What we don't recommend:</strong> free online tools. They upload your file and produce slides that look right but are unusable for editing (every word in its own text box).</li>
+      </ul>
+    </div>
+
+    <article class="prose-vexyn">
+      <h2>Why this is harder than PDF to Word</h2>
+      <p>
+        PowerPoint slides are <em>structured</em> documents. Each slide has a title placeholder, content placeholders, layout templates, master slides. PDF erases all of that — every character becomes raw positioned text on a page. Reconstruction requires guessing which text on the page was originally the title, which were bullets, which were captions, what layout master would have produced this design.
+      </p>
+      <p>
+        Free tools mostly skip the reconstruction. The output looks correct because every text block is at the right position on the slide, but try to edit it: each word is in its own text box, no layout master, no shared formatting, no real structure. Editing this is harder than rebuilding from scratch.
+      </p>
+      <p>
+        Adobe Acrobat does better because it has proprietary models trained on PowerPoint exports. Even Acrobat struggles when the source PDF was never a PowerPoint to begin with (academic papers, reports) — there's just no structure to recover.
+      </p>
+
+      <h2>The realistic free path: LibreOffice Impress</h2>
+      <p>
+        <a href="https://www.libreoffice.org" target="_blank" rel="noopener noreferrer">LibreOffice Impress</a> opens PDFs and exports .pptx. Quality is comparable to free online tools but stays on your machine.
+      </p>
+      <ol>
+        <li>Install LibreOffice from <a href="https://www.libreoffice.org/download/" target="_blank" rel="noopener noreferrer">libreoffice.org</a>.</li>
+        <li>Open LibreOffice Draw first (not Impress — Draw handles PDF import better).</li>
+        <li>File → Open, select the PDF. Each PDF page becomes a Draw page.</li>
+        <li>File → Export As → choose .pptx format.</li>
+      </ol>
+      <p>
+        Output will be slides matching the PDF visually. For text-heavy slides (reports converted to slide format), this is workable. For visually complex slides (diagrams, infographics), expect cleanup — but the start point is reasonable.
+      </p>
+
+      <h2>The most practical path: rebuild from scratch</h2>
+      <p>
+        For 5-15 slides of mostly text content, opening a fresh PowerPoint template and pasting in the text from each slide is often faster than dealing with conversion output. You get clean structure, real layout masters, properly formatted bullets — all of which conversion fails to preserve.
+      </p>
+      <p>
+        Worth considering when:
+      </p>
+      <ul>
+        <li>The deck is short (under 20 slides)</li>
+        <li>Most slides are text-heavy without complex diagrams</li>
+        <li>You'll be editing the slides anyway</li>
+        <li>The conversion output looks usable but every word is in its own text box</li>
+      </ul>
+
+      <h2>When Adobe Acrobat Pro is worth it</h2>
+      <p>
+        Acrobat's PDF to PowerPoint feature works best when the source PDF was originally exported from PowerPoint (round-trip scenario). For other PDFs, results are mid-tier even with Acrobat. Pricing $15-20/mo with a 7-day trial.
+      </p>
+      <p>Pay for Acrobat if:</p>
+      <ul>
+        <li>You convert PowerPoint exports back to editable .pptx regularly</li>
+        <li>You have batches of decks where structure must be preserved</li>
+        <li>You also need it for PDF to Word and PDF to Excel (combined value of full suite)</li>
+      </ul>
+
+      <h2>Special case: scanned PDFs</h2>
+      <p>
+        Scanned slide decks (PDFs that are images, not native text) need OCR first or no conversion will work. Use Vexyn's <a href="/pdf-ocr">PDF OCR</a> locally to produce a searchable PDF, then convert that with LibreOffice Impress.
+      </p>
+
+      <h2>What Vexyn ships for PDF work</h2>
+      <p>
+        We don't convert PDF to PowerPoint for the reasons above. But for the other operations around your deck:
+      </p>
+      <ul>
+        <li><a href="/pdf-to-jpg">PDF to JPG</a> — export individual slides as images for use in a fresh deck</li>
+        <li><a href="/pdf-splitter">PDF Splitter</a> — extract specific slides</li>
+        <li><a href="/pdf-ocr">PDF OCR</a> — make scanned decks searchable</li>
+        <li><a href="/pdf-organizer">PDF Organizer</a> — reorder slides with visual thumbnails</li>
+        <li><a href="/jpg-to-pdf">JPG to PDF</a> — bundle slide images back into a PDF</li>
+      </ul>
+      <p>See the full <a href="/pdf-tools">PDF Tools hub</a> for the complete list.</p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+
+      <h2>Bottom line</h2>
+      <p>
+        Free + local + reasonable quality — LibreOffice Impress. Best results for round-trips — Adobe Acrobat Pro. Often most practical — rebuild from scratch. Stay away from free online tools that upload your file and produce broken structure.
+      </p>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .prose-vexyn { color: var(--color-text); font-size: 1rem; line-height: 1.75; }
+  .prose-vexyn > * + * { margin-top: 1.25em; }
+  .prose-vexyn h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2.5em; margin-bottom: 0.75em; letter-spacing: -0.01em; }
+  .prose-vexyn h3 { font-size: 1.15rem; font-weight: 600; margin-top: 2em; margin-bottom: 0.5em; }
+  .prose-vexyn p { color: var(--color-text); }
+  .prose-vexyn a { color: var(--color-brand-400); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--color-brand-400) 30%, transparent); transition: border-color 0.15s; }
+  .prose-vexyn a:hover { border-bottom-color: var(--color-brand-400); }
+  .prose-vexyn ul, .prose-vexyn ol { padding-left: 1.5rem; }
+  .prose-vexyn li { margin-top: 0.5em; color: var(--color-text-mute); }
+  .prose-vexyn ul li { list-style: disc; }
+  .prose-vexyn ol li { list-style: decimal; }
+  .prose-vexyn strong { color: var(--color-text); font-weight: 600; }
+</style>

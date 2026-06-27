@@ -1,0 +1,182 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Sign PDF — what actually works in 2026';
+const description = 'An honest guide. "Sign a PDF" can mean drawing a signature image (easy, free) or applying a legally binding cryptographic signature (needs a CA-issued certificate). Here is which to use when, and how to do each locally.';
+
+const faqs = [
+  { q: 'Is a drawn signature legally binding?', a: 'It depends on jurisdiction and context. In the US, UK, EU and most countries, a drawn or typed signature on an electronic document is generally accepted for everyday agreements — exactly like a scanned signature on paper. For high-stakes documents (real estate, corporate contracts, government filings), a cryptographic signature backed by a CA-issued certificate or a qualified signature service (DocuSign, Adobe Sign) is required or strongly preferred. When in doubt, ask the document recipient what they accept.' },
+  { q: 'Can I sign a PDF locally without uploading?', a: 'Yes, for drawn signatures. Adobe Acrobat Reader (free desktop app) lets you draw a signature, store it, and apply to any PDF — all local. Preview on macOS does the same. For cryptographic signatures, the signing happens locally too but you need a CA-issued certificate or a hardware token.' },
+  { q: 'What\'s a CA-issued certificate and why does it matter?', a: 'A Certificate Authority (CA) is a trusted third party that issues digital certificates verifying you are who you say you are. A PDF signed with a CA certificate proves both that you signed it and that the document hasn\'t been altered since. For corporate, legal, or government documents, this is often required. You get one from your IT department, a commercial CA like DigiCert, or a government e-ID program. Without one, you can still sign — the signature just won\'t carry the same legal weight.' },
+  { q: 'Why doesn\'t Vexyn ship a sign-PDF tool?', a: 'For drawn signatures, Adobe Reader and macOS Preview cover this well and are already installed for most users. Building a third option adds little value. For cryptographic signatures, the math has to happen with a private key on a hardware token (smartcard, USB token, OS-managed keychain) — that\'s not something a browser web app can do without specialized hardware integration that\'s outside Vexyn\'s scope. We may add drawn-signature support in the future; cryptographic signing remains a desktop-app task.' },
+  { q: 'What about DocuSign, Adobe Sign, HelloSign?', a: 'These are signature workflow services — they handle the back-and-forth of getting multiple people to sign, track signatures, store the audit trail. They upload your document to do this, which is a privacy and compliance trade-off worth being explicit about. For a single signer signing a single document, free local tools (Adobe Reader desktop, Preview) handle it without upload. For multi-party workflows, the upload-based services earn their place.' },
+  { q: 'How do I sign a PDF on my phone?', a: 'Adobe Acrobat Reader mobile app supports drawn signatures and stores them locally. iOS Files + Markup tool also handles drawn signatures. Both produce a PDF you can email or save. For cryptographic signing on mobile, you need an app that integrates with your country\'s e-ID system — increasingly available in EU countries.' },
+];
+
+const schema = combineSchemas(
+  {
+    '@type': 'Article',
+    headline: title,
+    description,
+    url: `${SITE.url}/sign-pdf`,
+    author: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url, logo: { '@type': 'ImageObject', url: `${SITE.url}/logo-512.png` } },
+    datePublished: '2026-06-22',
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE.url}/sign-pdf` },
+  },
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Sign PDF', url: '/sign-pdf' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-10">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Sign PDF</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-4 leading-tight">Sign PDF — what actually works in 2026</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] leading-relaxed">
+        "Sign a PDF" can mean two very different things. One is easy and free. The other requires a CA-issued certificate and specific software. Here's an honest breakdown of which you need.
+      </p>
+    </header>
+
+    <div class="p-5 mb-10 rounded-xl bg-gradient-to-br from-[color:var(--color-brand-500)]/10 to-[color:var(--color-accent-500)]/10 border border-[color:var(--color-brand-500)]/30">
+      <p class="text-sm font-semibold uppercase tracking-wider text-[color:var(--color-brand-400)] mb-2">TL;DR</p>
+      <ul class="space-y-2 text-sm text-[color:var(--color-text)]">
+        <li>• <strong>Drawn signature (most everyday cases):</strong> <a href="https://get.adobe.com/reader/" target="_blank" rel="noopener noreferrer" class="text-[color:var(--color-brand-400)] hover:underline">Adobe Acrobat Reader</a> (free desktop app) on Windows / Linux. macOS Preview on Mac. Both local, both free, both produce a signed PDF you can email back.</li>
+        <li>• <strong>Cryptographic signature (legal / corporate):</strong> Adobe Acrobat Reader with a CA-issued certificate, or your government e-ID app (eIDAS in EU, Login.gov in US, etc).</li>
+        <li>• <strong>Multi-party signing workflow:</strong> DocuSign, Adobe Sign, HelloSign — these upload your document. Trade-off is real but the workflow features earn it for multi-signer scenarios.</li>
+        <li>• <strong>What we don't recommend:</strong> generic "free online PDF signing" sites that upload to extract a signature from your file. Sketchy by design.</li>
+      </ul>
+    </div>
+
+    <article class="prose-vexyn">
+      <h2>The two kinds of signatures</h2>
+      <p>
+        Before picking a tool, decide what you need.
+      </p>
+      <p>
+        <strong>Drawn (or typed) signature</strong> — an image of your signature, or a stylised name in cursive font, placed on top of the PDF. Visually the same as a scanned signature on paper. Legally accepted for everyday agreements (rental forms, vendor contracts, employee paperwork) in most jurisdictions. Easy, free, local.
+      </p>
+      <p>
+        <strong>Cryptographic signature</strong> — a hash of the document signed with your private key, embedded in the PDF. Proves the document hasn't been altered since you signed it, and (with a CA-issued certificate) proves your identity. Required for high-stakes documents in many contexts: corporate board approvals, government filings, certain real estate transactions, regulated industries. Needs specific software and credentials.
+      </p>
+      <p>
+        Most "sign PDF" searches are really asking for drawn signatures. If that's you, the free options below cover it.
+      </p>
+
+      <h2>Drawn signatures — the easy path</h2>
+      <p>
+        On <strong>Windows or Linux</strong>: install <a href="https://get.adobe.com/reader/" target="_blank" rel="noopener noreferrer">Adobe Acrobat Reader</a> (free). Open the PDF, click "Fill & Sign" in the right panel, click the pen icon, draw your signature with mouse/trackpad/touchscreen, drop it onto the signature line. Save. The signature is stored locally for future documents.
+      </p>
+      <p>
+        On <strong>macOS</strong>: open the PDF in Preview. Click the toolbox icon, then the signature icon. First time: Preview asks you to draw a signature on your trackpad or hold one up to your camera. Saved locally for future use. Click the signature to drop it onto the document.
+      </p>
+      <p>
+        Both local. Both free. Both produce a normal PDF you can email back to whoever sent it.
+      </p>
+
+      <h2>Cryptographic signatures — when you need them</h2>
+      <p>
+        Three components needed:
+      </p>
+      <ol>
+        <li>A <strong>private key</strong> stored securely — typically in a hardware token (USB smartcard, government e-ID card), the OS keychain (Windows Certificate Store, macOS Keychain), or a software keystore.</li>
+        <li>A <strong>certificate from a Certificate Authority</strong> binding your identity to the public key. Issued by commercial CAs (DigiCert, GlobalSign, Sectigo) for corporate use, or by government CAs for citizen use (eIDAS in EU member states, SUNAT in Peru, etc).</li>
+        <li><strong>Software that can sign</strong> using the key. Adobe Acrobat Reader does this on Windows and macOS, integrating with the OS keychain or hardware tokens. Some government e-ID apps do their own signing directly.</li>
+      </ol>
+      <p>
+        The actual signing math happens locally — your private key never leaves the token or keychain. The signature is just a string of bytes inserted into the PDF. Where you "get" the signature depends on your country and use case:
+      </p>
+      <ul>
+        <li><strong>EU citizens:</strong> your national eIDAS-compliant e-ID (national ID card or mobile app). Free, works for legal and government use.</li>
+        <li><strong>US:</strong> Login.gov for federal, commercial CA certificates for corporate use. Often integrated by employers.</li>
+        <li><strong>Corporate:</strong> your IT department issues internal certificates, or buys from a commercial CA.</li>
+      </ul>
+
+      <h2>Multi-party signing workflows</h2>
+      <p>
+        For "send this contract to 5 people, get them to sign in order, store the audit trail, send everyone a copy" — that's a workflow problem, not a signing problem. DocuSign, Adobe Sign, HelloSign are built for it.
+      </p>
+      <p>
+        These services upload your document. Privacy trade-off is real (sensitive contracts in the cloud during the signing window). For high-volume HR / sales / vendor flows, the workflow value usually wins. For one-off signings, free local tools are still the right answer.
+      </p>
+
+      <h2>What about "free online PDF signing" sites?</h2>
+      <p>
+        Many search results for "sign PDF" point to generic upload-and-sign services. They take your PDF, draw a signature image on it (the same thing Adobe Reader does for free locally), and let you download the result. The upload + processing flow makes no sense for a simple drawn signature — you're trading privacy for nothing.
+      </p>
+      <p>
+        Adobe Reader on Windows or Preview on Mac do this same job without leaving your machine. Both are free and pre-installed (Preview) or trivially installable (Reader).
+      </p>
+
+      <h2>Why Vexyn doesn't ship a signing tool</h2>
+      <p>
+        For drawn signatures, the existing free options (Adobe Reader desktop, macOS Preview) already cover this well — building a third browser-based option adds little value. For cryptographic signatures, the signing must happen with a private key on hardware or in OS keychain — neither of which a browser web app can integrate with without specialised hardware APIs that Vexyn doesn't ship.
+      </p>
+      <p>
+        A drawn-signature tool in the browser is possible and may be added in the future. Cryptographic signing remains a desktop-app concern.
+      </p>
+
+      <h2>What Vexyn does ship for signed PDFs</h2>
+      <ul>
+        <li><a href="/pdf-merger">PDF Merger</a> — combine a signed PDF with appendices</li>
+        <li><a href="/pdf-protector">PDF Protector</a> — add a password to a signed PDF before sharing</li>
+        <li><a href="/pdf-compressor">PDF Compressor</a> — shrink for email after signing (Strong mode invalidates any digital signature; use Keep-text mode if signatures matter)</li>
+        <li><a href="/pdf-watermark">PDF Watermark</a> — add CONFIDENTIAL after signing for distribution control</li>
+      </ul>
+      <p>
+        Caveat: any structural edit (Watermark, Crop, Page Numbers, Compressor Strong mode) invalidates a cryptographic signature on the document because the byte ranges the signature covers change. If digital signatures matter for the document, sign last.
+      </p>
+      <p>
+        See the full <a href="/pdf-tools">PDF Tools hub</a>.
+      </p>
+
+      <h2>Common mistakes to avoid</h2>
+      <ul>
+        <li><strong>Drawing a signature on a sensitive document via a random online site.</strong> The whole document is uploaded for an operation Adobe Reader does locally for free.</li>
+        <li><strong>Assuming a drawn signature is the same as a cryptographic signature.</strong> They're different. For everyday agreements, drawn is fine. For legal filings, audit reports, regulated industries — cryptographic signature with a CA certificate is what you need.</li>
+        <li><strong>Editing a PDF after signing it cryptographically.</strong> Any edit invalidates the signature. Sign last in your workflow.</li>
+        <li><strong>Using a personal e-mail signature (Outlook image) as a PDF signature.</strong> They're unrelated. PDF signatures live in the PDF data; email signatures live in the email.</li>
+      </ul>
+
+      <h2>Frequently asked questions</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+
+      <h2>Bottom line</h2>
+      <p>
+        For everyday drawn signatures — Adobe Reader (Win/Linux) or Preview (Mac), local and free. For cryptographic signatures — Adobe Reader with a CA-issued certificate, or your government e-ID. For multi-party workflows — DocuSign / Adobe Sign / HelloSign earn their upload. For generic "online signing" sites — stay away when better local options exist.
+      </p>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .prose-vexyn { color: var(--color-text); font-size: 1rem; line-height: 1.75; }
+  .prose-vexyn > * + * { margin-top: 1.25em; }
+  .prose-vexyn h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2.5em; margin-bottom: 0.75em; letter-spacing: -0.01em; }
+  .prose-vexyn h3 { font-size: 1.15rem; font-weight: 600; margin-top: 2em; margin-bottom: 0.5em; }
+  .prose-vexyn p { color: var(--color-text); }
+  .prose-vexyn a { color: var(--color-brand-400); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--color-brand-400) 30%, transparent); transition: border-color 0.15s; }
+  .prose-vexyn a:hover { border-bottom-color: var(--color-brand-400); }
+  .prose-vexyn ul, .prose-vexyn ol { padding-left: 1.5rem; }
+  .prose-vexyn li { margin-top: 0.5em; color: var(--color-text-mute); }
+  .prose-vexyn ul li { list-style: disc; }
+  .prose-vexyn ol li { list-style: decimal; }
+  .prose-vexyn strong { color: var(--color-text); font-weight: 600; }
+</style>

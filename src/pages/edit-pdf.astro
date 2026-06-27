@@ -1,0 +1,178 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Edit PDF — what actually works in 2026';
+const description = 'An honest guide. "Edit PDF" means different things — fixing a typo in body text is hard; rotating, watermarking, organizing pages is easy. Vexyn does 13 structural edits in the browser; for text edits, LibreOffice and Adobe handle it locally.';
+
+const faqs = [
+  { q: 'What does "edit PDF" actually mean?', a: 'It depends on what you want to change. Adding a watermark, rotating pages, deleting pages, reordering pages, adding page numbers, adjusting margins — Vexyn does all of these in the browser without uploading. Editing the actual body text of a page (fixing a typo, changing a paragraph) requires reflowing text and is much harder. For text edits, LibreOffice Draw works locally for free; Adobe Acrobat Pro does it best paid.' },
+  { q: 'Why is editing PDF text in a browser so hard?', a: 'PDF text doesn\'t exist as paragraphs. Each character is at a fixed coordinate with a specific font. Replacing "color" with "colour" means the new word is one character wider — every subsequent character on the line needs to shift, the line may need to wrap differently, the paragraph may push onto the next page. That reflow logic exists in office suites because they understand documents at the structural level. Browser PDF libraries can write text but can\'t intelligently reflow existing text.' },
+  { q: 'Can I just open a PDF in Word and edit it there?', a: 'Yes — Microsoft Word (desktop app, not web) opens PDFs and converts them on the fly to editable Word documents. Quality varies but it works for many cases. The catch: the converted document loses some formatting fidelity, so you\'ll need to save as PDF again afterwards. LibreOffice Writer does the same thing for free.' },
+  { q: 'What about online PDF editors like Smallpdf or Adobe online?', a: 'They upload your file to their servers, run their editor there, and download the result. For public content (marketing PDFs, blog post sources), that\'s fine. For contracts, IDs, or anything sensitive, it\'s a privacy decision worth being explicit about. Vexyn\'s structural edits stay local; for text edits where Vexyn doesn\'t ship a tool, LibreOffice keeps things local too.' },
+  { q: 'Can I redact text from a PDF without uploading?', a: 'Vexyn doesn\'t yet ship a redaction tool. For real redaction (the kind that physically removes text, not just covers it), Adobe Acrobat Pro\'s desktop app does this locally. For visual blackout, LibreOffice Draw lets you cover text with black rectangles — but be careful, this can be undone unless you flatten or re-render the page (use Vexyn\'s PDF Compressor in Strong mode after blackout to flatten).' },
+  { q: 'How do I edit images in a PDF?', a: 'Replacing or modifying images embedded in a PDF requires opening the PDF in LibreOffice Draw or Adobe Acrobat Pro. Both let you select the image and replace, delete, or move it. Vexyn doesn\'t do image-in-PDF editing because the UI complexity outweighs the use case for a browser tool.' },
+];
+
+const schema = combineSchemas(
+  {
+    '@type': 'Article',
+    headline: title,
+    description,
+    url: `${SITE.url}/edit-pdf`,
+    author: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url, logo: { '@type': 'ImageObject', url: `${SITE.url}/logo-512.png` } },
+    datePublished: '2026-06-22',
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE.url}/edit-pdf` },
+  },
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Edit PDF', url: '/edit-pdf' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-10">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Edit PDF</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-4 leading-tight">Edit PDF — what actually works in 2026</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] leading-relaxed">
+        "Edit PDF" can mean many things. Some are easy in a browser; some need desktop software. Here's an honest breakdown of what Vexyn does, what it doesn't, and what to use for each.
+      </p>
+    </header>
+
+    <div class="p-5 mb-10 rounded-xl bg-gradient-to-br from-[color:var(--color-brand-500)]/10 to-[color:var(--color-accent-500)]/10 border border-[color:var(--color-brand-500)]/30">
+      <p class="text-sm font-semibold uppercase tracking-wider text-[color:var(--color-brand-400)] mb-2">TL;DR</p>
+      <ul class="space-y-2 text-sm text-[color:var(--color-text)]">
+        <li>• <strong>Structural edits</strong> (rotate, watermark, delete pages, reorder, add page numbers, crop): Vexyn does all 13 of these in the browser, no upload. See the <a href="/pdf-tools" class="text-[color:var(--color-brand-400)] hover:underline">PDF Tools hub</a>.</li>
+        <li>• <strong>Editing body text</strong> (fixing typos, changing paragraphs): <a href="https://www.libreoffice.org" target="_blank" rel="noopener noreferrer" class="text-[color:var(--color-brand-400)] hover:underline">LibreOffice Draw</a> for free + local. Adobe Acrobat Pro for best results.</li>
+        <li>• <strong>Editing images in PDF</strong>: LibreOffice Draw or Adobe Acrobat Pro.</li>
+        <li>• <strong>Redaction (true)</strong>: Adobe Acrobat Pro\'s desktop app.</li>
+      </ul>
+    </div>
+
+    <article class="prose-vexyn">
+      <h2>The split: structural edits vs text edits</h2>
+      <p>
+        "Edit PDF" is a misleadingly broad term. There are two fundamentally different operations under that umbrella, and they need different tools.
+      </p>
+      <p>
+        <strong>Structural edits</strong> change the document around its content — rotate pages so a scan reads upright, watermark every page with CONFIDENTIAL, delete pages you don't want to share, reorder pages, add page numbers, trim margins. All of these are operations on the page level, not the text level. They can be done well in a browser. Vexyn ships 13 such tools.
+      </p>
+      <p>
+        <strong>Text edits</strong> change the content itself — fix a typo, rewrite a paragraph, change a number in a table. PDF text doesn't exist as paragraphs in the format; it's positioned characters with specific fonts. Replacing text requires reflowing what comes after, which requires understanding the document as a document — something only office suites do well. This needs desktop software (LibreOffice or Adobe Acrobat).
+      </p>
+
+      <h2>What Vexyn does (structural edits, all in browser)</h2>
+      <ul>
+        <li><a href="/pdf-rotator">Rotate PDF</a> — fix sideways scans, 90/180/270 degrees, per-page or whole document</li>
+        <li><a href="/pdf-organizer">PDF Organizer</a> — reorder and delete pages with visual thumbnails</li>
+        <li><a href="/pdf-watermark">Add watermark</a> — CONFIDENTIAL, DRAFT, custom text, positioning + opacity controls</li>
+        <li><a href="/pdf-page-numbers">Add page numbers</a> — three formats, six positions, configurable starting number</li>
+        <li><a href="/pdf-cropper">Crop margins</a> — percent or points, applied to every page</li>
+        <li><a href="/pdf-merger">Merge multiple PDFs</a> — combine and reorder</li>
+        <li><a href="/pdf-splitter">Split into pages</a> — extract specific ranges</li>
+        <li><a href="/pdf-compressor">Compress</a> — reduce file size</li>
+        <li><a href="/pdf-protector">Add password</a> — AES-128 encryption</li>
+        <li><a href="/pdf-unlocker">Remove password</a> — when you know the password</li>
+        <li><a href="/pdf-to-jpg">PDF to JPG</a> — export pages as images</li>
+        <li><a href="/jpg-to-pdf">JPG to PDF</a> — combine images into a PDF</li>
+        <li><a href="/pdf-ocr">OCR</a> — make scanned PDFs searchable</li>
+      </ul>
+      <p>
+        Every one of these runs in your browser tab. Drop the PDF, run the operation, download the result. Network tab confirms zero uploads.
+      </p>
+
+      <h2>For body text edits: LibreOffice Draw</h2>
+      <p>
+        <a href="https://www.libreoffice.org" target="_blank" rel="noopener noreferrer">LibreOffice Draw</a> (part of the LibreOffice suite — free, open source) lets you open a PDF and edit the text directly. The conversion to editable form isn't perfect, but for many documents it works well enough.
+      </p>
+      <ol>
+        <li>Install LibreOffice from <a href="https://www.libreoffice.org/download/" target="_blank" rel="noopener noreferrer">libreoffice.org</a>.</li>
+        <li>Open LibreOffice Draw.</li>
+        <li>File → Open, select your PDF. Each page becomes an editable layout.</li>
+        <li>Click into text to edit. Add, change, delete words.</li>
+        <li>File → Export As → PDF when done.</li>
+      </ol>
+      <p>
+        The output isn't byte-identical to the original (you'll see slight font rendering differences), but the changes are real edits, not annotations or overlays. Works locally, no upload.
+      </p>
+
+      <h2>For best-quality text editing: Adobe Acrobat Pro</h2>
+      <p>
+        Acrobat Pro is the gold standard for PDF text editing. It understands the document model better than LibreOffice and preserves more formatting. Pricing $15-20/mo with a 7-day trial.
+      </p>
+      <p>Pay for Acrobat if:</p>
+      <ul>
+        <li>You edit PDFs as part of regular work and quality matters</li>
+        <li>Documents have complex layouts that LibreOffice mangles</li>
+        <li>You need real redaction (Acrobat redacts, removes from underlying data, and renders)</li>
+        <li>You also need PDF to Word/Excel/PowerPoint regularly</li>
+      </ul>
+
+      <h2>For redaction specifically</h2>
+      <p>
+        Visual redaction (covering text with a black box) is easy and dangerous — the underlying text often stays in the PDF and can be extracted. True redaction physically removes the data. Adobe Acrobat Pro is the canonical tool for real redaction; their workflow finds the text, removes it from the data layer, and renders a black box on top.
+      </p>
+      <p>
+        For ad-hoc redaction without Acrobat, the workaround: use LibreOffice Draw to cover text with black rectangles, then run the result through Vexyn's <a href="/pdf-compressor">PDF Compressor</a> in Strong mode. Strong mode re-renders every page as an image, which flattens the rectangles and physically removes the underlying text. Verify the result by trying to select text under the redactions — selection should fail.
+      </p>
+
+      <h2>What about online PDF editors?</h2>
+      <p>
+        Smallpdf, ILovePDF, PDF24 online, Adobe online — all upload your file to their servers. Fine for public documents. For sensitive content (contracts, financials, medical), the privacy trade-off is real even if their policy says "we delete after 24 hours". Their servers process your file during that window.
+      </p>
+      <p>
+        Vexyn handles the structural edits without upload. For text edits Vexyn doesn't ship, LibreOffice keeps things local.
+      </p>
+
+      <h2>Common mistakes to avoid</h2>
+      <ul>
+        <li><strong>Using "edit PDF" as a single search.</strong> The answer depends on what you're editing. Structural edits have one set of tools; text edits have another.</li>
+        <li><strong>Confusing redaction with covering.</strong> A black rectangle drawn over text doesn't remove the text from the PDF. Always use a tool that does real redaction (Acrobat), or flatten with Vexyn's Compressor Strong mode afterwards.</li>
+        <li><strong>Uploading sensitive PDFs to "free PDF editor" sites.</strong> Many retain files. For contracts, IDs, tax documents, financials — keep editing local.</li>
+        <li><strong>Editing then re-saving without checking.</strong> LibreOffice and Acrobat both change subtle PDF metadata on save. If digital signatures matter for the document, edit invalidates them. Use the original PDF for verification copies.</li>
+      </ul>
+
+      <h2>Frequently asked questions</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+
+      <h2>Bottom line</h2>
+      <p>
+        For structural edits (rotate, watermark, delete pages, organize, page numbers, crop) — Vexyn does 13 of these in the browser without upload. Browse the <a href="/pdf-tools">PDF Tools hub</a>.
+      </p>
+      <p>
+        For body text edits — LibreOffice Draw for free + local, Adobe Acrobat Pro for paid + best quality. For redaction — Acrobat or workaround with LibreOffice + Vexyn Compressor Strong mode.
+      </p>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .prose-vexyn { color: var(--color-text); font-size: 1rem; line-height: 1.75; }
+  .prose-vexyn > * + * { margin-top: 1.25em; }
+  .prose-vexyn h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2.5em; margin-bottom: 0.75em; letter-spacing: -0.01em; }
+  .prose-vexyn h3 { font-size: 1.15rem; font-weight: 600; margin-top: 2em; margin-bottom: 0.5em; }
+  .prose-vexyn p { color: var(--color-text); }
+  .prose-vexyn a { color: var(--color-brand-400); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--color-brand-400) 30%, transparent); transition: border-color 0.15s; }
+  .prose-vexyn a:hover { border-bottom-color: var(--color-brand-400); }
+  .prose-vexyn ul, .prose-vexyn ol { padding-left: 1.5rem; }
+  .prose-vexyn li { margin-top: 0.5em; color: var(--color-text-mute); }
+  .prose-vexyn ul li { list-style: disc; }
+  .prose-vexyn ol li { list-style: decimal; }
+  .prose-vexyn strong { color: var(--color-text); font-weight: 600; }
+</style>

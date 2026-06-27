@@ -6,7 +6,7 @@ tags: ['pdf', 'privacy', 'tools']
 related: ['/pdf-merger', '/pdf-splitter', '/blog/how-to-merge-pdfs-without-uploading']
 ---
 
-The popular online PDF tools (Adobe Acrobat online, SmallPDF, ILovePDF, PDF24, Sejda) all share one feature you might not have noticed: they upload your file to their servers to process it. For receipts, marketing PDFs, and anything public, that's fine. For contracts, signed agreements, financial statements, medical records, or internal documents, it isn't.
+Most popular online PDF tools share one feature you might not have noticed: they upload your file to their servers to process it. For receipts, marketing PDFs, and anything public, that's fine. For contracts, signed agreements, financial statements, medical records, or internal documents, it isn't.
 
 This article is a concrete roundup of the tools you can use instead. Five picks covering the common PDF operations, each chosen because it processes the file on your own device rather than someone else's server. Each entry has honest notes on what it does well and where it falls short.
 

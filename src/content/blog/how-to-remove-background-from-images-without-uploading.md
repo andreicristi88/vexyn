@@ -6,7 +6,7 @@ tags: ['ai', 'images', 'privacy', 'guide']
 related: ['/background-remover', '/image-compressor']
 ---
 
-Removing the background from a photo used to mean opening Photoshop and spending fifteen minutes with the Pen tool. Then Remove.bg appeared in 2018 and the task collapsed to "drag photo, get cutout." Five years later, that same model fits in roughly 85 MB and runs in your browser without uploading the photo anywhere. This guide walks through three concrete ways to do it locally, what to do when the result looks wrong, and where the limits actually are.
+Removing the background from a photo used to mean opening Photoshop and spending fifteen minutes with the Pen tool. Then AI cutout services appeared around 2018 and the task collapsed to "drag photo, get cutout." A few years later, that same kind of model fits in roughly 85 MB and runs in your browser without uploading the photo anywhere. This guide walks through three concrete ways to do it locally, what to do when the result looks wrong, and where the limits actually are.
 
 ## Before you start — what works well and what doesn't
 
@@ -89,7 +89,7 @@ Trade-offs:
 
 ### Method C — Free online services (the privacy trade-off)
 
-Remove.bg, ClipDrop, and similar web services give excellent quality, but every image you process is uploaded to their servers. Their privacy policies typically promise deletion after some period; that promise is between you and them.
+Free online background-removal services give excellent quality, but every image you process is uploaded to their servers. Their privacy policies typically promise deletion after some period; that promise is between you and them.
 
 Best for: low-stakes images where you don't care if the service sees them, and where you specifically need the slightly-better edge quality of larger commercial models.
 
@@ -102,7 +102,7 @@ Trade-offs:
 
 The first-pass AI cutout is usually 90% right. The remaining 10% is mostly around hair and fine edges. Three quick refinement options:
 
-**Re-process with a different model.** If the first model misses, try another. Vexyn's tool offers different background-replace options that can hide minor edge errors. ClipDrop's "Cleanup" lets you brush over remaining background pixels.
+**Re-process with a different model.** If the first model misses, try another. Vexyn's tool offers different background-replace options that can hide minor edge errors. Some commercial editors include a "cleanup" brush that lets you paint over remaining background pixels.
 
 **Open in a desktop editor.** Bring the cutout into Photoshop, Affinity, or GIMP and use the layer mask + soft brush to clean up the edges. Five minutes here is usually enough for production work.
 
@@ -133,9 +133,9 @@ A common mistake: saving as JPG with transparency. JPG doesn't support transpare
 
 ## Frequently asked questions
 
-### How accurate is browser-based AI compared to Remove.bg or Photoshop?
+### How accurate is browser-based AI compared to commercial services?
 
-For typical photos (one subject, distinguishable background), the open-source models running in browsers are competitive with the paid commercial models. Remove.bg's secret sauce is mostly better edge refinement on tricky cases (hair, transparency). Photoshop adds manual control. For 90% of everyday cases, browser AI is enough.
+For typical photos (one subject, distinguishable background), the open-source models running in browsers are competitive with the paid commercial models. Commercial services tend to do better edge refinement on tricky cases (hair, transparency). Image editors with manual selection tools add precision. For 90% of everyday cases, browser AI is enough.
 
 ### Does the AI model see my image?
 

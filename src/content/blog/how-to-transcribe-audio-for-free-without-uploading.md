@@ -74,7 +74,7 @@ Trade-offs:
 
 ### Method C — Paid services (when accuracy matters more than privacy)
 
-Otter.ai, Rev.com, Descript, Trint, and similar services upload your audio to their servers and run larger, proprietary models. The quality jump from Whisper Base (free, local) to Whisper Large or proprietary commercial models is real for hard audio (heavy accents, overlapping speakers, noisy environments).
+Paid commercial transcription services upload your audio to their servers and run larger, proprietary models. The quality jump from Whisper Base (free, local) to Whisper Large or proprietary commercial models is real for hard audio (heavy accents, overlapping speakers, noisy environments).
 
 Best for: legal proceedings, professional journalism where the source already agreed to share, podcasts being produced commercially, content where accuracy is worth more than privacy.
 
@@ -123,7 +123,7 @@ If you're feeding into a video editor, SRT is almost always the right pick. If y
 
 ## Frequently asked questions
 
-### How accurate is Whisper Base compared to Otter.ai or Rev?
+### How accurate is Whisper Base compared to paid commercial services?
 
 For clear English speech in a quiet recording, Whisper Base reaches 90-95% word accuracy. Paid commercial services typically hit 95-98% on the same audio. The gap widens for hard audio (multiple speakers, heavy accents, noisy environments) where commercial services use larger proprietary models.
 

@@ -1,0 +1,210 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, combineSchemas } from '../lib/seo';
+
+const title = 'PDF to Word — what actually works in 2026';
+const description = 'An honest guide. Vexyn does not ship a PDF to Word converter because in-browser conversion produces broken output. LibreOffice handles it locally for free with much better results — here is how, plus when Adobe Acrobat is worth paying for.';
+
+const faqs = [
+  { q: 'Why doesn\'t Vexyn have a PDF to Word converter?', a: 'PDF to Word is one of the few common conversions that cannot be done well client-side without uploading your file. Producing a decent .docx requires reconstructing reading order, paragraph reflow, tables, and column layouts from raw PDF positioning data. That reconstruction is essentially document AI work that needs trained models too large to ship to a browser. Vexyn ships only tools that work properly in your tab — for PDF to Word, the honest answer is to recommend LibreOffice, which does this conversion locally and produces results closer to the original than any free online service.' },
+  { q: 'Is LibreOffice really better than ILovePDF or SmallPDF for this?', a: 'For most documents, yes. ILovePDF and SmallPDF use server-side conversion that\'s usually OK for plain text but often mangles tables, columns, and headers. LibreOffice runs the full document model locally — paragraphs, tables, lists are recognised as structures instead of guessed-at coordinates. Quality is consistently better, and your file stays on your machine.' },
+  { q: 'Is LibreOffice really free?', a: 'Yes, completely free and open source. No paid tier, no daily limit, no ads. It is a full office suite (Writer, Calc, Impress) that opens .docx, .xlsx, and .pptx natively. Many governments and large organisations use it as their default office software.' },
+  { q: 'What about Google Docs for PDF to Word?', a: 'Google Docs imports PDF and exports as Word — handy if you already work in Google Workspace. The catch: the PDF is uploaded to Google\'s servers. For sensitive documents (contracts, IDs, statements), LibreOffice keeps everything local.' },
+  { q: 'When is Adobe Acrobat worth paying for?', a: 'For frequent PDF to Word on heavily formatted documents (complex tables, sidebars, multi-column layouts), or when you need OCR baked into the conversion. Acrobat\'s commercial models are noticeably better on hard documents. For occasional use or simpler documents, LibreOffice covers the same ground for free.' },
+  { q: 'Can I convert PDF to Word on my phone?', a: 'LibreOffice has mobile viewer apps but the desktop versions are where conversion is solid. On a phone, the realistic options are Google Docs (uploads), Microsoft Word app (also uploads), or sending the PDF to your desktop for conversion there.' },
+  { q: 'What if my PDF is a scan (image-based)?', a: 'A scan has no text data to convert — it\'s pixels. You need OCR first, then conversion. Two paths: use Vexyn\'s PDF OCR to produce a searchable PDF locally, then open that in LibreOffice; or use Adobe Acrobat Pro which combines OCR + conversion in one step. Free online services almost universally upload your scan to do this.' },
+];
+
+const schema = combineSchemas(
+  {
+    '@type': 'Article',
+    headline: title,
+    description,
+    url: `${SITE.url}/pdf-to-word`,
+    author: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+    publisher: {
+      '@type': 'Organization',
+      name: SITE.name,
+      url: SITE.url,
+      logo: { '@type': 'ImageObject', url: `${SITE.url}/logo-512.png` },
+    },
+    datePublished: '2026-06-22',
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE.url}/pdf-to-word` },
+  },
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'PDF to Word', url: '/pdf-to-word' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-10">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">PDF to Word</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight mb-4 leading-tight">PDF to Word — what actually works in 2026</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] leading-relaxed">
+        An honest guide: why every browser tool that claims to do this is either uploading your file or producing broken output, and what to use instead.
+      </p>
+    </header>
+
+    <div class="p-5 mb-10 rounded-xl bg-gradient-to-br from-[color:var(--color-brand-500)]/10 to-[color:var(--color-accent-500)]/10 border border-[color:var(--color-brand-500)]/30">
+      <p class="text-sm font-semibold uppercase tracking-wider text-[color:var(--color-brand-400)] mb-2">TL;DR</p>
+      <ul class="space-y-2 text-sm text-[color:var(--color-text)]">
+        <li>• <strong>Best free option:</strong> install <a href="https://www.libreoffice.org" target="_blank" rel="noopener noreferrer" class="text-[color:var(--color-brand-400)] hover:underline">LibreOffice</a>, open the PDF, save as .docx. Works locally, no upload, decent quality on most documents.</li>
+        <li>• <strong>Best paid option:</strong> Adobe Acrobat Pro (~$15/mo) if you do this often on heavily formatted documents.</li>
+        <li>• <strong>What we don't recommend:</strong> the popular free online converters. They upload your file, often produce bad output, and many cap free use.</li>
+      </ul>
+    </div>
+
+    <article class="prose-vexyn">
+      <h2>Why Vexyn doesn't ship a PDF to Word converter</h2>
+      <p>
+        We are deliberate about which tools we build. The rule: a Vexyn tool runs entirely in your browser and produces output you'd actually want. PDF to Word fails the second half of that rule.
+      </p>
+      <p>
+        PDF and Word are fundamentally different document models. PDF is a print-fidelity format — every character has a fixed (x, y) coordinate on the page. There is no concept of "paragraph" or "table" or "heading" baked into the format. Those visual structures exist only because the original software (Word, InDesign, LaTeX) drew the characters in patterns that look like paragraphs and tables to a human eye. To convert to .docx, a tool has to reconstruct that structure from positions alone — figure out which characters belong to the same paragraph, where columns split, which clusters of cells form a table, which font size means "heading".
+      </p>
+      <p>
+        That reconstruction is document AI. The free online converters either do it badly with heuristics, or they upload your file to a server where they can run larger models. Adobe Acrobat does it best because they have decades of investment in proprietary models. LibreOffice does it surprisingly well because it understands the document model from its own office suite. A browser-side tool with no AI model and no document context produces output that's recognisable but broken — wrong reading order, tables that became lists of cells in random order, no heading hierarchy. Not worth shipping.
+      </p>
+
+      <h2>The right answer for most people: LibreOffice</h2>
+      <p>
+        <a href="https://www.libreoffice.org" target="_blank" rel="noopener noreferrer">LibreOffice</a> is a free, open-source office suite available for Windows, macOS, and Linux. It opens PDFs natively and exports them as .docx with quality that rivals paid services. Everything runs on your machine — no upload, no signup.
+      </p>
+      <p>Step-by-step:</p>
+      <ol>
+        <li>Download from <a href="https://www.libreoffice.org/download/download/" target="_blank" rel="noopener noreferrer">libreoffice.org</a>. Pick the version for your operating system. The install is ~300 MB.</li>
+        <li>Open LibreOffice Draw (not Writer — Draw handles PDFs better as the entry point).</li>
+        <li>File → Open, select your PDF.</li>
+        <li>The PDF appears as an editable document with text, images, and shapes.</li>
+        <li>File → Export As → Export as .docx. Pick a filename and save.</li>
+      </ol>
+      <p>
+        For documents with simple structure (single-column reports, articles, contracts), the output is usually very close to the original. Complex layouts (multi-column magazines, heavy infographics) need cleanup afterwards but are still usable as a starting point.
+      </p>
+
+      <h2>When Adobe Acrobat is worth paying for</h2>
+      <p>
+        Adobe Acrobat Pro is the gold standard for PDF work. The PDF to Word conversion is consistently the best on the market, especially for complex documents. It's also the only mainstream option that bundles OCR + conversion + accessibility in one workflow.
+      </p>
+      <p>Pay for Acrobat if:</p>
+      <ul>
+        <li>You convert PDFs to Word several times a week for work</li>
+        <li>The documents have complex tables, multi-column layouts, or footnotes that must survive intact</li>
+        <li>You frequently work with scanned PDFs that need OCR before conversion</li>
+        <li>You need accessibility tags preserved (Section 508, WCAG)</li>
+      </ul>
+      <p>
+        Pricing is around $15-20/month depending on plan. There's a free 7-day trial. For occasional one-off conversions, the trial is enough — finish your batch and cancel.
+      </p>
+
+      <h2>What about Google Docs?</h2>
+      <p>
+        Google Docs imports PDF and exports as .docx. Convenient if you live in Google Workspace. Two caveats:
+      </p>
+      <ul>
+        <li>The PDF is uploaded to Google's servers. For sensitive documents — contracts, IDs, financials, anything covered by client confidentiality — this is the same trade-off as any other cloud converter.</li>
+        <li>Quality on complex documents is mid-tier. Better than the worst free online tools, worse than LibreOffice or Acrobat.</li>
+      </ul>
+      <p>
+        If your PDF is public and Google Workspace is already your daily driver, Google Docs is a reasonable choice. For anything else, LibreOffice is both more private and produces better output.
+      </p>
+
+      <h2>What about Microsoft Word itself?</h2>
+      <p>
+        Word (the desktop app, not the web version) can open PDFs and convert them to editable Word documents. Quality is similar to LibreOffice — actually pretty good on simple documents, struggles on complex layouts. If you already pay for Microsoft 365 ($7-10/mo) this is the most convenient path.
+      </p>
+      <p>
+        Word for Web uploads to Microsoft servers; the desktop app converts locally. Same privacy distinction as Google Docs.
+      </p>
+
+      <h2>Special case: scanned PDFs</h2>
+      <p>
+        If your PDF is a scan — pages that look like text but are actually images — no converter can extract text without OCR first. OCR recognises characters in the image and creates a text layer. After OCR, the PDF becomes a normal text PDF and any of the methods above can convert it to Word.
+      </p>
+      <p>
+        Vexyn ships <a href="/pdf-ocr">PDF OCR</a> that runs Tesseract locally in your browser (no upload). Output is a searchable PDF with the original visual layout plus an invisible text layer. Open that result in LibreOffice and export to .docx as described above. The chain stays entirely on your machine.
+      </p>
+      <p>
+        Alternative: Adobe Acrobat Pro combines OCR + conversion in one step, which is faster but uploads to their cloud unless you're using the desktop app.
+      </p>
+
+      <h2>Common mistakes to avoid</h2>
+      <ul>
+        <li><strong>Uploading sensitive documents to free online converters.</strong> Most retain files for 24-72 hours per their policy. For tax returns, legal documents, medical records, internal corporate documents — that's a privacy decision worth making consciously, not by accident.</li>
+        <li><strong>Trusting the conversion blindly.</strong> Even Acrobat misses things on complex documents. Always proofread the .docx before sending it on or making edits that lose the original.</li>
+        <li><strong>Expecting perfect roundtrip fidelity.</strong> PDF to Word loses some information (PDF's exact print positioning becomes Word's reflowable layout). For exact preservation, keep the PDF and use Vexyn's <a href="/pdf-editor">PDF tools</a> to make in-place edits where possible.</li>
+        <li><strong>Converting scanned PDFs without OCR.</strong> The output will be empty pages or weird boxes. Run OCR first.</li>
+      </ul>
+
+      <h2>What Vexyn does ship for PDF work</h2>
+      <p>
+        13 PDF tools, all running in your browser, all without uploading. They cover the operations you typically need <em>around</em> a PDF — not the PDF to Word conversion itself, but most of the workflow that surrounds it:
+      </p>
+      <ul>
+        <li><a href="/pdf-merger">PDF Merger</a> — combine multiple PDFs into one</li>
+        <li><a href="/pdf-splitter">PDF Splitter</a> — extract specific pages</li>
+        <li><a href="/pdf-compressor">PDF Compressor</a> — shrink file size for sharing</li>
+        <li><a href="/pdf-rotator">PDF Rotator</a> — fix sideways scans</li>
+        <li><a href="/pdf-ocr">PDF OCR</a> — make scanned PDFs searchable (prereq for converting scans)</li>
+        <li><a href="/pdf-organizer">PDF Organizer</a> — reorder and delete pages with thumbnails</li>
+        <li><a href="/pdf-watermark">PDF Watermark</a> — add CONFIDENTIAL / DRAFT etc</li>
+        <li><a href="/pdf-protector">PDF Protector</a> — password-protect before sharing</li>
+        <li><a href="/pdf-unlocker">PDF Unlocker</a> — remove password when you know it</li>
+        <li><a href="/pdf-cropper">PDF Cropper</a> — trim margins</li>
+        <li><a href="/pdf-page-numbers">PDF Page Numbers</a> — add numbering</li>
+        <li><a href="/jpg-to-pdf">JPG to PDF</a> — bundle images into a PDF</li>
+        <li><a href="/pdf-to-jpg">PDF to JPG</a> — export pages as images</li>
+      </ul>
+      <p>
+        See the full <a href="/pdf-tools">PDF Tools hub</a> for the complete list.
+      </p>
+
+      <h2>Frequently asked questions</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+
+      <h2>Bottom line</h2>
+      <p>
+        For free, local, high-quality PDF to Word — install LibreOffice. For paid, best-in-class — Adobe Acrobat Pro. For convenience inside Google Workspace, accept that the file uploads to Google. For sensitive documents, stay local with one of the first two.
+      </p>
+      <p>
+        And for the dozen other PDF operations that <em>can</em> be done well in a browser, Vexyn has you covered — <a href="/pdf-tools">browse the PDF Tools hub</a>.
+      </p>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .prose-vexyn { color: var(--color-text); font-size: 1rem; line-height: 1.75; }
+  .prose-vexyn > * + * { margin-top: 1.25em; }
+  .prose-vexyn h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2.5em; margin-bottom: 0.75em; letter-spacing: -0.01em; }
+  .prose-vexyn h3 { font-size: 1.15rem; font-weight: 600; margin-top: 2em; margin-bottom: 0.5em; }
+  .prose-vexyn p { color: var(--color-text); }
+  .prose-vexyn a {
+    color: var(--color-brand-400);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-brand-400) 30%, transparent);
+    transition: border-color 0.15s;
+  }
+  .prose-vexyn a:hover { border-bottom-color: var(--color-brand-400); }
+  .prose-vexyn ul, .prose-vexyn ol { padding-left: 1.5rem; }
+  .prose-vexyn li { margin-top: 0.5em; color: var(--color-text-mute); }
+  .prose-vexyn ul li { list-style: disc; }
+  .prose-vexyn ol li { list-style: decimal; }
+  .prose-vexyn strong { color: var(--color-text); font-weight: 600; }
+</style>

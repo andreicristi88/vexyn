@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PdfWatermark from '../components/tools/PdfWatermark.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
 import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
 
@@ -43,6 +44,7 @@ const schema = combineSchemas(
       </p>
     </header>
 
+    <PrivacyNote />
     <PdfWatermark client:load />
 
     <article class="prose mt-16 max-w-3xl">

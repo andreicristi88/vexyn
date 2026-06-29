@@ -1,0 +1,19 @@
+---
+// Trust badge shown directly above each tool's drop zone, so the
+// "your file never leaves the browser" promise is reconfirmed at the
+// moment the user is about to take action — not just on landing pages.
+// Suggested by a r/selfhosted commenter on the first Vexyn post.
+interface Props {
+  /** Override default copy if a tool needs a more specific phrasing. */
+  text?: string;
+}
+const { text = 'Stays in your browser — never uploaded. Open DevTools → Network to verify.' } = Astro.props;
+---
+
+<div class="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[color:var(--color-success)]/30 bg-[color:var(--color-success)]/5 text-xs">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+  </svg>
+  <span class="text-[color:var(--color-text-mute)]">{text}</span>
+</div>

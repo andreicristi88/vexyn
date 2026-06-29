@@ -7,7 +7,7 @@ const description = 'Vexyn is a Sejda alternative for merging and splitting PDFs
 
 const faqs = [
   { q: "Why does Sejda limit free users to 3 tasks per hour?", a: "Server-side PDF processing has real cost — they need to rate-limit free traffic to keep paid customers responsive. That's a sensible business decision but a frustrating UX when you have 5 quick splits to do. Vexyn doesn't have server cost, so there is no inherent reason to cap usage." },
-  { q: 'Does Vexyn have all of Sejda\'s features?', a: 'No. Vexyn currently has PDF Merger and PDF Splitter. Sejda offers 30+ tools including OCR, edit text, fill forms, sign, watermark, redact. Vexyn focuses narrowly on the most-used operations.' },
+  { q: 'Does Vexyn have all of Sejda\'s features?', a: 'Vexyn ships 13 PDF tools today: Merger, Splitter, Compressor, Rotator, JPG↔PDF, Unlocker, Protector, Watermark, OCR, Organizer, Page Numbers, Cropper. Sejda adds server-only features (edit text, fill forms, real redaction, PDF to Word). Those don\'t work well client-side. For those tasks, LibreOffice Draw and Adobe Acrobat Pro handle them locally.' },
   { q: 'Are uploaded files on Sejda safe?', a: 'Sejda claims 2-hour automatic deletion. That\'s a policy, not a guarantee — during the window your file lives on their servers and goes through their processing pipeline. For documents you would not share publicly, that\'s a privacy decision worth being explicit about. Vexyn does not have files to delete because they never leave your browser.' },
   { q: 'What about the Sejda desktop app?', a: 'Sejda Desktop processes locally on Windows/Mac/Linux. If you want the full Sejda feature set offline, the Desktop app is the right pick. For the subset Vexyn covers (merge, split), it works without install on any platform.' },
 ];
@@ -93,14 +93,29 @@ const schema = combineSchemas(
               <td class="p-4">Yes</td>
             </tr>
             <tr class="border-b border-[color:var(--color-border)]">
-              <td class="p-4 text-[color:var(--color-text)] font-medium">Edit text in PDF</td>
-              <td class="p-4">No</td>
+              <td class="p-4 text-[color:var(--color-text)] font-medium">Compress / Rotate / Watermark</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes</td>
               <td class="p-4 text-[color:var(--color-success)]">Yes</td>
             </tr>
             <tr class="border-b border-[color:var(--color-border)]">
-              <td class="p-4 text-[color:var(--color-text)] font-medium">OCR / fill forms / sign</td>
-              <td class="p-4">No (roadmap)</td>
-              <td class="p-4 text-[color:var(--color-success)]">Yes (30+ tools)</td>
+              <td class="p-4 text-[color:var(--color-text)] font-medium">OCR / Organize / Page numbers / Crop</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes</td>
+            </tr>
+            <tr class="border-b border-[color:var(--color-border)]">
+              <td class="p-4 text-[color:var(--color-text)] font-medium">Protect / Unlock (password)</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes (AES-128)</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes</td>
+            </tr>
+            <tr class="border-b border-[color:var(--color-border)]">
+              <td class="p-4 text-[color:var(--color-text)] font-medium">JPG↔PDF</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes (both directions)</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes</td>
+            </tr>
+            <tr class="border-b border-[color:var(--color-border)]">
+              <td class="p-4 text-[color:var(--color-text)] font-medium">Edit text / fill forms / e-sign</td>
+              <td class="p-4">No (server-only — see LibreOffice / Adobe Reader)</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes</td>
             </tr>
             <tr class="border-b border-[color:var(--color-border)]">
               <td class="p-4 text-[color:var(--color-text)] font-medium">Desktop app available</td>
@@ -131,7 +146,7 @@ const schema = combineSchemas(
         <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
           <h3 class="font-semibold text-[color:var(--color-brand-400)] mb-2">Pick Vexyn when…</h3>
           <ul class="text-sm text-[color:var(--color-text-mute)] space-y-1.5 list-disc list-inside">
-            <li>You need just merge or split, often, without per-hour caps</li>
+            <li>You need any of the 13 core operations, without per-hour caps</li>
             <li>PDFs contain sensitive data</li>
             <li>You can't install a desktop app on the machine you're using</li>
             <li>You're on mobile or a Chromebook</li>

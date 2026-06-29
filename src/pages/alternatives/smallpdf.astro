@@ -64,7 +64,7 @@ const schema = combineSchemas(
             <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Daily free limit</td><td class="p-4 text-[color:var(--color-success)]">Unlimited</td><td class="p-4">2 documents / day (free)</td></tr>
             <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Account required?</td><td class="p-4 text-[color:var(--color-success)]">No</td><td class="p-4">For Pro features</td></tr>
             <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">File size limit</td><td class="p-4">~500 MB (browser memory)</td><td class="p-4">Capped on free tier</td></tr>
-            <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">PDF tools available</td><td class="p-4">Merger + Splitter today</td><td class="p-4">20+ tools incl. compress, convert, sign</td></tr>
+            <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">PDF tools available</td><td class="p-4">13 (merge, split, compress, rotate, OCR, JPG↔PDF, unlock, protect, watermark, organize, page numbers, crop)</td><td class="p-4">~30 (incl. server-only: PDF to Word/Excel/PPT, edit, AI tools)</td></tr>
             <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Works offline</td><td class="p-4 text-[color:var(--color-success)]">Yes (after first load)</td><td class="p-4">No</td></tr>
             <tr class="border-b border-[color:var(--color-border)]"><td class="p-4 text-[color:var(--color-text)] font-medium">Open source</td><td class="p-4 text-[color:var(--color-success)]">Yes (MIT)</td><td class="p-4">No</td></tr>
             <tr><td class="p-4 text-[color:var(--color-text)] font-medium">Price</td><td class="p-4 text-[color:var(--color-success)]">Free, unlimited</td><td class="p-4">Free w/ cap + Pro ($9/mo)</td></tr>
@@ -84,7 +84,7 @@ const schema = combineSchemas(
           <ul class="text-sm text-[color:var(--color-text-mute)] space-y-1.5 list-disc list-inside">
             <li>You hit the 2-document daily cap regularly</li>
             <li>PDFs contain sensitive content you'd rather not upload</li>
-            <li>You only need merge or split (no compress / OCR / sign yet)</li>
+            <li>You need any of the 13 core operations (merge, split, compress, rotate, OCR, unlock, protect, watermark, organize, page numbers, crop, JPG↔PDF)</li>
             <li>You don't want an account</li>
             <li>You want the work to be doable offline</li>
           </ul>
@@ -92,7 +92,8 @@ const schema = combineSchemas(
         <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
           <h3 class="font-semibold mb-2">Pick SmallPDF when…</h3>
           <ul class="text-sm text-[color:var(--color-text-mute)] space-y-1.5 list-disc list-inside">
-            <li>You need OCR, e-signing, page numbering, or conversion to/from Office formats</li>
+            <li>You need PDF to Word / Excel / PowerPoint conversion</li>
+            <li>You need to edit PDF body text or use their AI features</li>
             <li>You're already paying for Pro and use the full feature set</li>
             <li>Your PDFs are non-sensitive</li>
           </ul>

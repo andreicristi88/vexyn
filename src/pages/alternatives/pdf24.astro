@@ -7,7 +7,7 @@ const description = 'Vexyn is a PDF24 alternative for merging and splitting PDFs
 
 const faqs = [
   { q: 'Does PDF24 not also work offline?', a: 'PDF24 has a desktop installer for Windows that works offline. The PDF24 Online tools (pdf24.org) however upload files to their servers. If you want browser-based PDF work without upload, Vexyn covers the merge and split cases. For a feature-rich desktop suite on Windows, PDF24 is solid.' },
-  { q: 'Does Vexyn have all 20+ PDF tools PDF24 has?', a: 'No. Vexyn currently has PDF Merger and PDF Splitter. PDF24 covers OCR, compress, convert-to-image, e-sign, password-protect, and more. We add tools incrementally based on demand — merger and splitter cover the most-common operations.' },
+  { q: 'Does Vexyn have all 20+ PDF tools PDF24 has?', a: 'Vexyn ships 13 PDF tools today: Merger, Splitter, Compressor, Rotator, JPG↔PDF, Unlocker, Protector, Watermark, OCR, Organizer, Page Numbers, Cropper. PDF24 adds server-only features like PDF to Word, edit text, AI summaries, and certificate-based signing — those don\'t work well client-side. For those tasks, LibreOffice or Adobe Reader handle them locally without uploading.' },
   { q: 'Can I trust that nothing is uploaded?', a: 'Open DevTools → Network in your browser, then drop a PDF in Vexyn and merge or split. Zero requests fire. The tool is plain JavaScript loaded once; everything else happens locally.' },
   { q: 'What about encrypted PDFs?', a: "Encrypted PDFs can't be modified without their password. Vexyn flags them with a clear error rather than failing silently. Decrypt in a viewer first (save an unencrypted copy), then process." },
 ];
@@ -99,13 +99,28 @@ const schema = combineSchemas(
             </tr>
             <tr class="border-b border-[color:var(--color-border)]">
               <td class="p-4 text-[color:var(--color-text)] font-medium">OCR (scanned PDFs)</td>
-              <td class="p-4">No</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes (Tesseract)</td>
               <td class="p-4 text-[color:var(--color-success)]">Yes</td>
             </tr>
             <tr class="border-b border-[color:var(--color-border)]">
-              <td class="p-4 text-[color:var(--color-text)] font-medium">Compress / convert / sign</td>
-              <td class="p-4">No (roadmap)</td>
-              <td class="p-4 text-[color:var(--color-success)]">Yes (20+ tools)</td>
+              <td class="p-4 text-[color:var(--color-text)] font-medium">Compress / Rotate / Watermark</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes</td>
+            </tr>
+            <tr class="border-b border-[color:var(--color-border)]">
+              <td class="p-4 text-[color:var(--color-text)] font-medium">JPG↔PDF / Organize / Page numbers / Crop</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes</td>
+            </tr>
+            <tr class="border-b border-[color:var(--color-border)]">
+              <td class="p-4 text-[color:var(--color-text)] font-medium">Protect / Unlock (password)</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes (AES-128)</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes</td>
+            </tr>
+            <tr class="border-b border-[color:var(--color-border)]">
+              <td class="p-4 text-[color:var(--color-text)] font-medium">PDF to Word / edit text / e-sign</td>
+              <td class="p-4">No (server-only — see LibreOffice / Adobe Reader)</td>
+              <td class="p-4 text-[color:var(--color-success)]">Yes</td>
             </tr>
             <tr class="border-b border-[color:var(--color-border)]">
               <td class="p-4 text-[color:var(--color-text)] font-medium">Works offline</td>
@@ -131,7 +146,7 @@ const schema = combineSchemas(
         <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
           <h3 class="font-semibold text-[color:var(--color-brand-400)] mb-2">Pick Vexyn when…</h3>
           <ul class="text-sm text-[color:var(--color-text-mute)] space-y-1.5 list-disc list-inside">
-            <li>You only need merge or split, not the full PDF24 suite</li>
+            <li>You need any of the 13 core operations: merge, split, compress, rotate, OCR, JPG↔PDF, unlock, protect, watermark, organize, page numbers, crop</li>
             <li>PDFs contain sensitive data (contracts, IDs, statements)</li>
             <li>You're on Mac, Linux, or mobile (no PDF24 desktop)</li>
             <li>You can't install software on the machine you're using</li>

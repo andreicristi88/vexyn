@@ -343,6 +343,61 @@ the page frontmatter or a comment: `<!-- review competitor claims by
 <date+6mo> -->`. This makes the staleness explicit and creates a
 review trigger.
 
+### Adding a new tool? Update `/alternatives/*` too.
+
+The `/alternatives/*` pages are the only surface where we make explicit
+competitor comparisons. When a new tool ships, they go out of date
+silently — the page still claims "Vexyn currently has X" with a list
+that no longer matches reality.
+
+**Rule:** whenever you add an entry to `TOOLS` in `src/lib/tools.ts`,
+walk through every `/alternatives/*.astro` page in the same category
+and update:
+
+1. **The FAQ Q that lists what Vexyn ships** (typically "Does Vexyn
+   have all the tools X has?" or "Does Vexyn have all of X's
+   features?"). Names the full current toolset, calls out what stays
+   server-only.
+
+2. **The side-by-side comparison table rows.** If your new tool now
+   matches a row the competitor used to dominate (e.g. you added OCR
+   and the table said "OCR: No" on the Vexyn side), flip it. If your
+   new tool is a category that wasn't in the table at all, add a row
+   for it.
+
+3. **The "Pick Vexyn when…" box.** Add the new capability to the list
+   of reasons users would pick Vexyn.
+
+4. **The "Pick \<competitor\> when…" box.** Remove the new capability
+   from the competitor's advantages if it's no longer their exclusive
+   feature.
+
+5. **The `index.astro` cards.** The `vexynTools` array and `angle`
+   string for each competitor card. Today these say `['13 PDF tools']`
+   — bump the number when the count changes.
+
+Audit before pushing a new tool:
+
+```bash
+# Find /alternatives pages that may still claim outdated tool counts
+grep -rE 'PDF Merger and PDF Splitter|Merger \+ Splitter today|2 PDF tools|currently has' src/pages/alternatives/
+```
+
+This grep should return empty (or only flag rows you've intentionally
+left). If anything matches and the claim is stale, update it before
+committing the new tool.
+
+**Categories and their alternatives pages today:**
+
+| Tool category | Alternatives pages to audit |
+|---|---|
+| PDF | `ilovepdf.astro`, `smallpdf.astro`, `pdf24.astro`, `sejda.astro` |
+| Image | `tinypng.astro`, `removebg.astro`, `convertio.astro`, `cloudconvert.astro` |
+| AI (transcription) | `otter.astro`, `descript.astro` |
+
+When a new category gets enough tools to be worth a comparison page,
+add a new `/alternatives/<competitor>.astro` to the appropriate list.
+
 ---
 
 ## 13. Don't add useless meta tags
@@ -381,6 +436,12 @@ Before pushing a new page, verify:
   `/alternatives/*` and the honest-content `/pdf-to-word` style pages.
   Quick audit: `grep -rE 'ILovePDF|SmallPDF|PDF24|TinyPNG|Remove\\.bg|Otter|Descript|Convertio|CloudConvert|Sejda|ClipDrop' src/pages/ src/content/blog/`
   should only flag the allowed files.
+- [ ] **New tool shipped? Update `/alternatives/*`** (section 12 sub).
+  If you added an entry to `TOOLS`, walk every alternatives page in
+  the same category and refresh the FAQ Q, table rows, Pick boxes,
+  and index card. Audit:
+  `grep -rE 'PDF Merger and PDF Splitter|Merger \+ Splitter today|2 PDF tools|currently has' src/pages/alternatives/`
+  should return empty.
 
 ---
 

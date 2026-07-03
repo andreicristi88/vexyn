@@ -4,7 +4,7 @@
   type Status = 'idle' | 'loading' | 'ready' | 'processing' | 'done' | 'error';
 
   const MODEL_ID = 'Xenova/swin2SR-classical-sr-x2-64';
-  const MAX_INPUT_SIDE = 1024;
+  const MAX_INPUT_SIDE = 768;
 
   let lib: any = $state(null);
   let pipeline: any = $state(null);
@@ -12,6 +12,7 @@
   let loadProgress = $state(0);
   let loadLabel = $state('');
   let device: 'webgpu' | 'wasm' = $state('wasm');
+  let fellBackToWasm = $state(false);
   let errorMsg = $state('');
 
   let originalUrl = $state('');
@@ -86,6 +87,27 @@
     return Math.max(originalWidth, originalHeight) > MAX_INPUT_SIDE;
   }
 
+  async function runPipeline(rawImage: any) {
+    try {
+      return await pipeline(rawImage);
+    } catch (e: any) {
+      const msg = e?.message ?? String(e);
+      // WebGPU device-lost or OOM — reload the pipeline with CPU fallback and retry once.
+      if (device === 'webgpu' && /device.*lost|out of memory|OrtRun|WebGPU/i.test(msg)) {
+        console.warn('[Upscaler] WebGPU failed, falling back to WASM:', msg);
+        loadLabel = 'GPU out of memory — switching to CPU. This will be slower…';
+        device = 'wasm';
+        fellBackToWasm = true;
+        pipeline = await lib.pipeline('image-to-image', MODEL_ID, {
+          device: 'wasm',
+          dtype: 'fp32',
+        });
+        return await pipeline(rawImage);
+      }
+      throw e;
+    }
+  }
+
   async function upscale() {
     if (!pipeline || !originalUrl) return;
     status = 'processing';
@@ -93,10 +115,10 @@
     const start = performance.now();
     try {
       const rawImage = await lib.RawImage.fromURL(originalUrl);
-      let out = await pipeline(rawImage);
+      let out = await runPipeline(rawImage);
       // For 4x, run through pipeline twice (2x + 2x)
       if (scale === 4) {
-        out = await pipeline(out);
+        out = await runPipeline(out);
       }
       // Convert output to canvas → blob → object URL
       const canvas = document.createElement('canvas');
@@ -182,7 +204,7 @@
       <div class="p-5 rounded-xl bg-[color:var(--color-surface)] border border-[color:var(--color-border)] space-y-4">
         {#if tooLarge()}
           <div class="p-3 rounded-lg bg-[color:var(--color-danger)]/10 border border-[color:var(--color-danger)]/30 text-sm text-[color:var(--color-danger)]">
-            Input is larger than {MAX_INPUT_SIDE}px on the long side. Upscale would exceed browser GPU memory. Try a smaller image.
+            Input is larger than {MAX_INPUT_SIDE}px on the long side. Upscale would likely exceed browser GPU memory. Resize your image down first, or try the CPU fallback (slower but supports larger inputs — will trigger automatically if GPU fails).
           </div>
         {/if}
 
@@ -203,7 +225,10 @@
           {status === 'processing' ? 'Upscaling…' : `Upscale ${scale}×`}
         </button>
         {#if status === 'processing'}
-          <p class="text-xs text-[color:var(--color-text-mute)] text-center">Running on {device === 'webgpu' ? 'GPU (WebGPU)' : 'CPU (WASM fallback)'}. Larger images take longer.</p>
+          <p class="text-xs text-[color:var(--color-text-mute)] text-center">
+            Running on {device === 'webgpu' ? 'GPU (WebGPU)' : 'CPU (WASM)'}.
+            {fellBackToWasm ? 'GPU ran out of memory — using CPU instead (slower but reliable).' : 'Larger images take longer.'}
+          </p>
         {/if}
       </div>
     {/if}

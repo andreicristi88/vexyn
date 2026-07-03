@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AiTranslator from '../components/tools/AiTranslator.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'AI Text Translator';
+const description = 'Free AI translator that runs entirely in your browser using NLLB-200. 30+ languages, no upload, no signup, no character limit. Great for translating sensitive text you would not send to a cloud service.';
+
+const faqs = [
+  { q: 'Is my text really not uploaded?', a: "No text ever leaves your device. NLLB-200 runs locally in your browser via WebGPU (or WASM as a fallback). Open DevTools → Network — no requests fire during translation. The model itself downloads once at first use (~400 MB) and is cached afterwards." },
+  { q: "Why is the first load so heavy?", a: "NLLB-200 covers 200 languages — that is a lot of vocabulary and a lot of parameters. The distilled quantised model is around 400 MB. It downloads once, then subsequent visits start instantly from the cache. For occasional translation of a paragraph, it works well; for translating a book, use a desktop tool." },
+  { q: 'How accurate is it compared to Google Translate or DeepL?', a: "For major language pairs (English to French, Spanish, German, Chinese), NLLB-200 is close to Google Translate quality. DeepL is usually better on European languages when it supports them. The NLLB-200 real advantage is coverage — it works for 200 languages, including many that other services do not cover well or at all." },
+  { q: 'Can I translate long documents?', a: "The tool splits input by sentence and translates each chunk. Long paragraphs work fine; entire books get slow (each sentence adds a second or two). For very long documents, translate in sections manually — that keeps the browser responsive." },
+  { q: 'When should I NOT use this?', a: "Real-time interpretation, live meeting captions, or documents where legally-binding translation is required — Vexyn is a general-purpose text translator, not a certified translation service. For those cases, professional human translators or specialised paid tools are the right call." },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/ai-translator`,
+    description,
+    features: ['NLLB-200 supports 200 languages', 'Runs entirely in your browser via WebGPU', 'No upload, no signup, no character cap', 'Works offline once loaded'],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'AI Translator', url: '/ai-translator' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">AI Text Translator</span>
+      </div>
+      <div class="flex items-center gap-3 mb-3">
+        <h1 class="text-4xl font-bold tracking-tight">AI Text Translator</h1>
+        <span class="text-xs px-2 py-1 rounded-md bg-[color:var(--color-accent-500)]/15 border border-[color:var(--color-accent-500)]/30 text-[color:var(--color-accent-400)] font-medium uppercase tracking-wider">AI · Local</span>
+      </div>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Translate between 30+ languages entirely on your device. NLLB-200 by Meta runs in your browser — your text never gets sent to any server.
+      </p>
+    </header>
+
+    <PrivacyNote />
+    <AiTranslator client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Translation that doesn't see your text</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Google Translate and DeepL send every word you type to their servers. For casual translation of public content that's fine. For contracts you're negotiating, medical records, internal emails, legal documents — anything you'd rather not add to someone else's dataset — Vexyn runs Meta's <a class="text-[color:var(--color-brand-400)] hover:underline" href="https://huggingface.co/facebook/nllb-200-distilled-600M" target="_blank" rel="noopener noreferrer">NLLB-200</a> directly in your browser via <a class="text-[color:var(--color-brand-400)] hover:underline" href="https://github.com/huggingface/transformers.js" target="_blank" rel="noopener noreferrer">transformers.js</a>. Zero requests during translation.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  </div>
+</BaseLayout>

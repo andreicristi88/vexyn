@@ -1,0 +1,79 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import FaceBlur from '../components/tools/FaceBlur.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'AI Face Blur — Auto Anonymizer';
+const description = 'Auto-detect and blur every face in a photo with AI. Blur, pixelate, or black-block modes. Runs entirely in your browser — the image is never uploaded and MediaPipe is doing the detection locally.';
+
+const faqs = [
+  { q: 'What model does the tool use?', a: "MediaPipe FaceDetector (Google's BlazeFace short-range). It's a small, fast face detector that runs in ~50ms per image on modern devices. The model is ~5 MB and cached after first load." },
+  { q: 'What if it misses a face?', a: "MediaPipe is tuned for standard-facing faces at reasonable resolutions. It misses faces in profile, heavily obscured, at very small sizes, or in bad lighting. Increase the coverage padding to catch faces at the edge of detection, or use blocks over individual regions manually in a follow-up editor if precision matters." },
+  { q: "What's the difference between blur, pixelate, and solid block?", a: 'Blur is smooth and hides identity while keeping some visual context. Pixelate is more aggressive and traditional-looking. Solid black is total redaction — no identity, no context. Pick based on the vibe you want in the final image.' },
+  { q: 'Is my image uploaded?', a: 'No. MediaPipe runs locally via WebAssembly. Face detection happens in your browser tab. Open DevTools → Network — zero requests fire while processing.' },
+  { q: 'How does coverage padding work?', a: 'The detected face rectangle is grown by the padding factor. Default 1.4× covers hair, ears, and any glasses reasonably. Increase for better safety on identifiable haircuts; decrease if you want the effect tighter to the face.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/face-blur`,
+    description,
+    category: 'MultimediaApplication',
+    features: ['MediaPipe FaceDetector', 'Blur / pixelate / solid-block modes', 'Adjustable coverage padding', 'Runs entirely in browser', 'No upload, no signup'],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'AI Face Blur', url: '/face-blur' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">AI Face Blur</span>
+      </div>
+      <div class="flex items-center gap-3 mb-3">
+        <h1 class="text-4xl font-bold tracking-tight">AI Face Blur</h1>
+        <span class="text-xs px-2 py-1 rounded-md bg-[color:var(--color-accent-500)]/15 border border-[color:var(--color-accent-500)]/30 text-[color:var(--color-accent-400)] font-medium uppercase tracking-wider">AI · Local</span>
+      </div>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop a photo, get every face auto-detected and blurred, pixelated, or blocked out. Runs entirely in your browser — the photo never gets uploaded.
+      </p>
+    </header>
+
+    <PrivacyNote />
+    <FaceBlur client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Anonymization that doesn't see your photos</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Screenshots with colleagues in the background, group photos before posting online, event pictures where not everyone consented to being tagged — face anonymization is one of the most common privacy tasks. Every popular online tool for it uploads your image first. Vexyn does the face detection with <a class="text-[color:var(--color-brand-400)] hover:underline" href="https://developers.google.com/mediapipe" target="_blank" rel="noopener noreferrer">MediaPipe</a> running in your browser via WebAssembly, and applies the blur/pixelate/block effect on a local canvas. No upload, no external service.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">When to use each mode</h2>
+      <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+        <li><strong class="text-[color:var(--color-text)]">Blur:</strong> keeps some visual context (colours, shapes) while hiding identity. Best for casual photos.</li>
+        <li><strong class="text-[color:var(--color-text)]">Pixelate:</strong> traditional TV-style anonymization. More obvious that a face was removed.</li>
+        <li><strong class="text-[color:var(--color-text)]">Solid black:</strong> total redaction. Best for documents, evidence, journalism.</li>
+      </ul>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  </div>
+</BaseLayout>

@@ -214,6 +214,35 @@ export const TOOLS: Tool[] = [
     keywords: ['pdf', 'crop', 'trim', 'margins'],
     available: true,
   },
+  {
+    slug: 'image-upscaler',
+    name: 'AI Image Upscaler',
+    description: '2× or 4× resolution with AI-invented detail via Swin2SR. WebGPU-accelerated, no upload.',
+    category: 'ai',
+    secondaryCategories: ['image'],
+    icon: '🔍',
+    keywords: ['upscale', 'ai', 'super resolution', 'enlarge', 'sharpen', 'webgpu'],
+    available: true,
+  },
+  {
+    slug: 'ai-translator',
+    name: 'AI Text Translator',
+    description: 'Translate between 30+ languages entirely on your device with Meta NLLB-200. No upload, no signup.',
+    category: 'ai',
+    icon: '🌐',
+    keywords: ['translator', 'ai', 'nllb', 'multilingual', 'privacy', 'webgpu'],
+    available: true,
+  },
+  {
+    slug: 'face-blur',
+    name: 'AI Face Blur',
+    description: 'Auto-detect and blur every face in a photo. Blur, pixelate, or block modes. MediaPipe, runs in browser.',
+    category: 'ai',
+    secondaryCategories: ['image', 'privacy'],
+    icon: '👤',
+    keywords: ['face blur', 'anonymize', 'privacy', 'redact', 'mediapipe', 'ai'],
+    available: true,
+  },
 ];
 
 export const CATEGORIES = {

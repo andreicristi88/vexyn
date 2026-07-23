@@ -160,9 +160,36 @@
       gpuName = [info.vendor, info.architecture].filter(Boolean).join(' ') || 'your GPU';
       mode = 'webgpu';
       phase = 'idle';
+      // Returning visitor: weights are already cached, so the consent button
+      // is pure friction — skip straight to loading. Sessions themselves can
+      // never be cached (they live in page memory), so this still costs the
+      // init time, but it costs it without an extra click.
+      if (await weightsCached()) load();
     } catch (e: any) {
       unsupportedReason = e?.message ?? 'WebGPU failed to initialise.';
       phase = 'choose';
+    }
+  }
+
+  /** True when every model file is already in Cache Storage. */
+  async function weightsCached(): Promise<boolean> {
+    try {
+      if (!('caches' in window)) return false;
+      const cache = await caches.open(CACHE);
+      if (!cfg) {
+        const res = await fetch(`${MODEL_BASE}/runtime.json`);
+        if (!res.ok) return false;
+        cfg = await res.json();
+        alphasCumprod = buildAlphas(cfg.scheduler_config);
+      }
+      for (const part of PARTS) {
+        for (const f of filesFor(part)) {
+          if (!(await cache.match(`${MODEL_BASE}/${f.path}`))) return false;
+        }
+      }
+      return true;
+    } catch {
+      return false;
     }
   }
 
@@ -232,11 +259,14 @@
     error = '';
     const started = performance.now();
     try {
-      loadingLabel = 'Reading model manifest';
-      const manifest = await fetch(`${MODEL_BASE}/runtime.json`);
-      if (!manifest.ok) throw new Error(`manifest: HTTP ${manifest.status}`);
-      cfg = await manifest.json();
-      alphasCumprod = buildAlphas(cfg.scheduler_config);
+      if (!cfg) {
+        loadingLabel = 'Reading model manifest';
+        const manifest = await fetch(`${MODEL_BASE}/runtime.json`);
+        if (!manifest.ok) throw new Error(`manifest: HTTP ${manifest.status}`);
+        cfg = await manifest.json();
+        alphasCumprod = buildAlphas(cfg.scheduler_config);
+      }
+      const cached = await weightsCached();
       bytesTotal = PARTS.reduce((a, p) => {
         const fromFiles = filesFor(p).reduce((s, f) => s + f.bytes, 0);
         return a + (fromFiles || (cfg.sizes_mb?.[p] ?? 0) * 1048576);
@@ -252,7 +282,9 @@
 
       let done = 0;
       for (const part of PARTS) {
-        loadingLabel = `Downloading ${part.replace('_', ' ')}`;
+        loadingLabel = cached
+          ? `Reading ${part.replace('_', ' ')} from cache`
+          : `Downloading ${part.replace('_', ' ')}`;
         const buf = await fetchPart(part, (delta) => {
           done += delta;
           bytesDone = done;
@@ -504,9 +536,9 @@
         <span>{etaSec ? `~${etaSec}s left` : 'almost there'}</span>
       </div>
       <p class="mt-6 text-xs text-[color:var(--color-text-mute)] leading-relaxed">
-        This happens once. The browser caches the model, so your next visit skips straight to generating.
-        Preparing each part briefly freezes the tab — that is the GPU compiling shaders, and it cannot be
-        moved off the main thread.
+        The download happens once — the browser keeps the model cached. Handing it to the GPU has to be
+        redone each time the page loads though, because a prepared model lives in page memory and cannot
+        be stored. That is the step that briefly freezes the tab.
       </p>
     </div>
 

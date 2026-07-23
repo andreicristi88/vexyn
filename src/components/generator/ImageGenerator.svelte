@@ -35,6 +35,9 @@
   let bytesTotal = $state(0);
   let loadingLabel = $state('');
   let mbps = $state(0);
+  /** Whether this load is a real download or just a cache read. The two look
+   *  nothing alike to the user and must not be presented the same way. */
+  let fromCache = $state(false);
 
   let shots = $state<Shot[]>([]);
   let error = $state('');
@@ -183,7 +186,11 @@
    * cached (they live in page memory), so the init cost stays either way.
    */
   async function autoLoadIfCached() {
-    if (await weightsCached()) load();
+    if (!(await weightsCached())) return;
+    // Set before load() so the loading screen never flashes the download
+    // framing on its first frame.
+    fromCache = true;
+    load();
   }
 
   /** True when every model file is already in Cache Storage. */
@@ -277,7 +284,8 @@
         cfg = await manifest.json();
         alphasCumprod = buildAlphas(cfg.scheduler_config);
       }
-      const cached = await weightsCached();
+      // autoLoadIfCached may already have established this; don't re-scan.
+      if (!fromCache) fromCache = await weightsCached();
       bytesTotal = PARTS.reduce((a, p) => {
         const fromFiles = filesFor(p).reduce((s, f) => s + f.bytes, 0);
         return a + (fromFiles || (cfg.sizes_mb?.[p] ?? 0) * 1048576);
@@ -293,8 +301,8 @@
 
       let done = 0;
       for (const part of PARTS) {
-        loadingLabel = cached
-          ? `Reading ${part.replace('_', ' ')} from cache`
+        loadingLabel = fromCache
+          ? `Loading ${part.replace('_', ' ')}`
           : `Downloading ${part.replace('_', ' ')}`;
         const buf = await fetchPart(part, (delta) => {
           done += delta;
@@ -514,10 +522,14 @@
   <!-- ── loading ─────────────────────────────────────────────────── -->
   {:else if phase === 'loading'}
     <div class="p-8">
-      <div class="flex items-baseline justify-between mb-2">
+      <div class="flex items-baseline justify-between mb-2 gap-4">
         <span class="text-sm font-medium">{loadingLabel}</span>
-        <span class="text-sm tabular-nums text-[color:var(--color-text-mute)]">
-          {mb(bytesDone)} / {mb(bytesTotal)} MB
+        <span class="text-sm tabular-nums text-[color:var(--color-text-mute)] shrink-0">
+          {#if fromCache}
+            {pct.toFixed(0)}%
+          {:else}
+            {mb(bytesDone)} / {mb(bytesTotal)} MB
+          {/if}
         </span>
       </div>
       <div class="h-2 rounded-full bg-[color:var(--color-surface-2)] overflow-hidden">
@@ -526,15 +538,27 @@
           style={`width:${pct}%`}
         ></div>
       </div>
-      <div class="flex justify-between mt-2 text-xs text-[color:var(--color-text-dim)]">
-        <span>{mbps ? `${mbps.toFixed(1)} MB/s` : 'starting…'}</span>
-        <span>{etaSec ? `~${etaSec}s left` : 'almost there'}</span>
-      </div>
-      <p class="mt-6 text-xs text-[color:var(--color-text-mute)] leading-relaxed">
-        The download happens once — the browser keeps the model cached. Handing it to the GPU has to be
-        redone each time the page loads though, because a prepared model lives in page memory and cannot
-        be stored. That is the step that briefly freezes the tab.
-      </p>
+
+      {#if fromCache}
+        <p class="mt-2 text-xs text-[color:var(--color-text-dim)]">
+          Already on this device — nothing is being downloaded.
+        </p>
+        <p class="mt-6 text-xs text-[color:var(--color-text-mute)] leading-relaxed">
+          The model was saved on your first visit and is being read straight off your disk. What takes
+          these few seconds is handing it to {mode === 'wasm' ? 'the CPU' : 'the GPU'} — a prepared model
+          lives in page memory, so that part cannot be saved and has to be redone whenever the page
+          loads. It is also what briefly freezes the tab.
+        </p>
+      {:else}
+        <div class="flex justify-between mt-2 text-xs text-[color:var(--color-text-dim)]">
+          <span>{mbps ? `${mbps.toFixed(1)} MB/s` : 'starting…'}</span>
+          <span>{etaSec ? `~${etaSec}s left` : 'almost there'}</span>
+        </div>
+        <p class="mt-6 text-xs text-[color:var(--color-text-mute)] leading-relaxed">
+          This download happens once. The browser keeps the model, so every later visit skips straight to
+          preparing it — a few seconds instead of this.
+        </p>
+      {/if}
     </div>
 
   <!-- ── ready / generating ──────────────────────────────────────── -->

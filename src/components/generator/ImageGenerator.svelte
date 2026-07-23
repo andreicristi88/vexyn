@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { tick } from 'svelte';
   import { MODEL_BASE, MODEL } from '../../lib/constants';
   import { buildPrompt, type Preset } from '../../lib/styles';
 
@@ -164,15 +165,24 @@
       gpuName = [info.vendor, info.architecture].filter(Boolean).join(' ') || 'your GPU';
       mode = 'webgpu';
       phase = 'idle';
-      // Returning visitor: weights are already cached, so the consent button
-      // is pure friction — skip straight to loading. Sessions themselves can
-      // never be cached (they live in page memory), so this still costs the
-      // init time, but it costs it without an extra click.
-      if (await weightsCached()) load();
+      await autoLoadIfCached();
     } catch (e: any) {
       unsupportedReason = e?.message ?? 'WebGPU failed to initialise.';
       phase = 'choose';
+      await autoLoadIfCached();
     }
+  }
+
+  /**
+   * Returning visitor: the weights are already on disk, so both the consent
+   * screen and the load button are pure friction — the only thing they gate
+   * is a download that already happened. Sessions themselves can never be
+   * cached (they live in page memory), so the init cost stays either way.
+   */
+  async function autoLoadIfCached() {
+    if (!(await weightsCached())) return;
+    if (phase === 'choose') mode = 'wasm'; // cached implies they already accepted CPU
+    load();
   }
 
   /** True when every model file is already in Cache Storage. */
@@ -309,14 +319,27 @@
     }
   }
 
-  function startFeedback() {
+  /**
+   * Wait until the browser has actually painted. Two frames are needed: the
+   * first is scheduled before the pending DOM exists, the second runs after
+   * it has been laid out and drawn.
+   *
+   * This matters because ORT's WASM backend runs inference synchronously on
+   * the main thread. Without a real paint in between, the loading state is
+   * assigned but never drawn — the button keeps looking idle for the whole
+   * minute, then everything updates at once.
+   */
+  const paint = () =>
+    new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+
+  async function startFeedback() {
     elapsed = 0;
-    elapsedTimer = setInterval(() => (elapsed += 1), 1000);
-    // Bring the pending tile into view — on mobile it sits below the fold and
-    // the user would otherwise see nothing happen at all.
-    requestAnimationFrame(() => {
-      resultsEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    });
+    // A blocked main thread cannot fire timers, so a ticking counter would be
+    // a lie on the CPU path. WebGPU inference is async and does tick.
+    if (mode === 'webgpu') elapsedTimer = setInterval(() => (elapsed += 1), 1000);
+    await tick();
+    resultsEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    await paint();
   }
 
   function stopFeedback() {
@@ -328,7 +351,7 @@
     if (phase !== 'ready' || !prompt.trim()) return;
     phase = 'generating';
     error = '';
-    startFeedback();
+    await startFeedback();
     const t0 = performance.now();
     try {
       const full = buildPrompt(preset, prompt);
@@ -545,7 +568,7 @@
               <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25" />
               <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
             </svg>
-            <span>Generating… {elapsed}s</span>
+            <span>{mode === 'webgpu' ? `Generating… ${elapsed}s` : 'Generating…'}</span>
           {:else}
             Generate
           {/if}
@@ -589,7 +612,11 @@
       {#if shots.length || phase === 'generating'}
         <p class="mt-5 mb-2 text-xs text-[color:var(--color-text-dim)]" bind:this={resultsEl}>
           {#if phase === 'generating'}
-            Working on it — {mode === 'wasm' ? 'CPU generation takes about a minute' : 'usually a few seconds'}
+            {#if mode === 'wasm'}
+              Working — your CPU takes about a minute, and the page will not respond until it finishes.
+            {:else}
+              Working on it — usually a few seconds.
+            {/if}
           {:else}
             {shots.length} image{shots.length > 1 ? 's' : ''} · last one took {(lastMs / 1000).toFixed(1)}s
           {/if}
@@ -601,11 +628,13 @@
               aria-live="polite"
               aria-label="Generating image"
             >
-              <svg class="w-7 h-7 animate-spin text-[color:var(--color-brand-400)]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <svg class="w-7 h-7 animate-spin text-[color:var(--color-brand-400)] relative z-10" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25" />
                 <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
               </svg>
-              <span class="text-xs tabular-nums text-[color:var(--color-text-mute)]">{elapsed}s</span>
+              <span class="text-xs tabular-nums text-[color:var(--color-text-mute)] relative z-10">
+                {mode === 'webgpu' ? `${elapsed}s` : '~1 min'}
+              </span>
             </div>
           {/if}
           {#each shots as shot (shot.url)}
@@ -632,22 +661,31 @@
 </div>
 
 <style>
-  /* Pending tile: a slow sweep so it reads as "working", not "broken image". */
+  /* The CPU backend blocks the main thread for the whole generation, so any
+     animation driven by layout or paint properties freezes with it. Only
+     transform and opacity are handled by the compositor and keep moving —
+     which is exactly what has to keep moving to prove we are still working. */
   .vexyn-pending {
+    background: var(--color-surface);
+  }
+  .vexyn-pending::after {
+    content: '';
+    position: absolute;
+    inset: 0;
     background: linear-gradient(
       100deg,
-      var(--color-surface) 30%,
-      color-mix(in srgb, var(--color-brand-500) 12%, var(--color-surface)) 50%,
-      var(--color-surface) 70%
+      transparent 20%,
+      color-mix(in srgb, var(--color-brand-500) 22%, transparent) 50%,
+      transparent 80%
     );
-    background-size: 220% 100%;
-    animation: vexyn-sweep 1.6s ease-in-out infinite;
+    animation: vexyn-sweep 1.5s ease-in-out infinite;
+    will-change: transform;
   }
   @keyframes vexyn-sweep {
-    from { background-position: 180% 0; }
-    to { background-position: -60% 0; }
+    from { transform: translateX(-100%); }
+    to { transform: translateX(100%); }
   }
   @media (prefers-reduced-motion: reduce) {
-    .vexyn-pending { animation: none; }
+    .vexyn-pending::after { animation: none; opacity: 0.4; }
   }
 </style>

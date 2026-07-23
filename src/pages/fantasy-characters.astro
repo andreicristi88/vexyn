@@ -1,0 +1,50 @@
+---
+import GeneratorPage from '../components/generator/GeneratorPage.astro';
+import { getPreset } from '../lib/styles';
+
+const preset = getPreset('fantasy-characters');
+const title = 'AI D&D Character Portrait Generator — Free & Unlimited';
+const description =
+  'Generate fantasy character portraits for D&D, Pathfinder and any TTRPG. Free, unlimited, no signup — the AI runs in your browser on your own GPU.';
+
+const faqs = [
+  { q: 'Can I use a portrait for my character sheet / campaign / stream?', a: 'Yes — commercial use of outputs is permitted by the model licence. Character sheets, campaign notes, VTT tokens, Twitch overlays: all fine.' },
+  { q: 'How do I get the same character twice?', a: 'Lock the seed and keep the prompt identical — you will get the same image. Small prompt edits with a locked seed produce variations of roughly the same character. True multi-pose consistency needs bigger tools; for portraits, seed-locking covers most needs.' },
+  { q: 'Can it draw my whole party in one image?', a: 'Multi-character scenes are the weak spot of a single-step model — faces blur and limbs merge. Generate each member separately; the shared style keeps the set looking coherent.' },
+  { q: 'The face looks odd. What do I do?', a: 'Reroll — seeds vary wildly on faces. Adding "detailed face" is already in this page\'s styling; specifying age, expression and one distinctive feature ("scar over left eye") helps the model commit.' },
+  { q: 'Does it know D&D races and classes?', a: 'The base model was trained on enormous amounts of fantasy art, so tieflings, dragonborn, drow, paladins and warlocks all render recognisably. Rarer homebrew concepts work best described physically ("a fox-headed humanoid monk in orange robes").' },
+];
+---
+
+<GeneratorPage
+  preset={preset}
+  title={title}
+  h1="Fantasy Character Portraits"
+  description={description}
+  intro="Your character, visualised. Describe race, class and one memorable detail — dramatic fantasy-art styling is applied automatically."
+  faqs={faqs}
+>
+  <h2 class="text-2xl font-bold mb-4">Session zero, sorted</h2>
+  <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+    Every player knows the gap between the character in their head and the stock art on their sheet.
+    Commissioned art is wonderful and costs real money per character; free portrait sites are a carousel
+    of the same elves. Here you type "a grizzled human paladin in dented plate armour", wait three
+    seconds, and reroll until the face matches the voice you've been doing at the table. NPCs too — a GM
+    can portrait an entire village in one evening, for nothing.
+  </p>
+
+  <h2 class="text-2xl font-bold mb-4 mt-10">Describing a character the model understands</h2>
+  <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+    <li><strong class="text-[color:var(--color-text)]">Race + class + age:</strong> "an elderly dwarven cleric" anchors the whole face.</li>
+    <li><strong class="text-[color:var(--color-text)]">One signature item:</strong> the glowing tome, the braided beard, the cracked mask — a single memorable detail beats five adjectives.</li>
+    <li><strong class="text-[color:var(--color-text)]">Expression = personality:</strong> "grinning", "weary", "serene" — the model is good at faces carrying mood.</li>
+    <li><strong class="text-[color:var(--color-text)]">Colour-code your party:</strong> give each member a palette ("green cloak", "crimson robes") so the set reads as one campaign.</li>
+  </ul>
+
+  <h2 class="text-2xl font-bold mb-4 mt-10">Tokens for your VTT</h2>
+  <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+    The square 512×512 output drops straight into Foundry, Roll20 or Owlbear Rodeo as a portrait. For
+    round tokens, any token-maker tool crops these cleanly — the "upper body, centered" styling this page
+    applies was chosen with exactly that crop in mind.
+  </p>
+</GeneratorPage>

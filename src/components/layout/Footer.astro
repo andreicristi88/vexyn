@@ -18,21 +18,18 @@ const latestPosts = (await getCollection('blog'))
           <span class="font-semibold">{SITE.name}</span>
         </div>
         <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">
-          {SITE.tagline} Privacy-first browser tools. Everything runs locally on your device.
+          {SITE.tagline} AI image generation that runs entirely on your device.
         </p>
       </div>
 
       <div>
-        <h3 class="text-sm font-semibold mb-3">Tools</h3>
+        <h3 class="text-sm font-semibold mb-3">Generate</h3>
         <ul class="space-y-2 text-sm text-[color:var(--color-text-mute)]">
-          <li><a href="/pdf-tools" class="hover:text-[color:var(--color-text)]">PDF Tools <span class="text-[color:var(--color-text-dim)]">— 13</span></a></li>
-          <li><a href="/image-tools" class="hover:text-[color:var(--color-text)]">Image Tools <span class="text-[color:var(--color-text-dim)]">— 6</span></a></li>
-          <li><a href="/ai-tools" class="hover:text-[color:var(--color-text)]">AI Tools <span class="ml-1 text-[10px] uppercase tracking-wider text-[color:var(--color-accent-400)]">AI</span></a></li>
-          <li><a href="/developer-tools" class="hover:text-[color:var(--color-text)]">Developer Tools <span class="text-[color:var(--color-text-dim)]">— 3</span></a></li>
-          <li class="pt-1"><a href="/image-upscaler" class="hover:text-[color:var(--color-text)]">AI Image Upscaler <span class="ml-1 text-[10px] uppercase tracking-wider text-[color:var(--color-accent-400)]">AI</span></a></li>
-          <li><a href="/ai-translator" class="hover:text-[color:var(--color-text)]">AI Translator <span class="ml-1 text-[10px] uppercase tracking-wider text-[color:var(--color-accent-400)]">AI</span></a></li>
-          <li><a href="/face-blur" class="hover:text-[color:var(--color-text)]">AI Face Blur <span class="ml-1 text-[10px] uppercase tracking-wider text-[color:var(--color-accent-400)]">AI</span></a></li>
-          <li class="pt-1"><a href="/#tools" class="text-[color:var(--color-brand-400)] hover:text-[color:var(--color-brand-300)] text-xs uppercase tracking-wider">All tools →</a></li>
+          <li><a href="/" class="hover:text-[color:var(--color-text)]">Anything</a></li>
+          <li><a href="/game-assets" class="hover:text-[color:var(--color-text)]">Game assets</a></li>
+          <li><a href="/wallpapers" class="hover:text-[color:var(--color-text)]">Wallpapers</a></li>
+          <li><a href="/fantasy-characters" class="hover:text-[color:var(--color-text)]">Fantasy characters</a></li>
+          <li><a href="/stickers" class="hover:text-[color:var(--color-text)]">Stickers &amp; emotes</a></li>
         </ul>
       </div>
 
@@ -56,7 +53,6 @@ const latestPosts = (await getCollection('blog'))
         <h3 class="text-sm font-semibold mb-3">Links</h3>
         <ul class="space-y-2 text-sm text-[color:var(--color-text-mute)]">
           <li><a href="/about" class="hover:text-[color:var(--color-text)]">About</a></li>
-          <li><a href="/alternatives" class="hover:text-[color:var(--color-text)]">Alternatives</a></li>
           <li><a href="/privacy" class="hover:text-[color:var(--color-text)]">Privacy</a></li>
           <li>
             <a href={SITE.github} target="_blank" rel="noopener noreferrer" class="hover:text-[color:var(--color-text)] inline-flex items-center gap-1.5">

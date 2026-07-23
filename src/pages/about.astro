@@ -1,33 +1,61 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { SITE } from '../lib/constants';
+import { SITE, MODEL } from '../lib/constants';
 ---
 
-<BaseLayout title="About" description="Why Vexyn exists: free, private, local-first browser tools. No upload, no signup, no tracking.">
+<BaseLayout title="About" description="Why Vexyn exists: free AI image generation that runs entirely on your device. No account, no queue, no prompt logging — plus the terms that apply to what you make.">
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <h1 class="text-4xl font-bold mb-6">About Vexyn</h1>
 
     <p class="text-lg text-[color:var(--color-text-mute)] leading-relaxed mb-6">
-      Vexyn is a collection of free browser tools that run entirely on your device. No file uploads. No signup. No tracking. Open the page, do the thing, close the tab — your data stays yours.
+      Vexyn is a free AI image generator that runs entirely in your browser. The model downloads to your
+      device once, then every image is produced by your own GPU. No account, no queue, no generation
+      limit — and your prompts physically cannot be read by us, because they never leave your machine.
     </p>
 
     <h2 class="text-2xl font-bold mb-3 mt-10">Why this exists</h2>
     <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
-      The web is full of "free" tools that quietly upload your files, log your usage, sell your data, or wrap everything in a paywall on the third use. We thought there was a better way: a site of tools that simply <em>work</em> in the browser, with the same privacy guarantee a desktop app gives you — only without installing anything.
+      Every popular AI image site routes your prompt to their servers: it waits in a queue, gets logged,
+      counts against a credit balance, and often sits behind a signup wall. We wanted the opposite
+      architecture — ship the model <em>to the user</em> and let their hardware do the work. That single
+      decision is what makes "free, unlimited, private" an engineering fact rather than a marketing claim
+      that erodes later.
     </p>
 
     <h2 class="text-2xl font-bold mb-3 mt-10">How it works</h2>
     <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
-      Every tool on Vexyn is JavaScript (and sometimes WebAssembly) that loads into your browser and runs locally on your CPU or GPU. Files you drop are processed in browser memory and never sent to a server. When you close the tab, everything is gone.
+      On first use, the page downloads <a href={MODEL.url} class="text-[color:var(--color-brand-400)] hover:underline" target="_blank" rel="noopener noreferrer">{MODEL.id}</a> —
+      a distilled Stable Diffusion model that produces an image in a single denoising step, small enough
+      to run in a browser. Inference runs through WebGPU via ONNX Runtime Web. The browser caches the
+      weights, so later visits skip the download. Disconnect from the internet after loading — it still
+      works.
     </p>
 
-    <h2 class="text-2xl font-bold mb-3 mt-10">What's on the roadmap</h2>
-    <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
-      <li>PDF tools: merger, splitter, compressor, redactor — all client-side</li>
-      <li>Image tools: compression, conversion, EXIF stripping</li>
-      <li>WebGPU-powered AI: background removal, upscaling, transcription — running on your device</li>
-      <li>More developer utilities: regex, JWT, hash, color converters</li>
+    <h2 class="text-2xl font-bold mb-3 mt-10">Terms for what you generate</h2>
+    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-3">
+      The model is released under the <a href={MODEL.licenceUrl} class="text-[color:var(--color-brand-400)] hover:underline" target="_blank" rel="noopener noreferrer">OpenRAIL++ licence</a>.
+      Your images are yours, including for commercial use. The licence carries use restrictions that
+      apply to you as a user of this site. You may not use the generator to create content that:
+    </p>
+    <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6 list-disc pl-5">
+      <li>violates any law, or harms or exploits minors in any way;</li>
+      <li>creates or spreads verifiably false information with intent to harm others;</li>
+      <li>defames, disparages or harasses real people, or impersonates them without consent;</li>
+      <li>generates personal identifiable information to harm an individual;</li>
+      <li>discriminates against individuals or groups based on protected characteristics;</li>
+      <li>provides medical advice or is intended to be relied on in legal, financial or safety-critical decisions.</li>
     </ul>
+    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+      Because generation happens on your device, enforcement is your responsibility — exactly as it would
+      be if you ran the model locally yourself. These restrictions come from the model licence and are
+      passed on to you as it requires.
+    </p>
+
+    <h2 class="text-2xl font-bold mb-3 mt-10">How the site is funded</h2>
+    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+      Ads. That's it. Because your GPU does the compute, our costs stay near zero no matter how many
+      images you make — so there is no premium tier, no credit pack, and no reason to limit you.
+    </p>
 
     <h2 class="text-2xl font-bold mb-3 mt-10">Open source</h2>
     <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
@@ -36,7 +64,7 @@ import { SITE } from '../lib/constants';
 
     <h2 class="text-2xl font-bold mb-3 mt-10">Contact</h2>
     <p class="text-[color:var(--color-text-mute)] leading-relaxed">
-      Tool ideas, bug reports, or just hello — open an issue on GitHub or email <a href={`mailto:${SITE.email}`} class="text-[color:var(--color-brand-400)] hover:underline">{SITE.email}</a>.
+      Ideas, bug reports, or just hello — open an issue on GitHub or email <a href={`mailto:${SITE.email}`} class="text-[color:var(--color-brand-400)] hover:underline">{SITE.email}</a>.
     </p>
   </div>
 </BaseLayout>

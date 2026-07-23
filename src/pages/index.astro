@@ -1,204 +1,64 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import ToolCard from '../components/ui/ToolCard.astro';
-import { TOOLS } from '../lib/tools';
-import { SITE } from '../lib/constants';
-import { combineSchemas, itemListSchema } from '../lib/seo';
-import { getCollection } from 'astro:content';
+import GeneratorPage from '../components/generator/GeneratorPage.astro';
+import { FREEFORM, PRESETS } from '../lib/styles';
 
-const availableTools = TOOLS.filter(t => t.available);
-const comingTools = TOOLS.filter(t => !t.available);
+const title = 'Free AI Image Generator — No Signup, Runs In Your Browser';
+const description =
+  'Generate AI images free, with no account and no queue. The model runs on your own GPU via WebGPU — your prompts never leave your device.';
 
-const latestPosts = (await getCollection('blog'))
-  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
-  .slice(0, 3);
-
-const websiteSchema = {
-  '@type': 'WebSite',
-  name: SITE.name,
-  url: SITE.url,
-  description: SITE.description,
-  potentialAction: {
-    '@type': 'SearchAction',
-    target: `${SITE.url}/?q={search_term_string}`,
-    'query-input': 'required name=search_term_string',
-  },
-};
-
-const orgSchema = {
-  '@type': 'Organization',
-  name: SITE.name,
-  url: SITE.url,
-  logo: `${SITE.url}/favicon.svg`,
-  sameAs: [SITE.github],
-};
-
-const tools = itemListSchema(
-  availableTools.map((t) => ({ name: t.name, url: `/${t.slug}`, description: t.description })),
-);
-
-const schema = combineSchemas(websiteSchema, orgSchema, tools);
+const faqs = [
+  { q: 'Is it really free and unlimited?', a: 'Yes. The model runs on your own GPU, so generating an image costs us nothing — there is no API bill to pass on to you, no credits, and no daily cap. The site is funded by ads, not by limiting you.' },
+  { q: 'Do my prompts get sent anywhere?', a: 'No. After the one-time model download, generation happens entirely inside your browser tab. Open DevTools → Network and generate an image: zero requests fire. It even works offline once cached.' },
+  { q: 'Why is the first load large?', a: 'You are downloading the actual neural network (~880 MB) — the same thing other sites keep on their servers. Your browser caches it, so it only happens once per device.' },
+  { q: 'What hardware do I need?', a: 'A browser with WebGPU (Chrome, Edge, Brave, or Safari 18+) and a GPU with roughly 2 GB of memory. Most laptops from the last 5 years qualify. Each image takes about 2–6 seconds depending on your GPU.' },
+  { q: 'Can I use the images commercially?', a: 'Yes. The model (SDXS-512-DreamShaper) is released under the OpenRAIL++ licence, which permits commercial use of outputs. Standard use restrictions apply — no illegal or harmful content.' },
+  { q: 'Why are images 512×512?', a: 'That is the native resolution of a model small enough to run in a browser in one denoising step. It is the honest trade-off for local, private, unlimited generation.' },
+];
 ---
 
-<BaseLayout schema={schema}>
-  <!-- Hero -->
-  <section class="relative overflow-hidden">
-    <div class="absolute inset-0 glow pointer-events-none"></div>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 sm:pt-28 sm:pb-24 relative">
-      <div class="flex flex-col items-center text-center max-w-3xl mx-auto">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] text-xs text-[color:var(--color-text-mute)] mb-6">
-          <span class="inline-block w-1.5 h-1.5 rounded-full bg-[color:var(--color-success)]"></span>
-          100% client-side. Nothing uploaded. Ever.
-        </div>
+<GeneratorPage
+  preset={FREEFORM}
+  title={title}
+  h1="AI Image Generator"
+  description={description}
+  intro="Type a prompt, get an image in seconds. Free, no account, no queue — the AI runs on your own device, so your prompts never reach a server."
+  faqs={faqs}
+>
+  <h2 class="text-2xl font-bold mb-4">The generator that can't see your prompts</h2>
+  <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+    Every popular AI image site works the same way: your prompt travels to their servers, waits in a queue
+    behind everyone else, runs on their GPUs, and the result comes back — logged, rate-limited, and often
+    behind a signup wall. Vexyn inverts that. The network downloads <em>to you</em>, once, and after that
+    every image is produced by your own hardware. There is no server-side generation at all, which is why
+    there is nothing to sign up for, no queue to wait in, and no counter ticking down.
+  </p>
 
-        <h1 class="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight mb-6 leading-[1.05]">
-          Tools that <span class="gradient-text">stay on your device</span>.
-        </h1>
-
-        <p class="text-lg sm:text-xl text-[color:var(--color-text-mute)] mb-10 leading-relaxed max-w-2xl">
-          Free browser tools that never upload your files. No signup. No tracking. Everything runs locally, instantly.
-        </p>
-
-        <div class="flex flex-col sm:flex-row items-center gap-3">
-          <a href="#tools" class="px-6 py-3 rounded-lg bg-[color:var(--color-brand-500)] hover:bg-[color:var(--color-brand-600)] text-white font-medium transition-colors flex items-center gap-2">
-            Browse tools
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </a>
-          <a href={SITE.github} target="_blank" rel="noopener noreferrer" class="px-6 py-3 rounded-lg border border-[color:var(--color-border)] hover:border-[color:var(--color-border-strong)] bg-[color:var(--color-surface)] hover:bg-[color:var(--color-surface-2)] text-[color:var(--color-text)] font-medium transition-colors flex items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-            Star on GitHub
-          </a>
-        </div>
-
-        <div class="mt-16 grid grid-cols-3 gap-8 sm:gap-16 text-center">
-          <div>
-            <div class="text-2xl sm:text-3xl font-bold gradient-text">100%</div>
-            <div class="text-xs text-[color:var(--color-text-mute)] mt-1">Local</div>
-          </div>
-          <div>
-            <div class="text-2xl sm:text-3xl font-bold gradient-text">0</div>
-            <div class="text-xs text-[color:var(--color-text-mute)] mt-1">Uploads</div>
-          </div>
-          <div>
-            <div class="text-2xl sm:text-3xl font-bold gradient-text">∞</div>
-            <div class="text-xs text-[color:var(--color-text-mute)] mt-1">Free uses</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Categories -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="mb-8">
-      <h2 class="text-3xl font-bold tracking-tight mb-2">Pick a category</h2>
-      <p class="text-[color:var(--color-text-mute)]">22 tools split into four hubs. Click a card to browse just that category.</p>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <a href="/pdf-tools" class="group block p-6 rounded-xl card-depth bg-[color:var(--color-surface)] border border-[color:var(--color-border)] hover:border-[color:var(--color-brand-500)] hover:-translate-y-0.5 transition-all">
-        <div class="text-3xl mb-3" aria-hidden="true">📄</div>
-        <h3 class="font-semibold mb-1 text-[color:var(--color-text)] group-hover:text-[color:var(--color-brand-400)] transition-colors">PDF Tools</h3>
-        <p class="text-xs text-[color:var(--color-text-mute)] mb-2">13 tools</p>
-        <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">Merge, split, compress, rotate, convert, OCR, unlock, protect, watermark, organize, page numbers, crop.</p>
+  <h2 class="text-2xl font-bold mb-4 mt-10">Made for a specific style?</h2>
+  <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-4">
+    The open generator applies no styling — you get exactly what you describe. If you are making something
+    specific, the dedicated pages pre-tune the prompt for that look:
+  </p>
+  <div class="not-prose grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+    {PRESETS.map((p) => (
+      <a
+        href={`/${p.slug}`}
+        class="flex items-start gap-3 p-4 rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] hover:border-[color:var(--color-brand-500)] transition group"
+      >
+        <span class="text-2xl">{p.icon}</span>
+        <span>
+          <span class="block font-semibold group-hover:text-[color:var(--color-brand-400)] transition">{p.name}</span>
+          <span class="block text-xs text-[color:var(--color-text-mute)] mt-0.5">{p.tagline}</span>
+        </span>
       </a>
-      <a href="/image-tools" class="group block p-6 rounded-xl card-depth bg-[color:var(--color-surface)] border border-[color:var(--color-border)] hover:border-[color:var(--color-brand-500)] hover:-translate-y-0.5 transition-all">
-        <div class="text-3xl mb-3" aria-hidden="true">🖼</div>
-        <h3 class="font-semibold mb-1 text-[color:var(--color-text)] group-hover:text-[color:var(--color-brand-400)] transition-colors">Image Tools</h3>
-        <p class="text-xs text-[color:var(--color-text-mute)] mb-2">6 tools</p>
-        <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">Compress, convert format, strip EXIF metadata, AI background removal, color palette extraction.</p>
-      </a>
-      <a href="/ai-tools" class="group block p-6 rounded-xl card-depth bg-[color:var(--color-surface)] border border-[color:var(--color-border)] hover:border-[color:var(--color-accent-500)] hover:-translate-y-0.5 transition-all">
-        <div class="text-3xl mb-3" aria-hidden="true">✨</div>
-        <h3 class="font-semibold mb-1 text-[color:var(--color-text)] group-hover:text-[color:var(--color-accent-400)] transition-colors">AI Tools</h3>
-        <p class="text-xs text-[color:var(--color-text-mute)] mb-2">3 tools · on-device WebGPU</p>
-        <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">Whisper transcription, background removal, PDF OCR. Real AI, no API, no upload.</p>
-      </a>
-      <a href="/developer-tools" class="group block p-6 rounded-xl card-depth bg-[color:var(--color-surface)] border border-[color:var(--color-border)] hover:border-[color:var(--color-brand-500)] hover:-translate-y-0.5 transition-all">
-        <div class="text-3xl mb-3 font-mono" aria-hidden="true">{ }</div>
-        <h3 class="font-semibold mb-1 text-[color:var(--color-text)] group-hover:text-[color:var(--color-brand-400)] transition-colors">Developer Tools</h3>
-        <p class="text-xs text-[color:var(--color-text-mute)] mb-2">3 tools</p>
-        <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">JSON formatter, Base64 encoder, QR generator. No telemetry, no signup, no nonsense.</p>
-      </a>
-    </div>
-  </section>
+    ))}
+  </div>
 
-  <!-- Tools -->
-  <section id="tools" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="flex items-end justify-between mb-8">
-      <div>
-        <h2 class="text-3xl font-bold tracking-tight mb-2">All tools</h2>
-        <p class="text-[color:var(--color-text-mute)]">Pick a tool. Drop your file. Done — no servers involved.</p>
-      </div>
-      <div class="hidden sm:flex text-xs text-[color:var(--color-text-dim)] gap-3">
-        <span>{availableTools.length} live</span>
-        <span>•</span>
-        <span>{comingTools.length} coming</span>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {availableTools.map(tool => <ToolCard tool={tool} />)}
-      {comingTools.map(tool => <ToolCard tool={tool} />)}
-    </div>
-  </section>
-
-  <!-- Latest from the blog -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="flex items-end justify-between mb-8">
-      <div>
-        <h2 class="text-3xl font-bold tracking-tight mb-2">From the blog</h2>
-        <p class="text-[color:var(--color-text-mute)]">Practical guides on running tools locally — privacy, AI in the browser, file workflows.</p>
-      </div>
-      <a href="/blog" class="hidden sm:flex items-center gap-1 text-sm text-[color:var(--color-brand-400)] hover:underline">
-        All articles
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {latestPosts.map((post) => (
-        <a
-          href={`/blog/${post.id}`}
-          class="group block p-6 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] hover:border-[color:var(--color-brand-500)] hover:-translate-y-0.5 transition-all card-depth"
-        >
-          <div class="flex items-center gap-2 text-xs text-[color:var(--color-text-dim)] mb-3 uppercase tracking-wider">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Guide
-          </div>
-          <h3 class="font-semibold mb-2 text-[color:var(--color-text)] group-hover:text-[color:var(--color-brand-400)] transition-colors leading-snug">{post.data.title}</h3>
-          <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed line-clamp-3">{post.data.description}</p>
-        </a>
-      ))}
-    </div>
-    <a href="/blog" class="sm:hidden mt-6 flex items-center gap-1 text-sm text-[color:var(--color-brand-400)] hover:underline">
-      All articles
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-    </a>
-  </section>
-
-  <!-- Why -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="p-6 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
-        <div class="w-10 h-10 rounded-lg bg-[color:var(--color-success)]/10 border border-[color:var(--color-success)]/30 flex items-center justify-center mb-4">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        </div>
-        <h3 class="font-semibold mb-2">Your files never leave</h3>
-        <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">Every tool processes data directly in your browser. We don't have servers that touch your files — because they don't exist.</p>
-      </div>
-      <div class="p-6 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
-        <div class="w-10 h-10 rounded-lg bg-[color:var(--color-brand-500)]/10 border border-[color:var(--color-brand-500)]/30 flex items-center justify-center mb-4">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-400)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 2 13 9 22 9"/><polyline points="22 14 13 14 13 21"/><polyline points="2 9 11 9 11 2"/><polyline points="11 22 11 14 2 14"/></svg>
-        </div>
-        <h3 class="font-semibold mb-2">No signup, no tracking</h3>
-        <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">No accounts. No cookies. No analytics scripts that follow you across the web. Just tools that work and disappear when you close the tab.</p>
-      </div>
-      <div class="p-6 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
-        <div class="w-10 h-10 rounded-lg bg-[color:var(--color-accent-500)]/10 border border-[color:var(--color-accent-500)]/30 flex items-center justify-center mb-4">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-400)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        </div>
-        <h3 class="font-semibold mb-2">Instant. Offline-capable.</h3>
-        <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">No round-trips to a server. Tools run as fast as your device allows. Once loaded, many work without internet.</p>
-      </div>
-    </div>
-  </section>
-</BaseLayout>
+  <h2 class="text-2xl font-bold mb-4 mt-10">How it compares</h2>
+  <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+    Cloud generators produce higher-resolution, more polished images — that is what a data-center GPU buys.
+    What they cannot offer is this combination: zero cost at any volume, zero waiting at peak hours, and
+    prompts that physically cannot be read, logged or used for training, because they never leave your
+    machine. For drafts, iteration, references, assets and fun, local wins. When you need a 4K hero image,
+    use a cloud tool — no hard feelings.
+  </p>
+</GeneratorPage>

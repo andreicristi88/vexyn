@@ -1,0 +1,48 @@
+---
+import GeneratorPage from '../components/generator/GeneratorPage.astro';
+import { getPreset } from '../lib/styles';
+
+const preset = getPreset('stickers');
+const title = 'AI Sticker & Emote Generator — Free, No Signup';
+const description =
+  'Make Discord stickers and Twitch emotes with AI. Bold outlines, flat colors, readable at small sizes. Free and unlimited — runs in your browser.';
+
+const faqs = [
+  { q: 'Can I upload these as Discord stickers or Twitch emotes?', a: 'Yes. Download the PNG, remove the white background with any background-removal tool, resize (Discord stickers: 320×320, Twitch emotes: 112/56/28px) and upload. The bold-outline styling this page applies survives small sizes well.' },
+  { q: 'Why white background instead of transparent?', a: 'The model can only produce full images — transparency is not something a diffusion model outputs. The styling forces a clean white background precisely so removal tools cut it perfectly in one click.' },
+  { q: 'Will my emote still read at 28 pixels?', a: 'That is what the "bold outline, flat colors, simple shapes" styling is for. One subject, one emotion, no background clutter. If a concept looks busy at full size, it will vanish at 28px — simplify the prompt.' },
+  { q: 'Can I sell sticker packs made with this?', a: 'Yes — the model licence permits commercial use. Telegram packs, Ko-fi rewards, channel-sub emotes: all yours.' },
+];
+---
+
+<GeneratorPage
+  preset={preset}
+  title={title}
+  h1="Sticker & Emote Generator"
+  description={description}
+  intro="Bold, cute, readable-when-tiny. Describe a character and an emotion — sticker styling with clean outlines is applied automatically."
+  faqs={faqs}
+>
+  <h2 class="text-2xl font-bold mb-4">Emotes are a style, not just an image</h2>
+  <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+    A good emote is legible at 28 pixels in a fast-moving chat. That means thick outlines, flat colour
+    fills, one exaggerated emotion and zero background noise — a style discipline this page bakes into
+    every prompt automatically. You describe <em>who</em> ("a capybara") and <em>what they feel</em>
+    ("sleepy, in a hot spring"); the sticker language is handled for you.
+  </p>
+
+  <h2 class="text-2xl font-bold mb-4 mt-10">The three-step pipeline</h2>
+  <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+    <li><strong class="text-[color:var(--color-text)]">1. Generate</strong> until the pose and expression land — rerolls are free, burn as many as you like.</li>
+    <li><strong class="text-[color:var(--color-text)]">2. Cut the background</strong> with any one-click removal tool; the forced white background makes this clean.</li>
+    <li><strong class="text-[color:var(--color-text)]">3. Resize</strong> to platform specs — Discord 320×320, Twitch 112/56/28, Telegram 512×512.</li>
+  </ul>
+
+  <h2 class="text-2xl font-bold mb-4 mt-10">Ideas that always work</h2>
+  <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+    Animal + emotion is the eternal emote formula: shocked cat, smug frog, crying hamster, determined
+    penguin. Objects with faces run a close second — the happy coffee cup, the screaming toaster. For a
+    channel set, keep one mascot and vary the emotion across generations: "a red panda, laughing", "a red
+    panda, confused", "a red panda, heart eyes". Same energy, instant brand.
+  </p>
+</GeneratorPage>

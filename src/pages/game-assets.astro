@@ -1,0 +1,56 @@
+---
+import GeneratorPage from '../components/generator/GeneratorPage.astro';
+import { getPreset } from '../lib/styles';
+
+const preset = getPreset('game-assets');
+const title = 'AI Game Asset Generator — Free, No Signup, Unlimited';
+const description =
+  'Generate game assets with AI: item icons, sprites, concept art. Free and unlimited — the model runs in your browser, so there is no credit system.';
+
+const faqs = [
+  { q: 'Can I use these assets in a commercial game?', a: 'Yes. The model licence (OpenRAIL++) permits commercial use of outputs. Ship them in your Steam release, your jam entry, your mobile game — they are yours.' },
+  { q: 'How do I get a consistent style across assets?', a: 'Lock the seed and keep your prompt structure identical, changing only the subject ("a health potion" → "a mana potion"). The style tokens this page adds do most of the heavy lifting. Full character consistency across poses is beyond a single-step model — treat outputs as strong drafts.' },
+  { q: 'Can it make sprite sheets or animations?', a: 'No — it generates single 512×512 stills. For sheets, generate each frame separately and assemble in your editor. For pixel-perfect work, use the output as reference and redraw at target resolution.' },
+  { q: 'How do I remove the background?', a: 'The prompt this page builds asks for a plain background, which makes any background-removal tool work cleanly on the result. One-click transparent output is on the roadmap.' },
+  { q: 'Why this instead of paid asset generators?', a: 'Paid tools produce higher fidelity and train on your art style — worth it for studios. This is for the other 95%: jam entries, prototypes, placeholder-to-decent art, and solo devs at budget zero. Unlimited iterations, no credits burning while you explore.' },
+];
+---
+
+<GeneratorPage
+  preset={preset}
+  title={title}
+  h1="AI Game Asset Generator"
+  description={description}
+  intro="Item icons, props, enemies and concept art — generated on your own GPU, free and unlimited. Iterate as much as you want; there are no credits to burn."
+  faqs={faqs}
+>
+  <h2 class="text-2xl font-bold mb-4">Unlimited iteration is the whole point</h2>
+  <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+    Game art is iteration-hungry: you rarely want <em>one</em> potion icon, you want thirty variations to
+    pick from. Credit-based generators punish exactly that workflow — every exploration costs money.
+    Because Vexyn runs on your GPU, the thirtieth variation costs the same as the first: nothing. Roll the
+    seed, tweak a word, reroll. That loop is the tool.
+  </p>
+
+  <h2 class="text-2xl font-bold mb-4 mt-10">What it does well — and honestly, what it doesn't</h2>
+  <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+    <li><strong class="text-[color:var(--color-text)]">Great:</strong> item icons, potions, weapons, chests, props — single centered objects with clean silhouettes.</li>
+    <li><strong class="text-[color:var(--color-text)]">Good:</strong> enemy concepts, environment mood shots, card art drafts, capsule-image references.</li>
+    <li><strong class="text-[color:var(--color-text)]">Weak:</strong> pixel-perfect sprites (redraw from output), text on objects, multi-character scenes, exact style matching to existing art.</li>
+  </ul>
+  <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+    The sweet spot is jams and prototypes: real-looking assets in minutes, no artist budget, no licence
+    anxiety. When your game finds its audience, commission an artist — and hand them these as references.
+  </p>
+
+  <h2 class="text-2xl font-bold mb-4 mt-10">Prompt patterns that work</h2>
+  <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-3">
+    This page already wraps your prompt in game-asset styling (centered, plain background, clean
+    silhouette). Within that, structure beats poetry:
+  </p>
+  <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+    <li><strong class="text-[color:var(--color-text)]">Object + material + one detail:</strong> "an iron sword with a leather-wrapped hilt" beats "a cool sword".</li>
+    <li><strong class="text-[color:var(--color-text)]">Name the palette:</strong> "green and glossy", "rusted copper", "pale bone white".</li>
+    <li><strong class="text-[color:var(--color-text)]">State the mood:</strong> "cartoon", "grimdark", "hand-painted" steer the whole render.</li>
+  </ul>
+</GeneratorPage>

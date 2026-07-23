@@ -1,0 +1,49 @@
+---
+import GeneratorPage from '../components/generator/GeneratorPage.astro';
+import { getPreset } from '../lib/styles';
+
+const preset = getPreset('wallpapers');
+const title = 'AI Wallpaper Generator — Free, Unlimited, No Account';
+const description =
+  'Generate desktop and phone wallpapers with AI, free and unlimited. Runs on your own GPU in the browser — no signup, no watermark, no queue.';
+
+const faqs = [
+  { q: 'Are the wallpapers high enough resolution for my screen?', a: 'The model outputs 512×512 natively. For desktop use, run the result through any upscaler (many free ones exist) to reach 1080p/4K — AI-generated scenery upscales remarkably well because it has no fine text or faces to break.' },
+  { q: 'Is there a watermark?', a: 'No. The image is drawn on a canvas in your own browser — there is no server adding anything. What you generate is exactly what you download.' },
+  { q: 'Can I make a matching set for desktop and phone?', a: 'Lock the seed and generate the same prompt — you get the identical scene each time. Crop to 16:9 for desktop and 9:19 for phone from the same square image, or vary the prompt slightly per device.' },
+  { q: 'Can I share or sell wallpaper packs made here?', a: 'Yes — the model licence permits commercial use of outputs. A credit link back is appreciated but never required.' },
+];
+---
+
+<GeneratorPage
+  preset={preset}
+  title={title}
+  h1="AI Wallpaper Generator"
+  description={description}
+  intro="Describe the scene you want on your screen. Cinematic styling is applied automatically — atmospheric lighting, rich detail, wide vistas."
+  faqs={faqs}
+>
+  <h2 class="text-2xl font-bold mb-4">A wallpaper nobody else has</h2>
+  <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+    Wallpaper sites give you the same ten thousand images everyone downloads. Here you describe the exact
+    scene in your head — the lighthouse in the storm, the neon alley, that specific mountain light — and
+    get something that exists nowhere else. Don't like the composition? Reroll. It's free, instant, and
+    there is no download counter or "premium" tier hiding the good ones.
+  </p>
+
+  <h2 class="text-2xl font-bold mb-4 mt-10">Prompts that make good wallpapers</h2>
+  <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+    <li><strong class="text-[color:var(--color-text)]">Place + time + weather:</strong> "a desert canyon at golden hour" — the light does the work.</li>
+    <li><strong class="text-[color:var(--color-text)]">One focal point:</strong> a lighthouse, a lone tree, a distant tower. Scenes with a single anchor sit well behind icons.</li>
+    <li><strong class="text-[color:var(--color-text)]">Muted or bold, pick one:</strong> "pastel dawn mist" and "electric neon night" both work; mixing them rarely does.</li>
+    <li><strong class="text-[color:var(--color-text)]">Skip people:</strong> faces at 512px read poorly at wallpaper scale — landscapes and architecture shine.</li>
+  </ul>
+
+  <h2 class="text-2xl font-bold mb-4 mt-10">From 512 to your screen</h2>
+  <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+    The native output is square 512×512 — that is what fits a browser-sized model. Scenery upscales
+    exceptionally well: run the download through any free AI upscaler at 2–4× and crop to your aspect
+    ratio. Because there are no faces or text, the upscale artefacts that plague other content simply
+    don't appear in landscapes.
+  </p>
+</GeneratorPage>

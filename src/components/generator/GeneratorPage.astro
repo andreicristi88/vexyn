@@ -1,0 +1,124 @@
+---
+/**
+ * Shared shell for every generator page. Handles breadcrumb, hero, the
+ * generator island, the "how it works" strip and the licence note, so each
+ * niche page only carries the prose and FAQ that make it distinct for search.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ImageGenerator from './ImageGenerator.svelte';
+import { SITE, MODEL } from '../../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas, type Faq } from '../../lib/seo';
+import type { Preset } from '../../lib/styles';
+
+interface Props {
+  preset: Preset;
+  title: string;
+  h1: string;
+  description: string;
+  intro: string;
+  faqs: Faq[];
+}
+
+const { preset, title, h1, description, intro, faqs } = Astro.props;
+const path = preset.slug ? `/${preset.slug}` : '/';
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}${path}`,
+    description,
+    category: 'MultimediaApplication',
+    features: [
+      'Text-to-image generation',
+      'Runs entirely in your browser via WebGPU',
+      'Prompts never sent to a server',
+      'No account, no queue, no generation limit',
+      'Works offline once the model is cached',
+      `Open model — ${MODEL.id} (${MODEL.licence})`,
+    ],
+  }),
+  breadcrumbSchema(
+    preset.slug
+      ? [{ name: 'Home', url: '/' }, { name: preset.name, url: path }]
+      : [{ name: 'Home', url: '/' }],
+  ),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+    {preset.slug && (
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">{preset.name}</span>
+      </div>
+    )}
+
+    <header class="mb-6">
+      <div class="flex items-center gap-3 mb-3 flex-wrap">
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">{h1}</h1>
+        <span class="text-xs px-2 py-1 rounded-md bg-[color:var(--color-accent-500)]/15 border border-[color:var(--color-accent-500)]/30 text-[color:var(--color-accent-400)] font-medium uppercase tracking-wider">
+          Runs locally
+        </span>
+      </div>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">{intro}</p>
+    </header>
+
+    <ImageGenerator preset={preset} client:load />
+
+    <!-- How it works -->
+    <section class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="p-4 rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-[color:var(--color-brand-500)]/15 text-[color:var(--color-brand-400)] text-xs font-mono flex items-center justify-center">1</span>
+          <span class="text-sm font-semibold">Load once</span>
+        </div>
+        <p class="text-xs text-[color:var(--color-text-mute)] leading-relaxed">
+          The model downloads to your browser and stays cached. One wait, at the start — never again.
+        </p>
+      </div>
+      <div class="p-4 rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-[color:var(--color-brand-500)]/15 text-[color:var(--color-brand-400)] text-xs font-mono flex items-center justify-center">2</span>
+          <span class="text-sm font-semibold">Your GPU does the work</span>
+        </div>
+        <p class="text-xs text-[color:var(--color-text-mute)] leading-relaxed">
+          A single denoising step runs through WebGPU. No API call, no credit counter, no queue behind
+          other people.
+        </p>
+      </div>
+      <div class="p-4 rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-6 h-6 rounded-full bg-[color:var(--color-brand-500)]/15 text-[color:var(--color-brand-400)] text-xs font-mono flex items-center justify-center">3</span>
+          <span class="text-sm font-semibold">Keep what you make</span>
+        </div>
+        <p class="text-xs text-[color:var(--color-text-mute)] leading-relaxed">
+          Download as PNG. The model's licence permits commercial use, so your output is yours to ship.
+        </p>
+      </div>
+    </section>
+
+    <article class="prose mt-14 max-w-3xl">
+      <slot />
+
+      <h2 class="text-2xl font-bold mb-4 mt-12">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map((f) => (
+          <div>
+            <h3 class="font-semibold mb-1">{f.q}</h3>
+            <p class="text-[color:var(--color-text-mute)]">{f.a}</p>
+          </div>
+        ))}
+      </div>
+
+      <p class="mt-12 text-xs text-[color:var(--color-text-dim)] leading-relaxed border-t border-[color:var(--color-border)] pt-6">
+        Images are generated with <a class="text-[color:var(--color-brand-400)] hover:underline" href={MODEL.url} target="_blank" rel="noopener noreferrer">{MODEL.id}</a>,
+        released under the <a class="text-[color:var(--color-brand-400)] hover:underline" href={MODEL.licenceUrl} target="_blank" rel="noopener noreferrer">{MODEL.licence}</a> licence.
+        That licence permits commercial use and carries use restrictions that also apply to you — see our
+        <a class="text-[color:var(--color-brand-400)] hover:underline" href="/about">terms</a>.
+      </p>
+    </article>
+  </div>
+</BaseLayout>

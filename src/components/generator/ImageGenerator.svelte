@@ -158,29 +158,53 @@
     }
   }
 
-  async function fetchPart(part: Part, onChunk: (got: number, total: number) => void) {
-    const url = `${MODEL_BASE}/${part}/model.onnx`;
+  /** Files that make up one component. Wrangler caps uploads at 300 MiB, so
+   *  the unet ships as byte-split chunks the client re-concatenates. */
+  function filesFor(part: Part): Array<{ path: string; bytes: number }> {
+    return cfg?.files?.[part] ?? [{ path: `${part}/model.onnx`, bytes: 0 }];
+  }
+
+  async function fetchPart(part: Part, onChunk: (delta: number) => void) {
+    const files = filesFor(part);
     const cache = await caches.open(CACHE);
-    const hit = await cache.match(url);
-    if (hit) {
-      const buf = await hit.arrayBuffer();
-      onChunk(buf.byteLength, buf.byteLength);
-      return buf;
+    const totalBytesPart = files.reduce((a, f) => a + f.bytes, 0);
+    const out = totalBytesPart ? new Uint8Array(totalBytesPart) : null;
+    let offset = 0;
+    const chunks: Uint8Array[] = [];
+
+    for (const file of files) {
+      const url = `${MODEL_BASE}/${file.path}`;
+      const hit = await cache.match(url);
+      if (hit) {
+        const buf = new Uint8Array(await hit.arrayBuffer());
+        if (out) out.set(buf, offset);
+        else chunks.push(buf);
+        offset += buf.byteLength;
+        onChunk(buf.byteLength);
+        continue;
+      }
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`${file.path}: HTTP ${res.status}`);
+      // Cache the clone by streaming — never materialise a second copy in the heap.
+      cache.put(url, res.clone()).catch(() => {});
+      const reader = res.body!.getReader();
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (out) out.set(value, offset);
+        else chunks.push(value);
+        offset += value.length;
+        onChunk(value.length);
+      }
     }
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`${part}: HTTP ${res.status}`);
-    const total = Number(res.headers.get('content-length')) || 0;
-    // Cache the clone by streaming — never materialise a second copy in the heap.
-    cache.put(url, res.clone()).catch(() => {});
-    const buf = new Uint8Array(total);
-    const reader = res.body!.getReader();
-    let got = 0;
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buf.set(value, got);
-      got += value.length;
-      onChunk(got, total);
+
+    if (out) return out.buffer;
+    // Manifest lacked sizes — assemble from collected chunks.
+    const buf = new Uint8Array(offset);
+    let o = 0;
+    for (const c of chunks) {
+      buf.set(c, o);
+      o += c.length;
     }
     return buf.buffer;
   }
@@ -195,18 +219,19 @@
       if (!manifest.ok) throw new Error(`manifest: HTTP ${manifest.status}`);
       cfg = await manifest.json();
       alphasCumprod = buildAlphas(cfg.scheduler_config);
-      bytesTotal = PARTS.reduce((a, p) => a + (cfg.sizes_mb?.[p] ?? 0) * 1048576, 0);
+      bytesTotal = PARTS.reduce((a, p) => {
+        const fromFiles = filesFor(p).reduce((s, f) => s + f.bytes, 0);
+        return a + (fromFiles || (cfg.sizes_mb?.[p] ?? 0) * 1048576);
+      }, 0);
 
       loadingLabel = 'Starting the runtime';
       ort = await import('onnxruntime-web/webgpu');
 
       let done = 0;
       for (const part of PARTS) {
-        let last = 0;
         loadingLabel = `Downloading ${part.replace('_', ' ')}`;
-        const buf = await fetchPart(part, (got) => {
-          done += got - last;
-          last = got;
+        const buf = await fetchPart(part, (delta) => {
+          done += delta;
           bytesDone = done;
           const secs = (performance.now() - started) / 1000;
           if (secs > 0.5) mbps = done / 1048576 / secs;

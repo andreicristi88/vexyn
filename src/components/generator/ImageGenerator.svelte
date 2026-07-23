@@ -5,11 +5,11 @@
   let { preset }: { preset: Preset } = $props();
 
   type Phase = 'probe' | 'choose' | 'idle' | 'loading' | 'ready' | 'generating';
-  /** How images get made on this device:
-   *  webgpu — local, fast, unlimited (desktop happy path)
-   *  wasm   — local on CPU, unlimited but slow (fallback, user opted in)
-   *  server — our Workers AI endpoint, fast but daily-capped (user opted in) */
-  type Mode = 'webgpu' | 'wasm' | 'server';
+  /** Where inference runs. Both options are on-device by design — there is no
+   *  server path, so the privacy guarantee holds for every visitor equally.
+   *  webgpu — GPU, seconds per image (desktop and capable phones)
+   *  wasm   — CPU, roughly a minute per image (everything else) */
+  type Mode = 'webgpu' | 'wasm';
   type Shot = { url: string; prompt: string; seed: number; ms: number };
 
   const PARTS = ['text_encoder', 'unet', 'vae_decoder'] as const;
@@ -22,7 +22,6 @@
   let mode = $state<Mode>('webgpu');
   let gpuName = $state('');
   let unsupportedReason = $state('');
-  let serverRemaining = $state<number | null>(null);
 
   let prompt = $state('');
   let seed = $state(Math.floor(Math.random() * 1e6));
@@ -198,11 +197,6 @@
     }
   }
 
-  function chooseServer() {
-    mode = 'server';
-    phase = 'ready'; // nothing to load — the server has the model
-  }
-
   function chooseWasm() {
     mode = 'wasm';
     phase = 'idle'; // same download flow, CPU execution
@@ -315,25 +309,6 @@
     }
   }
 
-  async function generateServer() {
-    const t0 = performance.now();
-    const full = buildPrompt(preset, prompt);
-    const res = await fetch('/api/generate', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ prompt: full, seed }),
-    });
-    const data = await res.json().catch(() => ({}) as any);
-    if (!res.ok) throw new Error(data?.message ?? data?.error ?? `server error ${res.status}`);
-    serverRemaining = data.remaining ?? null;
-    lastMs = performance.now() - t0;
-    shots = [
-      { url: `data:image/jpeg;base64,${data.image}`, prompt: full, seed: data.seed ?? seed, ms: lastMs },
-      ...shots,
-    ].slice(0, 24);
-    if (!lockSeed) seed = Math.floor(Math.random() * 1e6);
-  }
-
   function startFeedback() {
     elapsed = 0;
     elapsedTimer = setInterval(() => (elapsed += 1), 1000);
@@ -354,16 +329,6 @@
     phase = 'generating';
     error = '';
     startFeedback();
-    if (mode === 'server') {
-      try {
-        await generateServer();
-      } catch (e: any) {
-        error = e?.message ?? String(e);
-      }
-      stopFeedback();
-      phase = 'ready';
-      return;
-    }
     const t0 = performance.now();
     try {
       const full = buildPrompt(preset, prompt);
@@ -459,53 +424,42 @@
 </script>
 
 <div class="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] overflow-hidden">
-  <!-- ── choose: no local GPU acceleration available ─────────────── -->
+  <!-- ── choose: no GPU acceleration, CPU is the only path ───────── -->
   {#if phase === 'choose'}
-    <div class="p-6 sm:p-8">
-      <div class="text-center mb-6">
-        <div class="text-3xl mb-3">📱</div>
-        <h2 class="text-lg font-semibold mb-2">Your device can't use GPU acceleration</h2>
-        <p class="text-sm text-[color:var(--color-text-mute)] max-w-md mx-auto">{unsupportedReason}</p>
-        <p class="text-sm text-[color:var(--color-text-mute)] max-w-md mx-auto mt-2">
-          You can still generate — pick how:
-        </p>
+    <div class="p-6 sm:p-8 text-center">
+      <div class="text-3xl mb-3">🐌</div>
+      <h2 class="text-lg font-semibold mb-2">This device has no GPU acceleration</h2>
+      <p class="text-sm text-[color:var(--color-text-mute)] max-w-md mx-auto mb-4">{unsupportedReason}</p>
+      <p class="text-sm text-[color:var(--color-text-mute)] max-w-md mx-auto mb-6">
+        It can still generate on the CPU — same model, same privacy, just slower. There is no server
+        option here by design: images are made on your device or not at all.
+      </p>
+
+      <div class="max-w-sm mx-auto text-left rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-bg)] p-4 mb-6 space-y-2">
+        <div class="flex items-baseline justify-between gap-4 text-sm">
+          <span class="text-[color:var(--color-text-mute)]">One-time download</span>
+          <span class="font-medium tabular-nums">{mb(880 * 1048576)} MB</span>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 text-sm">
+          <span class="text-[color:var(--color-text-mute)]">Time per image</span>
+          <span class="font-medium">about a minute</span>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 text-sm">
+          <span class="text-[color:var(--color-text-mute)]">Images per day</span>
+          <span class="font-medium">unlimited</span>
+        </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <button
-          onclick={chooseServer}
-          class="text-left p-4 rounded-lg border border-[color:var(--color-brand-500)] bg-[color:var(--color-brand-500)]/5 hover:bg-[color:var(--color-brand-500)]/10 transition"
-        >
-          <div class="flex items-center gap-2 mb-1.5">
-            <span class="text-lg">⚡</span>
-            <span class="font-semibold">Fast — on our server</span>
-          </div>
-          <p class="text-xs text-[color:var(--color-text-mute)] leading-relaxed mb-2">
-            Images in ~4 seconds, nothing to download. Limited to a few per day because we pay for the
-            GPU time.
-          </p>
-          <p class="text-xs text-[color:var(--color-accent-400)] leading-relaxed">
-            Your prompt is sent to our server for this. It is used for the image and never stored.
-          </p>
-        </button>
-
-        <button
-          onclick={chooseWasm}
-          class="text-left p-4 rounded-lg border border-[color:var(--color-border)] hover:border-[color:var(--color-text-mute)] transition"
-        >
-          <div class="flex items-center gap-2 mb-1.5">
-            <span class="text-lg">🔒</span>
-            <span class="font-semibold">Unlimited — on your device</span>
-          </div>
-          <p class="text-xs text-[color:var(--color-text-mute)] leading-relaxed mb-2">
-            No limit, prompts stay private. But it downloads {mb(880 * 1048576)} MB and each image takes
-            roughly a minute on a phone CPU.
-          </p>
-          <p class="text-xs text-[color:var(--color-text-dim)] leading-relaxed">
-            Best on Wi-Fi. Older phones may run out of memory.
-          </p>
-        </button>
-      </div>
+      <button
+        onclick={chooseWasm}
+        class="px-6 py-3 rounded-lg bg-[color:var(--color-brand-500)] text-white font-semibold hover:brightness-110 transition"
+      >
+        Continue on CPU
+      </button>
+      <p class="mt-4 text-xs text-[color:var(--color-text-dim)] max-w-sm mx-auto leading-relaxed">
+        Best on Wi-Fi. Phones with little free memory may not manage it — if the tab reloads itself,
+        that is what happened, and a desktop browser will work far better.
+      </p>
     </div>
 
   <!-- ── probe / idle ────────────────────────────────────────────── -->
@@ -527,13 +481,6 @@
       >
         {phase === 'probe' ? 'Checking your GPU…' : 'Load model'}
       </button>
-      {#if mode === 'wasm'}
-        <p class="mt-3 text-xs text-[color:var(--color-text-dim)]">
-          <button onclick={chooseServer} class="underline hover:text-[color:var(--color-text-mute)]">
-            Changed your mind? Use the fast server option instead
-          </button>
-        </p>
-      {/if}
       {#if error}
         <p class="mt-4 text-sm text-red-400">{error}</p>
       {/if}
@@ -568,26 +515,12 @@
   <!-- ── ready / generating ──────────────────────────────────────── -->
   {:else}
     <div class="p-5 sm:p-6">
-      {#if mode !== 'webgpu'}
+      {#if mode === 'wasm'}
         <div class="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg bg-[color:var(--color-bg)] border border-[color:var(--color-border)] text-xs">
-          {#if mode === 'server'}
-            <span>⚡</span>
-            <span class="text-[color:var(--color-text-mute)]">
-              Generating on our server — prompts leave your device.
-              {#if serverRemaining !== null}<span class="text-[color:var(--color-text)]">{serverRemaining} left today.</span>{/if}
-            </span>
-            <button
-              onclick={chooseWasm}
-              class="ml-auto shrink-0 underline text-[color:var(--color-text-dim)] hover:text-[color:var(--color-text)]"
-            >
-              Switch to private
-            </button>
-          {:else}
-            <span>🔒</span>
-            <span class="text-[color:var(--color-text-mute)]">
-              Running on your CPU — private and unlimited, but slow.
-            </span>
-          {/if}
+          <span>🐌</span>
+          <span class="text-[color:var(--color-text-mute)]">
+            Running on your CPU — unlimited and private, but expect about a minute per image.
+          </span>
         </div>
       {/if}
 

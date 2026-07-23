@@ -7,17 +7,33 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <h1 class="text-4xl font-bold mb-6">Privacy</h1>
 
     <p class="text-lg text-[color:var(--color-text-mute)] leading-relaxed mb-8">
-      Short version: <strong class="text-[color:var(--color-text)]">your prompts and generated images never leave your device.</strong>
-      Generation is client-side — there is no server that could see them.
+      Short version: <strong class="text-[color:var(--color-text)]">by default your prompts never leave your device.</strong>
+      There is one exception, it only happens if you pick it, and we tell you before you do — details below.
+    </p>
+
+    <h2 class="text-2xl font-bold mb-3 mt-8">The two ways images get made</h2>
+    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-3">
+      <strong class="text-[color:var(--color-text)]">On your device (the default).</strong> If your browser
+      supports WebGPU — every desktop browser and recent phones — the model runs inside your tab. Your
+      prompt is never transmitted anywhere. Generate an image with DevTools → Network open and you will
+      see zero requests.
+    </p>
+    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+      <strong class="text-[color:var(--color-text)]">On our server (only if you choose it).</strong> Some
+      devices, mostly phones, can't run the model locally. Those visitors are offered a choice: generate
+      on our server, or download the model and run it slowly on the device CPU. If — and only if — the
+      server option is picked, the prompt is sent to a Cloudflare Worker, passed to the image model, and
+      the result is returned. The prompt is not written to any database or log, and the image is not
+      stored. A per-connection daily counter is kept so the free capacity isn't drained by one user.
     </p>
 
     <h2 class="text-2xl font-bold mb-3 mt-8">What we don't do</h2>
     <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
       <li>We don't have accounts. There is no signup.</li>
-      <li>We don't receive, log or store your prompts — they are processed inside your browser tab.</li>
-      <li>We don't receive or store the images you generate.</li>
+      <li>We don't store prompts or generated images — on either path.</li>
       <li>We don't run analytics that profile you.</li>
       <li>We don't sell or share data — we don't have any to sell.</li>
+      <li>We don't send anything to a server unless you explicitly choose the server option.</li>
     </ul>
 
     <h2 class="text-2xl font-bold mb-3 mt-8">What we use</h2>

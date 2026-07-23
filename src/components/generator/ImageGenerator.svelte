@@ -4,7 +4,12 @@
 
   let { preset }: { preset: Preset } = $props();
 
-  type Phase = 'probe' | 'unsupported' | 'idle' | 'loading' | 'ready' | 'generating';
+  type Phase = 'probe' | 'choose' | 'idle' | 'loading' | 'ready' | 'generating';
+  /** How images get made on this device:
+   *  webgpu — local, fast, unlimited (desktop happy path)
+   *  wasm   — local on CPU, unlimited but slow (fallback, user opted in)
+   *  server — our Workers AI endpoint, fast but daily-capped (user opted in) */
+  type Mode = 'webgpu' | 'wasm' | 'server';
   type Shot = { url: string; prompt: string; seed: number; ms: number };
 
   const PARTS = ['text_encoder', 'unet', 'vae_decoder'] as const;
@@ -14,8 +19,10 @@
   const LATENT = 64; // 512 / 8
 
   let phase = $state<Phase>('probe');
+  let mode = $state<Mode>('webgpu');
   let gpuName = $state('');
   let unsupportedReason = $state('');
+  let serverRemaining = $state<number | null>(null);
 
   let prompt = $state('');
   let seed = $state(Math.floor(Math.random() * 1e6));
@@ -138,24 +145,35 @@
   async function probe() {
     if (!('gpu' in navigator)) {
       unsupportedReason =
-        'This browser has no WebGPU. Chrome, Edge, Brave or Safari 18+ can run the model locally.';
-      phase = 'unsupported';
+        'This browser has no WebGPU (common on phones and older browsers).';
+      phase = 'choose';
       return;
     }
     try {
       const adapter = await (navigator as any).gpu.requestAdapter({ powerPreference: 'high-performance' });
       if (!adapter) {
-        unsupportedReason = 'WebGPU is present but no graphics adapter was offered by the system.';
-        phase = 'unsupported';
+        unsupportedReason = 'WebGPU exists here, but the system offered no graphics adapter — your GPU is likely blocklisted.';
+        phase = 'choose';
         return;
       }
       const info = adapter.info ?? (adapter.requestAdapterInfo ? await adapter.requestAdapterInfo() : {});
       gpuName = [info.vendor, info.architecture].filter(Boolean).join(' ') || 'your GPU';
+      mode = 'webgpu';
       phase = 'idle';
     } catch (e: any) {
       unsupportedReason = e?.message ?? 'WebGPU failed to initialise.';
-      phase = 'unsupported';
+      phase = 'choose';
     }
+  }
+
+  function chooseServer() {
+    mode = 'server';
+    phase = 'ready'; // nothing to load — the server has the model
+  }
+
+  function chooseWasm() {
+    mode = 'wasm';
+    phase = 'idle'; // same download flow, CPU execution
   }
 
   /** Files that make up one component. Wrangler caps uploads at 300 MiB, so
@@ -226,6 +244,11 @@
 
       loadingLabel = 'Starting the runtime';
       ort = await import('onnxruntime-web/webgpu');
+      if (mode === 'wasm') {
+        // No COOP/COEP on the site (ads-compatible), so no threads. SIMD is on
+        // by default and is what makes single-thread tolerable at all.
+        ort.env.wasm.numThreads = 1;
+      }
 
       let done = 0;
       for (const part of PARTS) {
@@ -239,7 +262,7 @@
         loadingLabel = `Preparing ${part.replace('_', ' ')} — this freezes briefly`;
         await new Promise((r) => setTimeout(r, 60)); // let the label paint
         sessions[part] = await ort.InferenceSession.create(buf, {
-          executionProviders: ['webgpu'],
+          executionProviders: mode === 'wasm' ? ['wasm'] : ['webgpu'],
           graphOptimizationLevel: 'all',
         });
       }
@@ -255,10 +278,38 @@
     }
   }
 
+  async function generateServer() {
+    const t0 = performance.now();
+    const full = buildPrompt(preset, prompt);
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ prompt: full, seed }),
+    });
+    const data = await res.json().catch(() => ({}) as any);
+    if (!res.ok) throw new Error(data?.message ?? data?.error ?? `server error ${res.status}`);
+    serverRemaining = data.remaining ?? null;
+    lastMs = performance.now() - t0;
+    shots = [
+      { url: `data:image/jpeg;base64,${data.image}`, prompt: full, seed: data.seed ?? seed, ms: lastMs },
+      ...shots,
+    ].slice(0, 24);
+    if (!lockSeed) seed = Math.floor(Math.random() * 1e6);
+  }
+
   async function generate() {
     if (phase !== 'ready' || !prompt.trim()) return;
     phase = 'generating';
     error = '';
+    if (mode === 'server') {
+      try {
+        await generateServer();
+      } catch (e: any) {
+        error = e?.message ?? String(e);
+      }
+      phase = 'ready';
+      return;
+    }
     const t0 = performance.now();
     try {
       const full = buildPrompt(preset, prompt);
@@ -353,16 +404,53 @@
 </script>
 
 <div class="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] overflow-hidden">
-  <!-- ── unsupported ─────────────────────────────────────────────── -->
-  {#if phase === 'unsupported'}
-    <div class="p-8 text-center">
-      <div class="text-3xl mb-3">⚠</div>
-      <h2 class="text-lg font-semibold mb-2">This browser can't run the model</h2>
-      <p class="text-sm text-[color:var(--color-text-mute)] max-w-md mx-auto mb-4">{unsupportedReason}</p>
-      <p class="text-xs text-[color:var(--color-text-dim)]">
-        Everything here runs on your own GPU — there is no server to fall back to. That is the trade-off
-        for prompts that never leave your device.
-      </p>
+  <!-- ── choose: no local GPU acceleration available ─────────────── -->
+  {#if phase === 'choose'}
+    <div class="p-6 sm:p-8">
+      <div class="text-center mb-6">
+        <div class="text-3xl mb-3">📱</div>
+        <h2 class="text-lg font-semibold mb-2">Your device can't use GPU acceleration</h2>
+        <p class="text-sm text-[color:var(--color-text-mute)] max-w-md mx-auto">{unsupportedReason}</p>
+        <p class="text-sm text-[color:var(--color-text-mute)] max-w-md mx-auto mt-2">
+          You can still generate — pick how:
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button
+          onclick={chooseServer}
+          class="text-left p-4 rounded-lg border border-[color:var(--color-brand-500)] bg-[color:var(--color-brand-500)]/5 hover:bg-[color:var(--color-brand-500)]/10 transition"
+        >
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="text-lg">⚡</span>
+            <span class="font-semibold">Fast — on our server</span>
+          </div>
+          <p class="text-xs text-[color:var(--color-text-mute)] leading-relaxed mb-2">
+            Images in ~4 seconds, nothing to download. Limited to a few per day because we pay for the
+            GPU time.
+          </p>
+          <p class="text-xs text-[color:var(--color-accent-400)] leading-relaxed">
+            Your prompt is sent to our server for this. It is used for the image and never stored.
+          </p>
+        </button>
+
+        <button
+          onclick={chooseWasm}
+          class="text-left p-4 rounded-lg border border-[color:var(--color-border)] hover:border-[color:var(--color-text-mute)] transition"
+        >
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="text-lg">🔒</span>
+            <span class="font-semibold">Unlimited — on your device</span>
+          </div>
+          <p class="text-xs text-[color:var(--color-text-mute)] leading-relaxed mb-2">
+            No limit, prompts stay private. But it downloads {mb(880 * 1048576)} MB and each image takes
+            roughly a minute on a phone CPU.
+          </p>
+          <p class="text-xs text-[color:var(--color-text-dim)] leading-relaxed">
+            Best on Wi-Fi. Older phones may run out of memory.
+          </p>
+        </button>
+      </div>
     </div>
 
   <!-- ── probe / idle ────────────────────────────────────────────── -->
@@ -372,7 +460,7 @@
       <h2 class="text-xl font-semibold mb-2">Load the model once, then generate forever</h2>
       <p class="text-sm text-[color:var(--color-text-mute)] max-w-lg mx-auto mb-1">
         About {mb(880 * 1048576)} MB downloads to your browser and stays cached. After that every image is
-        generated on {gpuName || 'your GPU'} in a couple of seconds — no account, no queue, no limit.
+        generated {mode === 'wasm' ? 'on your CPU — around a minute each' : `on ${gpuName || 'your GPU'} in a couple of seconds`} — no account, no queue, no limit.
       </p>
       <p class="text-xs text-[color:var(--color-text-dim)] mb-6">
         Your prompts are never sent anywhere. Open DevTools → Network and check.
@@ -384,6 +472,13 @@
       >
         {phase === 'probe' ? 'Checking your GPU…' : 'Load model'}
       </button>
+      {#if mode === 'wasm'}
+        <p class="mt-3 text-xs text-[color:var(--color-text-dim)]">
+          <button onclick={chooseServer} class="underline hover:text-[color:var(--color-text-mute)]">
+            Changed your mind? Use the fast server option instead
+          </button>
+        </p>
+      {/if}
       {#if error}
         <p class="mt-4 text-sm text-red-400">{error}</p>
       {/if}
@@ -418,6 +513,29 @@
   <!-- ── ready / generating ──────────────────────────────────────── -->
   {:else}
     <div class="p-5 sm:p-6">
+      {#if mode !== 'webgpu'}
+        <div class="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg bg-[color:var(--color-bg)] border border-[color:var(--color-border)] text-xs">
+          {#if mode === 'server'}
+            <span>⚡</span>
+            <span class="text-[color:var(--color-text-mute)]">
+              Generating on our server — prompts leave your device.
+              {#if serverRemaining !== null}<span class="text-[color:var(--color-text)]">{serverRemaining} left today.</span>{/if}
+            </span>
+            <button
+              onclick={chooseWasm}
+              class="ml-auto shrink-0 underline text-[color:var(--color-text-dim)] hover:text-[color:var(--color-text)]"
+            >
+              Switch to private
+            </button>
+          {:else}
+            <span>🔒</span>
+            <span class="text-[color:var(--color-text-mute)]">
+              Running on your CPU — private and unlimited, but slow.
+            </span>
+          {/if}
+        </div>
+      {/if}
+
       <label for="vexyn-prompt" class="sr-only">Prompt</label>
       <textarea
         id="vexyn-prompt"

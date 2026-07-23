@@ -1,10 +1,29 @@
 name = "vexyn"
+main = "worker/index.ts"
 compatibility_date = "2024-11-01"
 
-# Vexyn is a fully static Astro site — no SSR, no Functions, no Workers
-# runtime code. Workers Static Assets serves the built /dist directory
-# directly. This setup mirrors Cloudflare Pages behaviour while staying
-# inside the Workers product where this project was provisioned.
+# The site itself is a fully static Astro build served via Workers Static
+# Assets. The worker script exists for ONE endpoint: POST /api/generate —
+# the server-side fallback for devices that cannot run the model locally
+# (no WebGPU). Everything else falls through to the assets.
 [assets]
 directory = "./dist"
 not_found_handling = "404-page"
+binding = "ASSETS"
+
+# Workers AI: Flux Schnell for the mobile/server fallback.
+[ai]
+binding = "AI"
+
+# Daily counters: per-IP and global budget cap.
+[[kv_namespaces]]
+binding = "RATE"
+id = "38ec22357ead4e3b9068fcc5ac020ed6"
+
+[vars]
+# Per-IP daily image cap for the server fallback.
+LIMIT_PER_IP = "8"
+# Global daily cap across ALL users. This is the cost knob:
+#   500/day  ≈ stays inside the Workers AI free tier ($0/mo)
+#   2000/day ≈ max ~$13/mo — raise only once ad revenue exists.
+LIMIT_GLOBAL = "500"

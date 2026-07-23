@@ -20,7 +20,10 @@
   const LATENT = 64; // 512 / 8
 
   let phase = $state<Phase>('probe');
-  let mode = $state<Mode>('webgpu');
+  // Defaults to the slow-but-universal path; 'webgpu' is only assigned once an
+  // adapter has actually been handed over, so a failed probe can never leave
+  // the component believing it has GPU acceleration.
+  let mode = $state<Mode>('wasm');
   let gpuName = $state('');
   let unsupportedReason = $state('');
 
@@ -148,29 +151,29 @@
   });
 
   async function probe() {
-    if (!('gpu' in navigator)) {
-      unsupportedReason =
-        'This browser has no WebGPU (common on phones and older browsers).';
-      phase = 'choose';
-      return;
-    }
+    // Decide the mode first, with no early exits — every path has to end up at
+    // the same auto-load check, or returning visitors get asked to load a model
+    // that is already sitting in their cache.
     try {
-      const adapter = await (navigator as any).gpu.requestAdapter({ powerPreference: 'high-performance' });
-      if (!adapter) {
-        unsupportedReason = 'WebGPU exists here, but the system offered no graphics adapter — your GPU is likely blocklisted.';
-        phase = 'choose';
-        return;
+      if (!('gpu' in navigator)) {
+        unsupportedReason = 'This browser has no WebGPU (common on phones and older browsers).';
+      } else {
+        const adapter = await (navigator as any).gpu.requestAdapter({ powerPreference: 'high-performance' });
+        if (!adapter) {
+          unsupportedReason =
+            'WebGPU exists here, but the system offered no graphics adapter — your GPU is likely blocklisted.';
+        } else {
+          const info = adapter.info ?? (adapter.requestAdapterInfo ? await adapter.requestAdapterInfo() : {});
+          gpuName = [info.vendor, info.architecture].filter(Boolean).join(' ') || 'your GPU';
+          mode = 'webgpu';
+        }
       }
-      const info = adapter.info ?? (adapter.requestAdapterInfo ? await adapter.requestAdapterInfo() : {});
-      gpuName = [info.vendor, info.architecture].filter(Boolean).join(' ') || 'your GPU';
-      mode = 'webgpu';
-      phase = 'idle';
-      await autoLoadIfCached();
     } catch (e: any) {
       unsupportedReason = e?.message ?? 'WebGPU failed to initialise.';
-      phase = 'choose';
-      await autoLoadIfCached();
     }
+
+    phase = mode === 'webgpu' ? 'idle' : 'choose';
+    await autoLoadIfCached();
   }
 
   /**
@@ -180,9 +183,7 @@
    * cached (they live in page memory), so the init cost stays either way.
    */
   async function autoLoadIfCached() {
-    if (!(await weightsCached())) return;
-    if (phase === 'choose') mode = 'wasm'; // cached implies they already accepted CPU
-    load();
+    if (await weightsCached()) load();
   }
 
   /** True when every model file is already in Cache Storage. */
@@ -264,6 +265,7 @@
   }
 
   async function load() {
+    if (phase === 'loading' || phase === 'ready' || phase === 'generating') return;
     phase = 'loading';
     error = '';
     const started = performance.now();

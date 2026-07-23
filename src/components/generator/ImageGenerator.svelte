@@ -36,6 +36,11 @@
   let shots = $state<Shot[]>([]);
   let error = $state('');
   let lastMs = $state(0);
+  /** Seconds ticking while a generation runs — on a phone the button label
+   *  alone is too easy to miss, and the result lands below the fold. */
+  let elapsed = $state(0);
+  let elapsedTimer: ReturnType<typeof setInterval> | null = null;
+  let resultsEl = $state<HTMLElement | null>(null);
 
   // Not reactive — these are heavy handles, never rendered.
   let ort: any = null;
@@ -329,16 +334,33 @@
     if (!lockSeed) seed = Math.floor(Math.random() * 1e6);
   }
 
+  function startFeedback() {
+    elapsed = 0;
+    elapsedTimer = setInterval(() => (elapsed += 1), 1000);
+    // Bring the pending tile into view — on mobile it sits below the fold and
+    // the user would otherwise see nothing happen at all.
+    requestAnimationFrame(() => {
+      resultsEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  }
+
+  function stopFeedback() {
+    if (elapsedTimer) clearInterval(elapsedTimer);
+    elapsedTimer = null;
+  }
+
   async function generate() {
     if (phase !== 'ready' || !prompt.trim()) return;
     phase = 'generating';
     error = '';
+    startFeedback();
     if (mode === 'server') {
       try {
         await generateServer();
       } catch (e: any) {
         error = e?.message ?? String(e);
       }
+      stopFeedback();
       phase = 'ready';
       return;
     }
@@ -420,6 +442,7 @@
     } catch (e: any) {
       error = e?.message ?? String(e);
     }
+    stopFeedback();
     phase = 'ready';
   }
 
@@ -582,9 +605,17 @@
         <button
           onclick={generate}
           disabled={phase === 'generating' || !prompt.trim()}
-          class="px-5 py-2.5 rounded-lg bg-[color:var(--color-brand-500)] text-white font-semibold hover:brightness-110 transition disabled:opacity-40 disabled:cursor-not-allowed"
+          class="px-5 py-2.5 rounded-lg bg-[color:var(--color-brand-500)] text-white font-semibold hover:brightness-110 transition disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
         >
-          {phase === 'generating' ? 'Generating…' : 'Generate'}
+          {#if phase === 'generating'}
+            <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25" />
+              <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+            </svg>
+            <span>Generating… {elapsed}s</span>
+          {:else}
+            Generate
+          {/if}
         </button>
         <span class="text-xs text-[color:var(--color-text-dim)] hidden sm:inline">⌘/Ctrl + Enter</span>
 
@@ -602,7 +633,7 @@
         </div>
       </div>
 
-      {#if !shots.length}
+      {#if !shots.length && phase !== 'generating'}
         <div class="mt-4">
           <p class="text-xs text-[color:var(--color-text-dim)] mb-2">Try one of these:</p>
           <div class="flex flex-wrap gap-2">
@@ -622,16 +653,35 @@
         <p class="mt-4 text-sm text-red-400">{error}</p>
       {/if}
 
-      {#if shots.length}
-        <p class="mt-5 mb-2 text-xs text-[color:var(--color-text-dim)]">
-          {shots.length} image{shots.length > 1 ? 's' : ''} · last one took {(lastMs / 1000).toFixed(1)}s
+      {#if shots.length || phase === 'generating'}
+        <p class="mt-5 mb-2 text-xs text-[color:var(--color-text-dim)]" bind:this={resultsEl}>
+          {#if phase === 'generating'}
+            Working on it — {mode === 'wasm' ? 'CPU generation takes about a minute' : 'usually a few seconds'}
+          {:else}
+            {shots.length} image{shots.length > 1 ? 's' : ''} · last one took {(lastMs / 1000).toFixed(1)}s
+          {/if}
         </p>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {#if phase === 'generating'}
+            <div
+              class="vexyn-pending relative rounded-lg overflow-hidden border border-[color:var(--color-brand-500)]/40 aspect-square flex flex-col items-center justify-center gap-2"
+              aria-live="polite"
+              aria-label="Generating image"
+            >
+              <svg class="w-7 h-7 animate-spin text-[color:var(--color-brand-400)]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25" />
+                <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+              </svg>
+              <span class="text-xs tabular-nums text-[color:var(--color-text-mute)]">{elapsed}s</span>
+            </div>
+          {/if}
           {#each shots as shot (shot.url)}
             <figure class="group relative rounded-lg overflow-hidden border border-[color:var(--color-border)]">
               <img src={shot.url} alt={shot.prompt} width="512" height="512" class="w-full aspect-square object-cover" />
+              <!-- Always visible on touch (no hover to reveal it); fades in on
+                   pointer devices so the image stays clean while browsing. -->
               <figcaption
-                class="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/85 to-transparent opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition"
+                class="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/85 to-transparent transition sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100"
               >
                 <button
                   onclick={() => download(shot)}
@@ -647,3 +697,24 @@
     </div>
   {/if}
 </div>
+
+<style>
+  /* Pending tile: a slow sweep so it reads as "working", not "broken image". */
+  .vexyn-pending {
+    background: linear-gradient(
+      100deg,
+      var(--color-surface) 30%,
+      color-mix(in srgb, var(--color-brand-500) 12%, var(--color-surface)) 50%,
+      var(--color-surface) 70%
+    );
+    background-size: 220% 100%;
+    animation: vexyn-sweep 1.6s ease-in-out infinite;
+  }
+  @keyframes vexyn-sweep {
+    from { background-position: 180% 0; }
+    to { background-position: -60% 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vexyn-pending { animation: none; }
+  }
+</style>

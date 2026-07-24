@@ -1,9 +1,15 @@
 <script lang="ts">
   import { tick } from 'svelte';
   import { MODEL_BASE, MODEL } from '../../lib/constants';
-  import { buildPrompt, type Preset } from '../../lib/styles';
+  import { buildPrompt, type PromptSource } from '../../lib/generators';
 
-  let { preset }: { preset: Preset } = $props();
+  let { source }: { source: PromptSource } = $props();
+
+  // Prompt Builder state: one selected value per field, seeded to each field's
+  // first option so the live preview is populated from the very first render.
+  let fieldValues = $state<Record<string, string>>(
+    Object.fromEntries((source.fields ?? []).map((f) => [f.id, f.options[0].value])),
+  );
 
   type Phase = 'probe' | 'choose' | 'idle' | 'loading' | 'ready' | 'generating';
   /** Where inference runs. Both options are on-device by design — there is no
@@ -11,7 +17,15 @@
    *  webgpu — GPU, seconds per image (desktop and capable phones)
    *  wasm   — CPU, roughly a minute per image (everything else) */
   type Mode = 'webgpu' | 'wasm';
-  type Shot = { url: string; prompt: string; seed: number; ms: number };
+  type Shot = {
+    id: number;
+    url: string;
+    prompt: string;
+    seed: number;
+    ms: number;
+    /** Background-removal lifecycle, only used when source.transparent. */
+    bg?: 'removing' | 'done';
+  };
 
   const PARTS = ['text_encoder', 'unet', 'vae_decoder'] as const;
   type Part = (typeof PARTS)[number];
@@ -30,6 +44,14 @@
   let prompt = $state('');
   let seed = $state(Math.floor(Math.random() * 1e6));
   let lockSeed = $state(false);
+  let showBuilder = $state(false);
+
+  /** The exact string sent to the encoder — shown live so the user sees it. */
+  const finalPrompt = $derived(buildPrompt(source, prompt, fieldValues));
+  /** Fields the user actually needs to fill for the button to make sense. */
+  const canGenerate = $derived(
+    source.describeIsPrimary ? prompt.trim().length > 0 : finalPrompt.length > 0,
+  );
 
   let bytesDone = $state(0);
   let bytesTotal = $state(0);
@@ -54,6 +76,9 @@
   let tokenizer: any = null;
   const sessions: Partial<Record<Part, any>> = {};
   let alphasCumprod: Float64Array | null = null;
+  let shotId = 0;
+  let removeBg: any = null; // lazily-loaded RMBG pipeline
+  let bgError = $state('');
 
   const pct = $derived(bytesTotal ? Math.min(100, (bytesDone / bytesTotal) * 100) : 0);
   const mb = (b: number) => (b / 1048576).toFixed(0);
@@ -364,7 +389,7 @@
     await startFeedback();
     const t0 = performance.now();
     try {
-      const full = buildPrompt(preset, prompt);
+      const full = finalPrompt;
       const sc = cfg.scheduler_config ?? {};
       const tStep = (sc.num_train_timesteps ?? 1000) - 1; // trailing spacing, 1 step
       const alphaT = Math.sqrt(alphasCumprod![tStep]);
@@ -435,7 +460,7 @@
       const url = canvas.toDataURL('image/png');
 
       lastMs = performance.now() - t0;
-      shots = [{ url, prompt: full, seed, ms: lastMs }, ...shots].slice(0, 24);
+      shots = [{ id: shotId++, url, prompt: full, seed, ms: lastMs }, ...shots].slice(0, 24);
       if (!lockSeed) seed = Math.floor(Math.random() * 1e6);
     } catch (e: any) {
       error = e?.message ?? String(e);
@@ -447,12 +472,65 @@
   function download(shot: Shot) {
     const a = document.createElement('a');
     a.href = shot.url;
-    a.download = `vexyn-${shot.seed}.png`;
+    a.download = `vexyn-${shot.seed}${shot.bg === 'done' ? '-cutout' : ''}.png`;
     a.click();
   }
 
+  /**
+   * Cut the background out of one result, in the browser, for a real
+   * transparent PNG. Runs BRIA's RMBG-1.4 (~85 MB, from the same Hugging Face
+   * CDN as our tokenizer) via transformers.js, loaded lazily the first time it
+   * is needed so it never weighs on the generate path. The image never leaves
+   * the device — same guarantee as generation.
+   */
+  async function loadBgRemover() {
+    if (removeBg) return removeBg;
+    const tf = await import('@huggingface/transformers');
+    const model = await tf.AutoModel.from_pretrained('briaai/RMBG-1.4', {
+      // WebGPU when we have it, WASM otherwise — matches how we already run.
+      device: mode === 'webgpu' ? 'webgpu' : 'wasm',
+    });
+    const processor = await tf.AutoProcessor.from_pretrained('briaai/RMBG-1.4');
+    removeBg = async (url: string): Promise<string> => {
+      const image = await tf.RawImage.fromURL(url);
+      const { pixel_values } = await processor(image);
+      const { output } = await model({ input: pixel_values });
+      // output is a single-channel mask in [0,1]; stretch it to the image size
+      // and use it as the alpha channel.
+      const mask = await tf.RawImage.fromTensor(output[0].mul(255).to('uint8')).resize(
+        image.width,
+        image.height,
+      );
+      const canvas = document.createElement('canvas');
+      canvas.width = image.width;
+      canvas.height = image.height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(image.toCanvas(), 0, 0);
+      const px = ctx.getImageData(0, 0, image.width, image.height);
+      for (let i = 0; i < mask.data.length; i++) px.data[i * 4 + 3] = mask.data[i];
+      ctx.putImageData(px, 0, 0);
+      return canvas.toDataURL('image/png');
+    };
+    return removeBg;
+  }
+
+  async function cutBackground(shot: Shot) {
+    if (shot.bg) return; // already removing or done
+    bgError = '';
+    shots = shots.map((s) => (s.id === shot.id ? { ...s, bg: 'removing' } : s));
+    await paint();
+    try {
+      const fn = await loadBgRemover();
+      const url = await fn(shot.url);
+      shots = shots.map((s) => (s.id === shot.id ? { ...s, url, bg: 'done' } : s));
+    } catch (e: any) {
+      bgError = e?.message ?? String(e);
+      shots = shots.map((s) => (s.id === shot.id ? { ...s, bg: undefined } : s));
+    }
+  }
+
   function onKey(e: KeyboardEvent) {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') generate();
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && canGenerate) generate();
   }
 </script>
 
@@ -498,7 +576,7 @@
   <!-- ── probe / idle ────────────────────────────────────────────── -->
   {:else if phase === 'probe' || phase === 'idle'}
     <div class="p-8 text-center">
-      <div class="text-4xl mb-4">{preset.icon}</div>
+      <div class="text-4xl mb-4">{source.icon}</div>
       <h2 class="text-xl font-semibold mb-2">Load the model once, then generate forever</h2>
       <p class="text-sm text-[color:var(--color-text-mute)] max-w-lg mx-auto mb-1">
         About {mb(880 * 1048576)} MB downloads to your browser and stays cached. After that every image is
@@ -573,20 +651,55 @@
         </div>
       {/if}
 
-      <label for="vexyn-prompt" class="sr-only">Prompt</label>
+      <!-- Prompt Builder: structured fields (if any) + a describe box. The
+           describe box is the main input for open generators, and an optional
+           "add detail" field when the fields carry the subject. -->
+      {#if source.fields?.length}
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+          {#each source.fields as field (field.id)}
+            <label class="block">
+              <span class="block text-xs text-[color:var(--color-text-dim)] mb-1">{field.label}</span>
+              <select
+                bind:value={fieldValues[field.id]}
+                class="w-full rounded-lg bg-[color:var(--color-bg)] border border-[color:var(--color-border)] px-2.5 py-2 text-sm outline-none focus:border-[color:var(--color-brand-500)] transition"
+              >
+                {#each field.options as opt}
+                  <option value={opt.value}>{opt.label}</option>
+                {/each}
+              </select>
+            </label>
+          {/each}
+        </div>
+      {/if}
+
+      <label for="vexyn-prompt" class="block text-xs text-[color:var(--color-text-dim)] mb-1">
+        {source.describeIsPrimary ? 'Describe your image' : 'Add detail (optional)'}
+      </label>
       <textarea
         id="vexyn-prompt"
         bind:value={prompt}
         onkeydown={onKey}
         rows="2"
-        placeholder={preset.placeholder}
+        placeholder={source.placeholder}
         class="w-full resize-none rounded-lg bg-[color:var(--color-bg)] border border-[color:var(--color-border)] px-4 py-3 text-[15px] outline-none focus:border-[color:var(--color-brand-500)] transition"
       ></textarea>
+
+      <!-- Live preview of the exact string sent to the model — no hidden magic. -->
+      {#if finalPrompt}
+        <details class="mt-2 group">
+          <summary class="text-xs text-[color:var(--color-text-dim)] cursor-pointer hover:text-[color:var(--color-text-mute)] select-none">
+            Final prompt <span class="opacity-60">(what the model actually sees)</span>
+          </summary>
+          <p class="mt-1.5 text-xs text-[color:var(--color-text-mute)] font-mono leading-relaxed bg-[color:var(--color-bg)] rounded-md p-2.5 border border-[color:var(--color-border)]">
+            {finalPrompt}
+          </p>
+        </details>
+      {/if}
 
       <div class="flex flex-wrap items-center gap-2 mt-3">
         <button
           onclick={generate}
-          disabled={phase === 'generating' || !prompt.trim()}
+          disabled={phase === 'generating' || !canGenerate}
           class="px-5 py-2.5 rounded-lg bg-[color:var(--color-brand-500)] text-white font-semibold hover:brightness-110 transition disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
         >
           {#if phase === 'generating'}
@@ -615,11 +728,11 @@
         </div>
       </div>
 
-      {#if !shots.length && phase !== 'generating'}
+      {#if !shots.length && phase !== 'generating' && source.describeIsPrimary}
         <div class="mt-4">
           <p class="text-xs text-[color:var(--color-text-dim)] mb-2">Try one of these:</p>
           <div class="flex flex-wrap gap-2">
-            {#each preset.examples as ex}
+            {#each source.examples as ex}
               <button
                 onclick={() => (prompt = ex)}
                 class="px-3 py-1.5 rounded-full text-xs border border-[color:var(--color-border)] text-[color:var(--color-text-mute)] hover:border-[color:var(--color-brand-500)] hover:text-[color:var(--color-text)] transition"
@@ -663,24 +776,56 @@
               </span>
             </div>
           {/if}
-          {#each shots as shot (shot.url)}
+          {#each shots as shot (shot.id)}
             <figure class="group relative rounded-lg overflow-hidden border border-[color:var(--color-border)]">
-              <img src={shot.url} alt={shot.prompt} width="512" height="512" class="w-full aspect-square object-cover" />
-              <!-- Always visible on touch (no hover to reveal it); fades in on
-                   pointer devices so the image stays clean while browsing. -->
+              <!-- Checkerboard shows through where the background was removed. -->
+              <div class="w-full aspect-square" class:vexyn-alpha={shot.bg === 'done'}>
+                <img src={shot.url} alt={shot.prompt} width="512" height="512" class="w-full h-full object-cover" />
+              </div>
+
+              {#if shot.bg === 'removing'}
+                <div class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 backdrop-blur-sm">
+                  <svg class="w-6 h-6 animate-spin text-white" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25" />
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                  </svg>
+                  <span class="text-[11px] text-white/90">Removing background…</span>
+                </div>
+              {/if}
+
               <figcaption
                 class="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/85 to-transparent transition sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100"
               >
-                <button
-                  onclick={() => download(shot)}
-                  class="w-full text-xs font-medium text-white py-1 rounded bg-white/15 hover:bg-white/25 backdrop-blur transition"
-                >
-                  Download PNG
-                </button>
+                <div class="flex gap-1.5">
+                  <button
+                    onclick={() => download(shot)}
+                    class="flex-1 text-xs font-medium text-white py-1 rounded bg-white/15 hover:bg-white/25 backdrop-blur transition"
+                  >
+                    Download{shot.bg === 'done' ? ' PNG' : ''}
+                  </button>
+                  {#if source.transparent && shot.bg !== 'done'}
+                    <button
+                      onclick={() => cutBackground(shot)}
+                      disabled={shot.bg === 'removing'}
+                      class="flex-1 text-xs font-medium text-white py-1 rounded bg-[color:var(--color-brand-500)]/80 hover:bg-[color:var(--color-brand-500)] backdrop-blur transition disabled:opacity-50"
+                    >
+                      Remove BG
+                    </button>
+                  {/if}
+                </div>
               </figcaption>
             </figure>
           {/each}
         </div>
+        {#if source.transparent && shots.length && !bgError}
+          <p class="mt-2 text-xs text-[color:var(--color-text-dim)]">
+            "Remove BG" runs a second small model in your browser for a real transparent PNG — first use
+            downloads ~85 MB, then it is cached. Nothing is uploaded.
+          </p>
+        {/if}
+        {#if bgError}
+          <p class="mt-2 text-xs text-red-400">Background removal failed: {bgError}</p>
+        {/if}
       {/if}
     </div>
   {/if}
@@ -693,6 +838,17 @@
      which is exactly what has to keep moving to prove we are still working. */
   .vexyn-pending {
     background: var(--color-surface);
+  }
+
+  /* Checkerboard behind a cut-out image, so transparency is visible. */
+  .vexyn-alpha {
+    background-image:
+      linear-gradient(45deg, #808080 25%, transparent 25%),
+      linear-gradient(-45deg, #808080 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #808080 75%),
+      linear-gradient(-45deg, transparent 75%, #808080 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0;
   }
   .vexyn-pending::after {
     content: '';

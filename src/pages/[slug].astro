@@ -1,0 +1,32 @@
+---
+/**
+ * Single dynamic route for BOTH category hubs (/games, /anime, …) and
+ * generator pages (/game-image-generator, …). Keeping them in one route
+ * avoids two dynamic routes fighting over the same URL depth.
+ */
+import GeneratorPage from '../components/generator/GeneratorPage.astro';
+import CategoryHub from '../components/generator/CategoryHub.astro';
+import { GENERATORS, CATEGORIES } from '../lib/generators';
+
+export function getStaticPaths() {
+  const cats = CATEGORIES.map((c) => ({
+    params: { slug: c.id },
+    props: { kind: 'category' as const, category: c },
+  }));
+  const gens = GENERATORS.map((g) => ({
+    params: { slug: g.slug },
+    props: { kind: 'generator' as const, generator: g },
+  }));
+  return [...cats, ...gens];
+}
+
+const props = Astro.props as
+  | { kind: 'category'; category: (typeof CATEGORIES)[number] }
+  | { kind: 'generator'; generator: (typeof GENERATORS)[number] };
+---
+
+{props.kind === 'category' ? (
+  <CategoryHub category={props.category} />
+) : (
+  <GeneratorPage generator={props.generator} />
+)}

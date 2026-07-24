@@ -1,64 +1,126 @@
 ---
-import GeneratorPage from '../components/generator/GeneratorPage.astro';
-import { FREEFORM, PRESETS } from '../lib/styles';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ImageGenerator from '../components/generator/ImageGenerator.svelte';
+import { SITE, MODEL } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+import { CATEGORIES, generatorsIn, FREEFORM } from '../lib/generators';
 
 const title = 'Free AI Image Generator — No Signup, Runs In Your Browser';
 const description =
-  'Generate AI images free, with no account and no queue. The model runs on your own GPU via WebGPU — your prompts never leave your device.';
+  'Generate AI images free, with no account and no queue. The model runs on your own device — your prompts never leave your browser.';
+
+const cats = [...CATEGORIES].sort((a, b) => a.order - b.order);
 
 const faqs = [
-  { q: 'Is it really free and unlimited?', a: 'Yes. The model runs on your own GPU, so generating an image costs us nothing — there is no API bill to pass on to you, no credits, and no daily cap. The site is funded by ads, not by limiting you.' },
-  { q: 'Do my prompts get sent anywhere?', a: 'No. After the one-time model download, generation happens entirely inside your browser tab. Open DevTools → Network and generate an image: zero requests fire. It even works offline once cached.' },
-  { q: 'Why is the first load large?', a: 'You are downloading the actual neural network (~880 MB) — the same thing other sites keep on their servers. Your browser caches it, so it only happens once per device.' },
-  { q: 'What hardware do I need?', a: 'A browser with WebGPU (Chrome, Edge, Brave, or Safari 18+) and a GPU with roughly 2 GB of memory. Most laptops from the last 5 years qualify. Each image takes about 2–6 seconds depending on your GPU.' },
-  { q: 'Can I use the images commercially?', a: 'Yes. The model (SDXS-512-DreamShaper) is released under the OpenRAIL++ licence, which permits commercial use of outputs. Standard use restrictions apply — no illegal or harmful content.' },
-  { q: 'Why are images 512×512?', a: 'That is the native resolution of a model small enough to run in a browser in one denoising step. It is the honest trade-off for local, private, unlimited generation.' },
+  { q: 'Is it really free and unlimited?', a: 'Yes. The model runs on your own device, so generating an image costs us nothing — no API bill, no credits, no daily cap. The site is funded by ads, not by limiting you.' },
+  { q: 'Do my prompts get sent anywhere?', a: 'No. After the one-time model download, generation happens entirely inside your browser. Open DevTools → Network and generate: zero requests fire. It even works offline once cached.' },
+  { q: 'Why is the first load large?', a: 'You are downloading the actual neural network (~840 MB) — the thing other sites keep on their servers. Your browser caches it, so it only happens once per device.' },
+  { q: 'What hardware do I need?', a: 'Any device works. With WebGPU (most desktops, recent phones) each image takes a few seconds on your GPU; without it, the same model runs on the CPU, slower.' },
+  { q: 'Can I use the images commercially?', a: 'Yes. The model is released under the OpenRAIL++ licence, which permits commercial use of outputs. Standard use restrictions apply.' },
 ];
+
+const schema = combineSchemas(
+  {
+    '@type': 'WebSite',
+    name: SITE.name,
+    url: SITE.url,
+    description: SITE.description,
+  },
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: SITE.url,
+    description,
+    category: 'MultimediaApplication',
+    features: [
+      'Free AI image generation',
+      'Runs entirely in your browser',
+      'Prompts never sent to a server',
+      'No account, no queue, no limit',
+      `Open model — ${MODEL.id} (${MODEL.licence})`,
+    ],
+  }),
+  breadcrumbSchema([{ name: 'Home', url: '/' }]),
+  faqSchema(faqs),
+);
 ---
 
-<GeneratorPage
-  preset={FREEFORM}
-  title={title}
-  h1="AI Image Generator"
-  description={description}
-  intro="Type a prompt, get an image in seconds. Free, no account, no queue — the AI runs on your own device, so your prompts never reach a server."
-  faqs={faqs}
->
-  <h2 class="text-2xl font-bold mb-4">The generator that can't see your prompts</h2>
-  <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
-    Every popular AI image site works the same way: your prompt travels to their servers, waits in a queue
-    behind everyone else, runs on their GPUs, and the result comes back — logged, rate-limited, and often
-    behind a signup wall. Vexyn inverts that. The network downloads <em>to you</em>, once, and after that
-    every image is produced by your own hardware. There is no server-side generation at all, which is why
-    there is nothing to sign up for, no queue to wait in, and no counter ticking down.
-  </p>
-
-  <h2 class="text-2xl font-bold mb-4 mt-10">Made for a specific style?</h2>
-  <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-4">
-    The open generator applies no styling — you get exactly what you describe. If you are making something
-    specific, the dedicated pages pre-tune the prompt for that look:
-  </p>
-  <div class="not-prose grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-    {PRESETS.map((p) => (
-      <a
-        href={`/${p.slug}`}
-        class="flex items-start gap-3 p-4 rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] hover:border-[color:var(--color-brand-500)] transition group"
-      >
-        <span class="text-2xl">{p.icon}</span>
-        <span>
-          <span class="block font-semibold group-hover:text-[color:var(--color-brand-400)] transition">{p.name}</span>
-          <span class="block text-xs text-[color:var(--color-text-mute)] mt-0.5">{p.tagline}</span>
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+    <header class="mb-6">
+      <div class="flex items-center gap-3 mb-3 flex-wrap">
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">AI Image Generator</h1>
+        <span class="text-xs px-2 py-1 rounded-md bg-[color:var(--color-accent-500)]/15 border border-[color:var(--color-accent-500)]/30 text-[color:var(--color-accent-400)] font-medium uppercase tracking-wider">
+          Runs locally
         </span>
-      </a>
-    ))}
-  </div>
+      </div>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Type a prompt, get an image in seconds. Free, no account, no queue — the AI runs on your own
+        device, so your prompts never reach a server.
+      </p>
+    </header>
 
-  <h2 class="text-2xl font-bold mb-4 mt-10">How it compares</h2>
-  <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
-    Cloud generators produce higher-resolution, more polished images — that is what a data-center GPU buys.
-    What they cannot offer is this combination: zero cost at any volume, zero waiting at peak hours, and
-    prompts that physically cannot be read, logged or used for training, because they never leave your
-    machine. For drafts, iteration, references, assets and fun, local wins. When you need a 4K hero image,
-    use a cloud tool — no hard feelings.
-  </p>
-</GeneratorPage>
+    <ImageGenerator source={FREEFORM} client:load />
+
+    <!-- Category hubs -->
+    <section class="mt-12">
+      <h2 class="text-2xl font-bold mb-1">Built for a purpose?</h2>
+      <p class="text-sm text-[color:var(--color-text-mute)] mb-5">
+        The generators below pre-tune the prompt for a specific look — pick a category to browse.
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {cats.map((c) => {
+          const gens = generatorsIn(c.id);
+          return (
+            <div class="p-5 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
+              <a href={`/${c.id}`} class="flex items-center gap-2 mb-3 group">
+                <span class="text-2xl">{c.icon}</span>
+                <span class="font-semibold text-lg group-hover:text-[color:var(--color-brand-400)] transition">{c.name}</span>
+                <span class="ml-auto text-xs text-[color:var(--color-text-dim)]">{gens.length} tools</span>
+              </a>
+              <div class="flex flex-wrap gap-1.5">
+                {gens.slice(0, 6).map((g) => (
+                  <a
+                    href={`/${g.slug}`}
+                    class="px-2.5 py-1 rounded-full text-xs border border-[color:var(--color-border)] text-[color:var(--color-text-mute)] hover:border-[color:var(--color-brand-500)] hover:text-[color:var(--color-text)] transition"
+                  >
+                    {g.icon} {g.name}
+                  </a>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">The generator that can't see your prompts</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Every popular AI image site works the same way: your prompt travels to their servers, waits in a
+        queue behind everyone else, runs on their GPUs, and the result comes back — logged, rate-limited,
+        and often behind a signup wall. Vexyn inverts that. The model downloads <em>to you</em>, once, and
+        after that every image is produced by your own hardware. There is no server-side generation at
+        all, which is why there is nothing to sign up for, no queue to wait in, and no counter ticking
+        down.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">How it compares</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Cloud generators produce higher-resolution, more polished images — that is what a data-center GPU
+        buys. What they cannot offer is this combination: zero cost at any volume, zero waiting at peak
+        hours, and prompts that physically cannot be read, logged or used for training. For drafts,
+        iteration, references, game art and fun, local wins.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map((f) => (
+          <div>
+            <h3 class="font-semibold mb-1">{f.q}</h3>
+            <p class="text-[color:var(--color-text-mute)]">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  </div>
+</BaseLayout>

@@ -20,11 +20,11 @@ The one thing unique to QBO is the **Intuit Bank ID (INTU.BID)**. QuickBooks use
 
 We will build the file first, then deal with the QuickBooks Online case head-on.
 
-## Step 1 — Export your bank transactions as CSV
+## Export your bank transactions as CSV
 
 Download the transactions from your bank as CSV for the date range you need. Open it once in a plain text editor so you know which column is the date, which is the amount (or whether debits and credits are split into two columns), and what the description column is called.
 
-## Step 2 — Convert with the columns and formats set explicitly
+## Convert with the columns and formats set explicitly
 
 Open [Vexyn's CSV to QBO converter](/csv-to-qbo). It runs entirely in your browser — nothing is uploaded — and it maps your columns rather than guessing.
 
@@ -35,7 +35,7 @@ Open [Vexyn's CSV to QBO converter](/csv-to-qbo). It runs entirely in your brows
 5. Check the preview — every parsed date and signed amount is shown, and unreadable rows are listed. Confirm it looks right.
 6. Download the .qbo.
 
-## Step 3 — Import into QuickBooks
+## Import into QuickBooks
 
 In QuickBooks Desktop: **File → Utilities → Import → Web Connect Files**, and select your .qbo. In QuickBooks Online: use the file-upload option under the banking / transactions area.
 

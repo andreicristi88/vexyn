@@ -18,7 +18,7 @@ Bank CSV exports are rarely clean. There is whitespace padding every value, blan
 
 Do the structural tidy-up when the file is nearly right. Do the reformat when you want a predictable layout to feed into a spreadsheet template or another tool.
 
-## Step 1 — Structural tidy-up
+## Structural tidy-up
 
 Open [Vexyn's CSV Cleaner](/csv-cleaner). It runs in your browser and uploads nothing.
 
@@ -32,7 +32,7 @@ Open [Vexyn's CSV Cleaner](/csv-cleaner). It runs in your browser and uploads no
 
 Crucially, every value stays as text — an account number like `00123` keeps its leading zeros, and long numbers are never turned into scientific notation.
 
-## Step 2 — Reformat to a standard layout (optional)
+## Reformat to a standard layout (optional)
 
 If you want more than a tidy-up — one consistent shape regardless of which bank the file came from — use the [Bank CSV Formatter](/bank-csv-formatter).
 
@@ -42,7 +42,7 @@ If you want more than a tidy-up — one consistent shape regardless of which ban
 
 This is the step that makes downstream work predictable: a spreadsheet template, an import, or another tool always receives the same layout.
 
-## Step 3 — Handle the junk header rows
+## Handle the junk header rows
 
 Some banks add a line or two of account metadata above the real header — an account name, a date range. If your file has these, they can throw off the column detection. The simplest fix is to open the file in a plain text editor and delete those top lines so the real header is the first row, then run the cleaner. Most exports do not need this, but it is worth knowing when the columns look wrong.
 

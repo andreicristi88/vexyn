@@ -17,11 +17,11 @@ Combining CSVs by simply appending their rows assumes every file has the same co
 
 The fix is to merge by **column name**: line up each file's "Date" with every other file's "Date", regardless of where it sits, and fill blanks where a file is missing a column. That way a year of slightly different exports still produces one coherent table.
 
-## Step 1 — Gather your CSV files
+## Gather your CSV files
 
 Collect the exports you want to combine. They can come from the same account across different months, or even different accounts, as long as the columns are broadly similar. Open one or two in a text editor to confirm they are genuinely CSVs and roughly the same shape.
 
-## Step 2 — Merge by column name
+## Merge by column name
 
 Open [Vexyn's CSV Merger](/csv-merger). It runs in your browser and matches columns by name — nothing is uploaded.
 
@@ -30,7 +30,7 @@ Open [Vexyn's CSV Merger](/csv-merger). It runs in your browser and matches colu
 3. Rows are appended in the order you added the files. A file missing a column simply gets blanks for it — no data is dropped or shifted.
 4. Review the merged preview, then download the single combined CSV.
 
-## Step 3 — Clean up afterwards, if needed
+## Clean up afterwards, if needed
 
 A merged file often benefits from two quick follow-ups:
 

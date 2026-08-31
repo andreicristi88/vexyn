@@ -18,7 +18,7 @@ There are two different questions hiding in "remove duplicates", and they need d
 
 Deciding which one applies to your file is the important part. Remove by whole row when you have exact repeats; remove by a key column when the same transaction shows up with small differences.
 
-## Step 1 — Open the file and decide the identity
+## Open the file and decide the identity
 
 Open [Vexyn's CSV Deduplicator](/csv-deduplicator). It runs in your browser and never uploads the file.
 
@@ -27,7 +27,7 @@ Open [Vexyn's CSV Deduplicator](/csv-deduplicator). It runs in your browser and 
 3. If your transactions have a unique column — a Transaction ID, a reference number — click that column header to match on it instead. Now rows are duplicates when that value repeats, regardless of the other fields.
 4. You can select more than one column to form a compound key (for example, Date plus Amount plus Description) when there is no single ID.
 
-## Step 2 — Choose which copy to keep
+## Choose which copy to keep
 
 When duplicates are found, you decide which one survives:
 
@@ -38,7 +38,7 @@ There is also an option to ignore case and surrounding spaces, so "ACME " and "a
 
 The tool reports how many rows it removed and across how many duplicate groups, so you can sanity-check the result before downloading.
 
-## Step 3 — Verify and download
+## Verify and download
 
 Before downloading, glance at the numbers. If you expected a handful of overlapping days to produce a few duplicates and the tool removed hundreds, your key is probably too loose — for example, matching on Amount alone will treat every €10 coffee as the same transaction. Tighten the key (add Date and Description) and try again.
 

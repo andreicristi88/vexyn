@@ -22,7 +22,7 @@ A CSV file is plain text. It has no idea what a "number" or a "date" is — it j
 
 The fix in every case is the same idea: **tell Excel to treat the columns as text instead of letting it guess.** The three methods below all do that, in different ways.
 
-## Method A — Convert to .xlsx with text preserved (easiest, no upload)
+## Convert to .xlsx with text preserved (easiest, no upload)
 
 The cleanest fix is to convert the CSV to a real Excel file where every value is already marked as text, so Excel never gets the chance to guess. [Vexyn's CSV to Excel converter](/csv-to-excel) does exactly this, entirely in your browser — the file is never uploaded.
 
@@ -33,7 +33,7 @@ The cleanest fix is to convert the CSV to a real Excel file where every value is
 
 Best for: anyone who wants the file to just open correctly, especially for account numbers, card numbers, IDs, and postal codes. Because it runs locally, it is also the right choice for bank statements and payment reports you would not upload to a random converter.
 
-## Method B — Import with the Text Import Wizard (built into Excel)
+## Import with the Text Import Wizard (built into Excel)
 
 If you would rather stay inside Excel, do not double-click the file. **Import** it and set the column types by hand.
 
@@ -45,7 +45,7 @@ If you would rather stay inside Excel, do not double-click the file. **Import** 
 
 Best for: people who do this often and want it inside Excel without extra tools. The catch is that you have to remember to set every sensitive column to Text every single time, or the corruption sneaks back.
 
-## Method C — Force text with a helper column or a leading apostrophe
+## Force text with a helper column or a leading apostrophe
 
 If the file is small and you only need to protect a value or two, there are two quick manual tricks:
 
@@ -62,7 +62,7 @@ Before you trust the file, spot-check the columns that matter:
 - **Long numbers:** a card or IBAN number shows all its digits, not `1.2E+15`. Click the cell — the formula bar should show the full value, not a rounded one.
 - **Codes and ranges:** a value like `3-5` or `1/2` is still text, not a date.
 
-If any of these are wrong, the file was opened with Excel guessing types. Go back to Method A or B — you cannot fix scientific-notation damage after the fact, because the original digits are already lost.
+If any of these are wrong, the file was opened with Excel guessing types. Go back and use the .xlsx converter or the Text Import Wizard — you cannot fix scientific-notation damage after the fact, because the original digits are already lost.
 
 ## Common mistakes to avoid
 
@@ -96,7 +96,7 @@ Converting to .xlsx with every cell marked as text is the closest — Excel open
 ## Related guides
 
 - [CSV Cleaner](/csv-cleaner) — tidy up whitespace, empty rows and duplicate headers before converting.
-- [CSV to Excel](/csv-to-excel) — the converter used in Method A, values kept as text.
+- [CSV to Excel](/csv-to-excel) — the .xlsx converter from the first method, values kept as text.
 
 ## Sources cited in this guide
 

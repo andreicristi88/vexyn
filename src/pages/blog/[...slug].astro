@@ -162,10 +162,32 @@ function fmtDate(d: Date): string {
 </BaseLayout>
 
 <style is:global>
-  .prose-vexyn { color: var(--color-text); font-size: 1rem; line-height: 1.75; }
+  .prose-vexyn { color: var(--color-text); font-size: 1rem; line-height: 1.75; counter-reset: vexsec; }
   .prose-vexyn > * + * { margin-top: 1.25em; }
-  .prose-vexyn h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2.5em; margin-bottom: 0.75em; letter-spacing: -0.01em; scroll-margin-top: 6rem; }
+  .prose-vexyn h2 { display: flex; align-items: center; gap: 0.65rem; font-size: 1.5rem; font-weight: 700; margin-top: 2.5em; margin-bottom: 0.75em; letter-spacing: -0.01em; scroll-margin-top: 6rem; counter-increment: vexsec; }
+  .prose-vexyn h2::before {
+    content: counter(vexsec);
+    flex: none;
+    display: grid; place-items: center;
+    width: 1.7em; height: 1.7em;
+    font-size: 0.7em; font-weight: 700; line-height: 1;
+    color: var(--color-brand-400);
+    background: color-mix(in srgb, var(--color-brand-500) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-brand-500) 30%, transparent);
+    border-radius: 8px;
+  }
+  /* Numbered TOC — counter runs in the same document order as the h2 badges, so numbers match. */
+  .vexyn-toc ul { counter-reset: vextoc; }
+  .vexyn-toc a[data-toc-link] { counter-increment: vextoc; }
+  .vexyn-toc a[data-toc-link]::before {
+    content: counter(vextoc);
+    display: inline-block;
+    width: 1.4em; margin-right: 0.2em;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600; color: var(--color-text-dim);
+  }
   .vexyn-toc a.toc-active { color: var(--color-brand-400); border-left-color: var(--color-brand-500); font-weight: 500; }
+  .vexyn-toc a.toc-active::before { color: var(--color-brand-400); }
   .prose-vexyn h3 { font-size: 1.15rem; font-weight: 600; margin-top: 2em; margin-bottom: 0.5em; }
   .prose-vexyn p { color: var(--color-text); }
   .prose-vexyn a { color: var(--color-brand-400); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--color-brand-400) 30%, transparent); transition: border-color 0.15s; }

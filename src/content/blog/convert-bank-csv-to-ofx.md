@@ -22,13 +22,13 @@ Converting means mapping your bank's columns onto OFX's fields and, critically, 
 
 A converter that gets these two things right produces a clean import. One that guesses silently produces a mess you only notice weeks later. So the goal is a converter that lets you **see and confirm** the parsed dates and amounts before you commit.
 
-## Step 1 — Get your transactions as a CSV
+## Get your transactions as a CSV
 
 Download the transactions from your bank as CSV — usually under "Export", "Download", or "Statements". Pick the date range you need. If your bank offers OFX or QIF directly, use that instead; this guide is for when CSV is all you get.
 
 Open the file once in a plain text editor to see what you are working with: which column is the date, which is the amount (or whether there are separate debit and credit columns), and what the description column is called. You do not need to change anything — just know the layout.
 
-## Step 2 — Convert with the columns mapped explicitly
+## Convert with the columns mapped explicitly
 
 Open [Vexyn's CSV to OFX converter](/csv-to-ofx). It runs entirely in your browser — the statement is never uploaded — and it asks you to map your columns instead of guessing.
 
@@ -39,7 +39,7 @@ Open [Vexyn's CSV to OFX converter](/csv-to-ofx). It runs entirely in your brows
 5. Look at the preview. It shows every parsed date and the signed amount, and lists any rows it could not read. Confirm the dates and the plus/minus signs look right.
 6. Download the .ofx.
 
-## Step 3 — Import into your finance software and verify
+## Import into your finance software and verify
 
 Import the .ofx the way your app expects (usually File → Import). Then check three things against the original statement:
 

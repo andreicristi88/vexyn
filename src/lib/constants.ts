@@ -42,6 +42,7 @@ export const NAV: NavItem[] = [
       { label: 'All tools', href: '/#tools', description: 'The complete list' },
     ],
   },
+  { label: 'Guides', href: '/blog' },
   { label: 'About', href: '/about' },
   { label: 'GitHub', href: 'https://github.com/andreicristi88/vexyn', external: true },
 ];

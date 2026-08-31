@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { SITE } from '../../lib/constants';
+import { breadcrumbSchema, combineSchemas } from '../../lib/seo';
+
+const title = 'Guides';
+const description =
+  'Practical guides for working with financial data — converting bank CSVs, importing into accounting software, and fixing the ways spreadsheets quietly corrupt your numbers.';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
+);
+
+const schema = combineSchemas(
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Guides', url: '/blog' },
+  ]),
+  {
+    '@type': 'Blog',
+    name: `${SITE.name} Guides`,
+    url: `${SITE.url}/blog`,
+    description,
+  },
+);
+
+function fmtDate(d: Date): string {
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-10">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Guides</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Guides</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Practical, no-nonsense guides for financial data: converting bank exports, importing into accounting software, and avoiding the traps that corrupt your numbers.
+      </p>
+    </header>
+
+    {posts.length === 0 ? (
+      <p class="text-[color:var(--color-text-mute)]">Guides are on the way.</p>
+    ) : (
+      <div class="space-y-3">
+        {posts.map((post) => (
+          <a
+            href={`/blog/${post.id.replace(/\.md$/, '')}`}
+            class="group block p-6 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] hover:border-[color:var(--color-brand-500)] hover:-translate-y-0.5 transition-all"
+          >
+            <div class="flex items-center gap-2 text-xs text-[color:var(--color-text-dim)] mb-2 font-mono uppercase tracking-wider">
+              <time datetime={post.data.pubDate.toISOString()}>{fmtDate(post.data.pubDate)}</time>
+              {post.data.tags && post.data.tags.length > 0 && (
+                <>
+                  <span>·</span>
+                  <span>{post.data.tags[0]}</span>
+                </>
+              )}
+            </div>
+            <h2 class="text-xl font-semibold mb-2 group-hover:text-[color:var(--color-brand-400)] transition-colors">{post.data.title}</h2>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{post.data.description}</p>
+          </a>
+        ))}
+      </div>
+    )}
+  </div>
+</BaseLayout>

@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BankCsvFormatter from '../components/tools/BankCsvFormatter.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Bank CSV Formatter';
+const description =
+  'Free tool to reshape any bank CSV export into one clean, standard layout — ISO dates, one signed amount column, tidy headers. Handles separate debit/credit columns. Runs in your browser, nothing uploaded.';
+
+const faqs = [
+  { q: 'What does the standard layout look like?', a: 'Date (as YYYY-MM-DD), Description, Amount (a single signed number — negative for money out), and optionally Balance and Category. Every bank export becomes the same shape, so the same downstream tools and spreadsheets work regardless of which bank it came from.' },
+  { q: 'My bank uses separate Debit and Credit columns.', a: 'Switch "Amount columns" to "Separate debit & credit" and map both. The tool combines them into one signed column — credits positive, debits negative — which is what most accounting tools and analyzers expect.' },
+  { q: 'How does it avoid wrong dates?', a: 'You pick the date format explicitly (year-first, month-first, or day-first). The preview shows the normalized dates so you can confirm before downloading. It never silently guesses between 01/02 meaning January 2 or February 1.' },
+  { q: 'What if a value cannot be normalized?', a: 'It is passed through unchanged and counted as an issue, so no data is lost. The tool tells you how many values need a look — usually a wrong date-format or decimal-separator setting.' },
+  { q: 'Is my bank data uploaded?', a: 'No. Everything runs in your browser. Open DevTools → Network — nothing is sent.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/bank-csv-formatter`,
+    description,
+    category: 'FinanceApplication',
+    features: ['Map any bank CSV to a standard layout', 'Combine separate debit/credit columns into one signed amount', 'ISO date normalization with explicit format', 'US and European number formats', 'Runs entirely in your browser, no upload'],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Bank CSV Formatter', url: '/bank-csv-formatter' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Bank CSV Formatter</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Bank CSV Formatter</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Turn any bank's messy CSV export into one clean, standard layout. Map your columns once and get tidy ISO dates and a single signed amount — all in your browser.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your bank export is reformatted in your browser. Open DevTools → Network to verify — nothing is uploaded." />
+    <BankCsvFormatter client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Every bank, one shape</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        No two banks export the same way. One uses a single signed amount, another splits debit and credit into two columns; one writes dates day-first, another month-first; column names and order vary endlessly. This tool lets you map that mess to one standard layout, so your own spreadsheets, importers and the other tools here always receive the same tidy columns.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map((f) => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  </div>
+</BaseLayout>

@@ -12,17 +12,43 @@ const posts = (await getCollection('blog')).sort(
   (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
 );
 
-// Display order of guide categories. Anything without a category falls into
-// "More guides" at the end.
-const CATEGORY_ORDER = ['Spreadsheets & Excel', 'Accounting imports', 'Cleaning & organizing'];
+// Category presentation — mirrors the zone headers on the homepage: an icon,
+// a bold title, and a one-line tagline. Order here is the display order.
+const CATEGORIES: { name: string; icon: string; tagline: string }[] = [
+  {
+    name: 'Spreadsheets & Excel',
+    icon: '📊',
+    tagline: 'Open and save CSVs without Excel mangling your numbers and dates.',
+  },
+  {
+    name: 'Accounting imports',
+    icon: '📥',
+    tagline: 'Turn bank and payment exports into OFX/QBO your accounting software accepts.',
+  },
+  {
+    name: 'Cleaning & organizing',
+    icon: '🧹',
+    tagline: 'Trim, dedupe and merge messy exports into one tidy file.',
+  },
+];
 
-const grouped = CATEGORY_ORDER.map((cat) => ({
-  name: cat,
-  posts: posts.filter((p) => p.data.category === cat),
+const grouped = CATEGORIES.map((cat) => ({
+  ...cat,
+  posts: posts.filter((p) => p.data.category === cat.name),
 })).filter((g) => g.posts.length > 0);
 
-const uncategorized = posts.filter((p) => !p.data.category || !CATEGORY_ORDER.includes(p.data.category));
-if (uncategorized.length) grouped.push({ name: 'More guides', posts: uncategorized });
+const knownNames = CATEGORIES.map((c) => c.name);
+const uncategorized = posts.filter(
+  (p) => !p.data.category || !knownNames.includes(p.data.category),
+);
+if (uncategorized.length) {
+  grouped.push({
+    name: 'More guides',
+    icon: '📚',
+    tagline: 'Everything else worth knowing.',
+    posts: uncategorized,
+  });
+}
 
 const schema = combineSchemas(
   breadcrumbSchema([
@@ -34,44 +60,62 @@ const schema = combineSchemas(
 ---
 
 <BaseLayout title={title} description={description} schema={schema}>
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <header class="mb-12">
-      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
-        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
-        <span>/</span>
+  <!-- Hero -->
+  <section class="relative overflow-hidden border-b border-[color:var(--color-border)]">
+    <div class="absolute inset-0 glow pointer-events-none"></div>
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12 sm:pt-20 sm:pb-14 relative">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-4">
+        <a href="/" class="hover:text-[color:var(--color-text)] transition-colors">Home</a>
+        <span class="text-[color:var(--color-text-dim)]">/</span>
         <span class="text-[color:var(--color-text)]">Guides</span>
       </div>
-      <h1 class="text-4xl font-bold tracking-tight mb-3">Guides</h1>
-      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
-        Practical, no-nonsense guides for financial data: converting bank exports, importing into accounting software, and avoiding the traps that corrupt your numbers.
+      <h1 class="text-4xl sm:text-5xl font-bold tracking-tight mb-4 leading-[1.1]">
+        Financial data, <span class="text-[color:var(--color-brand-400)]">done right</span>.
+      </h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl leading-relaxed">
+        No-nonsense guides for bank exports and accounting files: convert them, import them, and avoid the traps that quietly corrupt your numbers. Every guide points to a free tool that does the job in your browser.
       </p>
-    </header>
+    </div>
+  </section>
 
+  <!-- Guides by category -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16">
     {posts.length === 0 ? (
       <p class="text-[color:var(--color-text-mute)]">Guides are on the way.</p>
     ) : (
-      <div class="space-y-12">
-        {grouped.map((group) => (
-          <section>
-            <div class="flex items-center gap-3 mb-4">
-              <h2 class="text-sm font-semibold uppercase tracking-wider text-[color:var(--color-text-mute)]">{group.name}</h2>
-              <div class="flex-1 h-px bg-[color:var(--color-border)]"></div>
-              <span class="text-xs text-[color:var(--color-text-dim)]">{group.posts.length}</span>
+      grouped.map((group) => (
+        <div>
+          <div class="flex items-baseline gap-3 mb-6">
+            <span class="text-2xl" aria-hidden="true">{group.icon}</span>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-2xl font-bold tracking-tight">{group.name}</h2>
+                <span class="text-xs text-[color:var(--color-text-dim)] px-1.5 py-0.5 rounded-full border border-[color:var(--color-border)]">{group.posts.length}</span>
+              </div>
+              <p class="text-sm text-[color:var(--color-text-mute)]">{group.tagline}</p>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {group.posts.map((post) => (
-                <a
-                  href={`/blog/${post.id.replace(/\.md$/, '')}`}
-                  class="group block p-5 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] hover:border-[color:var(--color-brand-500)] hover:-translate-y-0.5 transition-all"
-                >
-                  <h3 class="font-semibold mb-2 leading-snug group-hover:text-[color:var(--color-brand-400)] transition-colors">{post.data.title}</h3>
-                  <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed line-clamp-3">{post.data.description}</p>
-                </a>
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {group.posts.map((post) => (
+              <a
+                href={`/blog/${post.id.replace(/\.md$/, '')}`}
+                class="group flex flex-col p-5 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] hover:border-[color:var(--color-brand-500)] hover:-translate-y-0.5 transition-all"
+              >
+                <div class="flex items-center gap-1.5 mb-3">
+                  <span class="text-sm opacity-60" aria-hidden="true">{group.icon}</span>
+                  <span class="text-[10px] uppercase tracking-wider text-[color:var(--color-text-dim)]">Guide</span>
+                </div>
+                <h3 class="font-semibold mb-2 leading-snug group-hover:text-[color:var(--color-brand-400)] transition-colors">{post.data.title}</h3>
+                <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed line-clamp-3 flex-1">{post.data.description}</p>
+                <span class="mt-4 inline-flex items-center gap-1 text-xs font-medium text-[color:var(--color-text-dim)] group-hover:text-[color:var(--color-brand-400)] group-hover:gap-2 transition-all">
+                  Read guide
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+      ))
     )}
-  </div>
+  </section>
 </BaseLayout>

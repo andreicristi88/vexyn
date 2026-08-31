@@ -198,8 +198,35 @@ body {
 }
 
 /* Drop zone tint on hover — pairs with existing Tailwind drag-over styles */
+.dropzone-tint {
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
 .dropzone-tint:hover {
   background: var(--dropzone-bg-hover);
+  border-color: var(--color-border-strong);
+}
+
+/* Form controls — emerald accent instead of the browser's default blue,
+   applied site-wide so every tool's checkboxes/radios match the theme. */
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--color-brand-500);
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+}
+
+/* Tool preview tables — the `text-xs border-collapse` class combo is unique
+   to the tool components (prose tables don't use it), so this only touches
+   them. Zebra rows + a soft brand hover make dense data readable. */
+table.border-collapse.text-xs tbody tr {
+  transition: background-color 120ms ease;
+}
+table.border-collapse.text-xs tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--color-surface-2) 50%, transparent);
+}
+table.border-collapse.text-xs tbody tr:hover {
+  background: color-mix(in srgb, var(--color-brand-500) 8%, transparent);
 }
 
 /* Body grain texture — barely-there noise overlay for tactile depth.

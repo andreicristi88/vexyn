@@ -11,7 +11,7 @@ const description =
   'Free CSV cleaner that runs entirely in your browser. Trim whitespace, remove empty rows and duplicates, fix messy headers, standardize delimiters. Your data is never uploaded.';
 
 const faqs = [
-  { q: 'Is my file uploaded anywhere?', a: 'No. The CSV is parsed and cleaned entirely in your browser with JavaScript. Open DevTools → Network while you use it — no requests fire. This matters for financial and personal data you would not want to send to a random web tool.' },
+  { q: 'Is my file uploaded anywhere?', a: 'No. The CSV is parsed and cleaned entirely in your browser with JavaScript. Open DevTools → Network while you use it — no request carries your file out. This matters for financial and personal data you would not want to send to a random web tool.' },
   { q: 'What delimiters are supported?', a: 'Comma, semicolon, tab, and pipe are detected automatically. European exports that use semicolons work the same as comma files. The output is always comma-delimited so it opens cleanly in Excel and Google Sheets.' },
   { q: 'Will it break account numbers or leading zeros?', a: 'No. Every value is kept as text, so "00123" stays "00123" and long card or IBAN numbers are not turned into scientific notation. This is the most common way other tools silently corrupt financial data.' },
   { q: 'What does "clean headers" do?', a: 'It trims whitespace from column names and makes duplicate names unique (a second "Amount" column becomes "Amount (2)"), so downstream tools and spreadsheets do not merge or drop columns.' },
@@ -56,7 +56,7 @@ const schema = combineSchemas(
       </p>
     </header>
 
-    <PrivacyNote text="Your CSV is parsed and cleaned in your browser. Open DevTools → Network to verify — nothing is uploaded." />
+    <PrivacyNote text="Your CSV is parsed and cleaned in your browser. Open DevTools → Network to verify — your file is never uploaded." />
     <CsvCleaner client:load />
 
     <article class="prose mt-16 max-w-3xl">

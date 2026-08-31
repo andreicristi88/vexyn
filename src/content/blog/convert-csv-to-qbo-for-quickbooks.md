@@ -26,7 +26,7 @@ Download the transactions from your bank as CSV for the date range you need. Ope
 
 ## Convert with the columns and formats set explicitly
 
-Open [Vexyn's CSV to QBO converter](/csv-to-qbo). It runs entirely in your browser — nothing is uploaded — and it maps your columns rather than guessing.
+Open [Vexyn's CSV to QBO converter](/csv-to-qbo). It runs entirely in your browser — your file is never uploaded — and it maps your columns rather than guessing.
 
 1. Drop the CSV in. It auto-detects the delimiter and takes a first guess at the date, amount, and description columns.
 2. Correct the **Date** and **Amount** mappings if needed.
@@ -74,7 +74,7 @@ Public OFX bank directories list the Bank IDs (also called FID/BID) for many ins
 
 ### Is my bank data uploaded anywhere?
 
-No, not with a browser-based converter. The CSV is read and the QBO is built on your device — open your browser's Network panel and you will see nothing sent.
+No, not with a browser-based converter. The CSV is read and the QBO is built on your device — open your browser's Network panel and you will see your file is never sent out.
 
 ### Can I import a CSV into QuickBooks directly instead?
 

@@ -67,7 +67,7 @@ Build a compound key: select the columns that together identify a transaction, t
 
 ### Is my data uploaded?
 
-No. Deduplication runs in your browser. The Network panel shows nothing sent.
+No. Deduplication runs in your browser. The Network panel shows your file is never sent out.
 
 ## Related guides
 

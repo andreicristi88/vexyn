@@ -15,7 +15,7 @@ const faqs = [
   { q: 'My bank uses separate Debit and Credit columns.', a: 'Switch "Amount columns" to "Separate debit & credit" and map both. The tool combines them into one signed column — credits positive, debits negative — which is what most accounting tools and analyzers expect.' },
   { q: 'How does it avoid wrong dates?', a: 'You pick the date format explicitly (year-first, month-first, or day-first). The preview shows the normalized dates so you can confirm before downloading. It never silently guesses between 01/02 meaning January 2 or February 1.' },
   { q: 'What if a value cannot be normalized?', a: 'It is passed through unchanged and counted as an issue, so no data is lost. The tool tells you how many values need a look — usually a wrong date-format or decimal-separator setting.' },
-  { q: 'Is my bank data uploaded?', a: 'No. Everything runs in your browser. Open DevTools → Network — nothing is sent.' },
+  { q: 'Is my bank data uploaded?', a: 'No. Everything runs in your browser. Open DevTools → Network — your file is never sent out.' },
 ];
 
 const schema = combineSchemas(
@@ -48,7 +48,7 @@ const schema = combineSchemas(
       </p>
     </header>
 
-    <PrivacyNote text="Your bank export is reformatted in your browser. Open DevTools → Network to verify — nothing is uploaded." />
+    <PrivacyNote text="Your bank export is reformatted in your browser. Open DevTools → Network to verify — your file is never uploaded." />
     <BankCsvFormatter client:load />
 
     <article class="prose mt-16 max-w-3xl">

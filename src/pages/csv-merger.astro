@@ -13,7 +13,7 @@ const description =
 const faqs = [
   { q: 'What if the files have different columns?', a: 'They still merge. Columns are matched by header name (ignoring case and spaces), and the result is the union of all columns. A file missing a column simply has blanks for it — nothing is dropped or misaligned.' },
   { q: 'Does the row order stay the same?', a: 'Yes. Rows are appended in the order you add the files, and within each file in their original order.' },
-  { q: 'Is my data uploaded?', a: 'No. All files are read and merged in your browser. Open DevTools → Network — nothing is sent. Safe for bank and transaction exports.' },
+  { q: 'Is my data uploaded?', a: 'No. All files are read and merged in your browser. Open DevTools → Network — your file is never sent out. Safe for bank and transaction exports.' },
   { q: 'How many files can I merge?', a: 'As many as your browser memory allows — typically dozens of normal exports. Each file is capped at about 50 MB.' },
   { q: 'Are values changed?', a: 'No. Every value is carried across exactly, including leading zeros and formatting. Only the columns are aligned.' },
 ];
@@ -48,7 +48,7 @@ const schema = combineSchemas(
       </p>
     </header>
 
-    <PrivacyNote text="Your files are merged in your browser. Open DevTools → Network to verify — nothing is uploaded." />
+    <PrivacyNote text="Your files are merged in your browser. Open DevTools → Network to verify — your file is never uploaded." />
     <CsvMerger client:load />
 
     <article class="prose mt-16 max-w-3xl">

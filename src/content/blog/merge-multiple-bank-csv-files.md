@@ -23,7 +23,7 @@ Collect the exports you want to combine. They can come from the same account acr
 
 ## Merge by column name
 
-Open [Vexyn's CSV Merger](/csv-merger). It runs in your browser and matches columns by name — nothing is uploaded.
+Open [Vexyn's CSV Merger](/csv-merger). It runs in your browser and matches columns by name — your file is never uploaded.
 
 1. Drop all the files in at once, or add them one at a time. Each appears in a list with its column and row count.
 2. The tool builds the union of all columns: every column that appears in any file becomes a column in the result, in the order it was first seen.
@@ -60,7 +60,7 @@ As many as your browser's memory allows — a year or more of normal monthly exp
 
 ### Is my data uploaded?
 
-No. The merge happens in your browser. Open the Network panel and you will see nothing sent.
+No. The merge happens in your browser. Open the Network panel and you will see your file is never sent out.
 
 ## Related guides
 

@@ -69,7 +69,7 @@ Delete those top lines in a plain text editor so the real header is the first ro
 
 ### Is my data uploaded?
 
-No. Both tools run in your browser and send nothing. Confirm it in the Network panel.
+No. Both tools run in your browser and never send your file out. Confirm it in the Network panel.
 
 ## Related guides
 

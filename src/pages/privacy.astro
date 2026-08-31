@@ -3,7 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { breadcrumbSchema } from '../lib/seo';
 
 const title = 'Privacy';
-const description = 'How Vexyn handles your data: it does not. Every tool runs in your browser and nothing is uploaded.';
+const description = 'How Vexyn handles your data: it does not. Every tool runs in your browser and your file is never uploaded.';
 const schema = breadcrumbSchema([
   { name: 'Home', url: '/' },
   { name: 'Privacy', url: '/privacy' },
@@ -15,7 +15,7 @@ const schema = breadcrumbSchema([
     <h1 class="text-4xl font-bold mb-6">Privacy</h1>
 
     <div class="space-y-5 text-[color:var(--color-text-mute)] leading-relaxed">
-      <p>Short version: your files and their contents never leave your browser, and we do not track you.</p>
+      <p>Short version: your files and their contents never leave your browser.</p>
 
       <h2 class="text-2xl font-bold text-[color:var(--color-text)] mt-8 mb-2">Your data</h2>
       <p>

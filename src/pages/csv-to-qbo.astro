@@ -15,7 +15,7 @@ const faqs = [
   { q: 'Will QuickBooks accept the file? (Read this)', a: 'It depends on the version. QuickBooks Desktop generally imports .qbo files created this way. QuickBooks Online is stricter and sometimes rejects manually-built QBO or requires the exact Intuit Bank ID (INTU.BID) of your real bank. If QuickBooks Online refuses the file, try the OFX version and QuickBooks Desktop, or enter your bank\'s INTU.BID in the field provided. We are honest about this because a broken import is worse than a clear warning.' },
   { q: 'What is the INTU.BID field?', a: 'The Intuit Bank ID identifies your financial institution to QuickBooks. Some versions accept a generic value; some require your bank\'s specific ID. You can find your bank\'s INTU.BID from public OFX bank lists. Leave it blank to try without one.' },
   { q: 'How do I avoid wrong dates and amounts?', a: 'You pick the date format and decimal separator explicitly, and the preview shows every parsed date and signed amount before you download. The tool never guesses silently — wrong dates in QuickBooks are a mess to undo.' },
-  { q: 'Is my bank data uploaded?', a: 'No. Everything runs in your browser. Open DevTools → Network — nothing is sent. Your financial data never leaves your device.' },
+  { q: 'Is my bank data uploaded?', a: 'No. Everything runs in your browser. Open DevTools → Network — your file is never sent out. Your financial data never leaves your device.' },
 ];
 
 const schema = combineSchemas(
@@ -48,7 +48,7 @@ const schema = combineSchemas(
       </p>
     </header>
 
-    <PrivacyNote text="Your bank data is converted in your browser. Open DevTools → Network to verify — nothing is uploaded." />
+    <PrivacyNote text="Your bank data is converted in your browser. Open DevTools → Network to verify — your file is never uploaded." />
     <CsvToOfx format="qbo" client:load />
 
     <article class="prose mt-16 max-w-3xl">

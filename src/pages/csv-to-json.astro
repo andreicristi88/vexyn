@@ -13,7 +13,7 @@ const description =
 const faqs = [
   { q: 'What JSON shapes are supported?', a: 'Two: an array of objects (each row becomes {header: value}), and an array of arrays (the first entry is the headers). Objects is the common choice for APIs and code; arrays is compact and preserves column order exactly.' },
   { q: 'Are numbers converted?', a: 'No. Every value stays a string, so 00123 stays "00123" and long numbers are not mangled. If you need typed numbers, cast them in your own code where you control the rules — this tool will not silently change your data.' },
-  { q: 'Is my file uploaded?', a: 'No. Conversion happens entirely in your browser. Open DevTools → Network — nothing is sent.' },
+  { q: 'Is my file uploaded?', a: 'No. Conversion happens entirely in your browser. Open DevTools → Network — your file is never sent out.' },
   { q: 'Can I handle large files?', a: 'Up to about 50 MB. The on-screen preview is truncated for very large output, but the download and copy always contain everything.' },
 ];
 
@@ -47,7 +47,7 @@ const schema = combineSchemas(
       </p>
     </header>
 
-    <PrivacyNote text="Your CSV is converted in your browser. Open DevTools → Network to verify — nothing is uploaded." />
+    <PrivacyNote text="Your CSV is converted in your browser. Open DevTools → Network to verify — your file is never uploaded." />
     <CsvToJson client:load />
 
     <Faq faqs={faqs} />

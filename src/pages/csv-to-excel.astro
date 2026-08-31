@@ -12,7 +12,7 @@ const description =
 
 const faqs = [
   { q: 'Does it keep leading zeros and long numbers?', a: 'Yes. Every value is written to the Excel file as text, so account numbers like 00123 keep their zeros and long card or IBAN numbers do not turn into scientific notation (1.23E+15). This is the single most common way CSV-to-Excel tools silently corrupt financial data — this one refuses to.' },
-  { q: 'Is my file uploaded?', a: 'No. The CSV is parsed and the .xlsx is built entirely in your browser. Open DevTools → Network — nothing is sent. That matters for bank exports and payment reports you would not hand to a random converter.' },
+  { q: 'Is my file uploaded?', a: 'No. The CSV is parsed and the .xlsx is built entirely in your browser. Open DevTools → Network — your file is never sent out. That matters for bank exports and payment reports you would not hand to a random converter.' },
   { q: 'Is the output a real Excel file?', a: 'Yes — a genuine .xlsx that opens in Excel, Google Sheets, LibreOffice Calc, and Numbers. The header row is bold; the rest is your data.' },
   { q: 'What delimiters work?', a: 'Comma, semicolon, tab and pipe are detected automatically, so European semicolon exports convert the same as comma files.' },
   { q: 'How large a file can it handle?', a: 'Up to about 50 MB comfortably — tens of thousands of rows. It all runs on your CPU, so very large files depend on your machine.' },
@@ -53,7 +53,7 @@ const schema = combineSchemas(
       </p>
     </header>
 
-    <PrivacyNote text="Your CSV is converted in your browser. Open DevTools → Network to verify — nothing is uploaded." />
+    <PrivacyNote text="Your CSV is converted in your browser. Open DevTools → Network to verify — your file is never uploaded." />
     <CsvToExcel client:load />
 
     <article class="prose mt-16 max-w-3xl">

@@ -15,7 +15,7 @@ const faqs = [
   { q: 'How do I avoid wrong dates?', a: 'The single biggest risk in any bank-CSV conversion is 01/02 being read as Jan 2 in the US or Feb 1 in Europe. This tool never guesses silently: you pick the date format explicitly, and the preview shows every parsed date so you can confirm before downloading.' },
   { q: 'What about European number formats?', a: 'Choose the decimal separator (dot or comma) and the tool handles thousands separators, currency symbols, parentheses for negatives, and CR/DR suffixes. The preview shows the parsed signed amounts.' },
   { q: 'Where do transaction IDs come from?', a: 'If your CSV has a unique ID column, map it. If not, the tool generates a stable ID from each transaction so re-importing the same file will not create duplicates in your software.' },
-  { q: 'Is my bank data uploaded?', a: 'No. The whole conversion happens in your browser. Open DevTools → Network — nothing is sent. This is exactly the kind of file you should not hand to a random online converter.' },
+  { q: 'Is my bank data uploaded?', a: 'No. The whole conversion happens in your browser. Open DevTools → Network — your file is never sent out. This is exactly the kind of file you should not hand to a random online converter.' },
 ];
 
 const schema = combineSchemas(
@@ -48,7 +48,7 @@ const schema = combineSchemas(
       </p>
     </header>
 
-    <PrivacyNote text="Your bank data is converted in your browser. Open DevTools → Network to verify — nothing is uploaded." />
+    <PrivacyNote text="Your bank data is converted in your browser. Open DevTools → Network to verify — your file is never uploaded." />
     <CsvToOfx format="ofx" client:load />
 
     <article class="prose mt-16 max-w-3xl">

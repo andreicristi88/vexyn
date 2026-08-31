@@ -8,13 +8,13 @@ import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../li
 
 const title = 'CSV Deduplicator';
 const description =
-  'Free tool to find and remove duplicate rows in a CSV — exact matches or by a key column like Transaction ID. Runs entirely in your browser, nothing is uploaded.';
+  'Free tool to find and remove duplicate rows in a CSV — exact matches or by a key column like Transaction ID. Runs entirely in your browser, your file is never uploaded.';
 
 const faqs = [
   { q: 'Can I dedupe by just one column?', a: 'Yes. By default a row is a duplicate only when the whole row matches. Click one or more column headers to match on just those — for example, treat rows with the same Transaction ID or Invoice Number as duplicates even if other fields differ.' },
   { q: 'Which duplicate is kept?', a: 'Your choice: the first occurrence (default) or the last. The order of the rows you keep is preserved.' },
   { q: 'What does "ignore case and surrounding spaces" do?', a: 'It treats "ACME " and "acme" as the same value when deciding what is a duplicate. Useful for messy exports where the same entry appears with slightly different formatting.' },
-  { q: 'Is my file uploaded?', a: 'No. Everything runs in your browser. Open DevTools → Network — no requests fire. Important for bank and transaction data.' },
+  { q: 'Is my file uploaded?', a: 'No. Everything runs in your browser. Open DevTools → Network — no request carries your file out. Important for bank and transaction data.' },
   { q: 'Does it change the surviving rows?', a: 'No. It only removes duplicate rows; the rows it keeps are byte-for-byte unchanged, including leading zeros and formatting.' },
 ];
 
@@ -54,7 +54,7 @@ const schema = combineSchemas(
       </p>
     </header>
 
-    <PrivacyNote text="Your CSV is processed in your browser. Open DevTools → Network to verify — nothing is uploaded." />
+    <PrivacyNote text="Your CSV is processed in your browser. Open DevTools → Network to verify — your file is never uploaded." />
     <CsvDeduplicator client:load />
 
     <article class="prose mt-16 max-w-3xl">

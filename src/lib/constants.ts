@@ -4,9 +4,12 @@ export const SITE = {
   title: 'Vexyn — Free Financial Data Tools That Run In Your Browser',
   description:
     'Free tools to clean, convert, reconcile and analyze financial data — bank exports, Stripe reports, CSVs. Everything runs in your browser. Your data is never uploaded.',
-  // 'no upload', 'no signup', 'no tracking' are architectural promises we can
-  // keep forever because processing is client-side. Never claim 'no ads' —
-  // display ads are the funding model and must not become a broken promise.
+  // 'no upload', 'no signup', 'your files never leave the browser' are
+  // architectural promises we can keep forever because processing is
+  // client-side. Do NOT claim 'no ads', 'no tracking', or 'no cookies', and do
+  // not invite a Network-panel check that "nothing is sent": display ads are
+  // the funding model and load third-party scripts/cookies that would make any
+  // of those a broken, verifiable-as-false promise. Scope claims to the file.
   tagline: 'Financial data tools that never leave your device.',
   author: 'Vexyn',
   email: 'support.vexyn@gmail.com',

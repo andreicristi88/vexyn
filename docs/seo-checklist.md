@@ -251,41 +251,54 @@ have an `alt=` attribute.
 
 ---
 
-## 11. Don't claim 'no ads'
+## 11. Don't contradict the ad-funded model
 
-Vexyn may add non-tracking ad networks (Carbon Ads, EthicalAds) or
-sponsorship slots in the future. Promising "no ads" anywhere on the
-site closes that door and burns trust if we later add anything that
-looks like an ad.
+Display advertising is Vexyn's funding model. Ad networks (AdSense,
+Ezoic, and similar) load third-party scripts and set cookies that
+**track visitors**. Any claim that ads would falsify must not appear on
+the site — and because our whole trust pitch invites people to *open
+DevTools → Network and check*, a false claim here is not just off-brand,
+it is verifiable-as-false the moment the ads load.
 
-What we CAN safely promise (architectural guarantees, not policy):
-- **No upload** — files run through client-side code; verifiable in
-  DevTools Network tab
-- **No signup** — no auth code in the site
-- **No tracking** — no analytics, no fingerprinting, no third-party
-  pixels
-- **No telemetry** — no usage data sent anywhere
+The privacy wedge that still holds — and that we lean on hard — is that
+**the user's file never leaves their browser**. That stays true with ads
+on the page: ad scripts run in the page, but they never touch the CSV you
+dropped in. Scope every privacy claim to *the file / your data*, never to
+*the page / the site as a whole*.
 
-What we do NOT promise:
-- "No ads" — leaves no room for future monetisation
-- "No watermarks" — same reason
-- "Forever free for this feature" — same reason
+What we CAN safely promise (architectural guarantees about the file):
+- **No upload** — your file is processed by client-side code and never
+  sent to a server; verifiable by watching for a request that carries
+  *your file* out
+- **No signup / no accounts** — no auth code in the site
+- **Your data never leaves your browser** — the file and its contents
+  stay on the device
+
+What we must NOT promise (an ad network breaks each of these):
+- **"No ads"** / "ad-free" — ads are the funding model
+- **"No tracking"** / "we don't track you" — ad networks track
+- **"No cookies"** / "no third parties" — ad scripts set both
+- **"Nothing is sent"** / "no requests fire" / "nothing goes out" — the
+  page makes ad requests; only *your file* is never sent
+- "No watermarks", "forever free for this feature" — leave room to change
 
 Replacement phrasings:
 
 | Don't write | Write instead |
 |---|---|
-| "No ads, no signup, no tracking" | "No signup, no tracking, no upload" |
-| "tools without ads or telemetry" | "tools without telemetry or upload" |
+| "No ads, no signup, no tracking" | "No upload, no signup, no accounts" |
+| "Open Network — nothing is sent" | "Open Network — your file is never sent out" |
+| "we do not track you" | "your files never leave your browser" |
+| "no requests fire" | "no request carries your file out" |
 | "ad-laden online tools" | "upload-based online tools" |
-| "You want a no-ads experience" | "You want a minimal, no-signup experience" |
 
 This rule is **also documented in `src/lib/constants.ts`** as a top-of-
-file comment so anyone editing the SITE description doesn't reintroduce
-the claim by accident.
+file comment so anyone editing the SITE copy doesn't reintroduce a
+forbidden claim by accident.
 
-Audit: `grep -irE 'no ads|no-ads|ad-free|ad-laden|without ads|zero ads' src/ docs/`
-should return only this checklist plus the constants.ts note.
+Audit — both must return only this checklist plus the constants.ts note:
+- `grep -irE 'no ads|no-ads|ad-free|ad-laden|without ads|zero ads' src/ docs/`
+- `grep -irE 'no tracking|do not track|no cookies|nothing is sent|no requests fire|nothing goes out' src/ docs/`
 
 ---
 
@@ -429,8 +442,10 @@ Before pushing a new page, verify:
 - [ ] `npm run build` passes with no warnings
 - [ ] After deploy: `curl -s https://vexyn.app/<route> | grep -E 'og:image|<title>|description'`
   shows correct values
-- [ ] **No 'no ads' claim** (section 11) — Vexyn may monetize later.
-  Audit: `grep -irE 'no ads|no-ads|ad-free|ad-laden|without ads' src/`
+- [ ] **No claim the ad model breaks** (section 11) — no "no ads", "no
+  tracking", "no cookies", or absolute "nothing is sent"; privacy claims
+  scoped to *the file*. Audit:
+  `grep -irE 'no ads|ad-free|no tracking|do not track|no cookies|nothing is sent|no requests fire' src/`
   should return only the constants.ts note.
 - [ ] **No competitor names in body prose** (section 12) — only on
   `/alternatives/*` and the honest-content `/pdf-to-word` style pages.

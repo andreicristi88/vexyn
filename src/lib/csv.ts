@@ -320,6 +320,55 @@ export function dedupeRows(grid: Grid, mode: DedupeMode): DedupeResult {
   };
 }
 
+/**
+ * Combine several grids into one by aligning columns on header name
+ * (case- and whitespace-insensitive). The merged column order is the order
+ * headers are first seen; a file missing a column gets blanks for it. This is
+ * the useful default when the same export comes from different months or banks
+ * with slightly different column sets.
+ */
+export function mergeGrids(grids: Grid[]): Grid {
+  const headerOrder: string[] = [];
+  const lowerToIndex = new Map<string, number>();
+
+  for (const g of grids) {
+    for (const h of g.headers) {
+      const key = h.trim().toLowerCase();
+      if (!lowerToIndex.has(key)) {
+        lowerToIndex.set(key, headerOrder.length);
+        headerOrder.push(h);
+      }
+    }
+  }
+
+  const width = headerOrder.length;
+  const rows: string[][] = [];
+  for (const g of grids) {
+    const colMap = g.headers.map((h) => lowerToIndex.get(h.trim().toLowerCase()) ?? -1);
+    for (const row of g.rows) {
+      const out = new Array(width).fill('');
+      for (let c = 0; c < row.length; c++) {
+        const target = colMap[c];
+        if (target >= 0) out[target] = row[c] ?? '';
+      }
+      rows.push(out);
+    }
+  }
+
+  return { headers: headerOrder, rows, delimiter: ',', hadBom: false };
+}
+
+/** Turn a grid into an array of header→value objects (for JSON export). */
+export function gridToRecords(grid: Grid): Record<string, string>[] {
+  return grid.rows.map((row) => {
+    const obj: Record<string, string> = {};
+    grid.headers.forEach((h, i) => {
+      obj[h] = row[i] ?? '';
+    });
+    return obj;
+  });
+}
+
 /** Human label for a delimiter, for the UI. */
 export function delimiterLabel(d: string): string {
   if (d === '\t') return 'Tab';

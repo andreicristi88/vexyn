@@ -7,8 +7,12 @@ name: IndexNow ping
 on:
   push:
     branches: [main]
+    # Ignore non-content docs only — content guides live in
+    # src/content/blog/*.md and MUST trigger a re-ping so Bing learns the
+    # new URL. Do not add '**/*.md' back here.
     paths-ignore:
-      - '**/*.md'
+      - 'README.md'
+      - 'docs/**'
       - '.gitignore'
       - 'LICENSE'
   workflow_dispatch:

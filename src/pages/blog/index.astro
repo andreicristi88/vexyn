@@ -12,27 +12,30 @@ const posts = (await getCollection('blog')).sort(
   (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
 );
 
+// Display order of guide categories. Anything without a category falls into
+// "More guides" at the end.
+const CATEGORY_ORDER = ['Spreadsheets & Excel', 'Accounting imports', 'Cleaning & organizing'];
+
+const grouped = CATEGORY_ORDER.map((cat) => ({
+  name: cat,
+  posts: posts.filter((p) => p.data.category === cat),
+})).filter((g) => g.posts.length > 0);
+
+const uncategorized = posts.filter((p) => !p.data.category || !CATEGORY_ORDER.includes(p.data.category));
+if (uncategorized.length) grouped.push({ name: 'More guides', posts: uncategorized });
+
 const schema = combineSchemas(
   breadcrumbSchema([
     { name: 'Home', url: '/' },
     { name: 'Guides', url: '/blog' },
   ]),
-  {
-    '@type': 'Blog',
-    name: `${SITE.name} Guides`,
-    url: `${SITE.url}/blog`,
-    description,
-  },
+  { '@type': 'Blog', name: `${SITE.name} Guides`, url: `${SITE.url}/blog`, description },
 );
-
-function fmtDate(d: Date): string {
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-}
 ---
 
 <BaseLayout title={title} description={description} schema={schema}>
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <header class="mb-10">
+    <header class="mb-12">
       <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
         <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
         <span>/</span>
@@ -47,24 +50,26 @@ function fmtDate(d: Date): string {
     {posts.length === 0 ? (
       <p class="text-[color:var(--color-text-mute)]">Guides are on the way.</p>
     ) : (
-      <div class="space-y-3">
-        {posts.map((post) => (
-          <a
-            href={`/blog/${post.id.replace(/\.md$/, '')}`}
-            class="group block p-6 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] hover:border-[color:var(--color-brand-500)] hover:-translate-y-0.5 transition-all"
-          >
-            <div class="flex items-center gap-2 text-xs text-[color:var(--color-text-dim)] mb-2 font-mono uppercase tracking-wider">
-              <time datetime={post.data.pubDate.toISOString()}>{fmtDate(post.data.pubDate)}</time>
-              {post.data.tags && post.data.tags.length > 0 && (
-                <>
-                  <span>·</span>
-                  <span>{post.data.tags[0]}</span>
-                </>
-              )}
+      <div class="space-y-12">
+        {grouped.map((group) => (
+          <section>
+            <div class="flex items-center gap-3 mb-4">
+              <h2 class="text-sm font-semibold uppercase tracking-wider text-[color:var(--color-text-mute)]">{group.name}</h2>
+              <div class="flex-1 h-px bg-[color:var(--color-border)]"></div>
+              <span class="text-xs text-[color:var(--color-text-dim)]">{group.posts.length}</span>
             </div>
-            <h2 class="text-xl font-semibold mb-2 group-hover:text-[color:var(--color-brand-400)] transition-colors">{post.data.title}</h2>
-            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{post.data.description}</p>
-          </a>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {group.posts.map((post) => (
+                <a
+                  href={`/blog/${post.id.replace(/\.md$/, '')}`}
+                  class="group block p-5 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] hover:border-[color:var(--color-brand-500)] hover:-translate-y-0.5 transition-all"
+                >
+                  <h3 class="font-semibold mb-2 leading-snug group-hover:text-[color:var(--color-brand-400)] transition-colors">{post.data.title}</h3>
+                  <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed line-clamp-3">{post.data.description}</p>
+                </a>
+              ))}
+            </div>
+          </section>
         ))}
       </div>
     )}

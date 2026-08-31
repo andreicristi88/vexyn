@@ -8,6 +8,8 @@ const blog = defineCollection({
     description: z.string(),
     pubDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
+    /** Guide category, used to group the Guides listing. */
+    category: z.string().optional(),
     tags: z.array(z.string()).optional(),
     /** Tool routes this guide funnels to, shown as a "Related tools" aside. */
     related: z.array(z.string()).optional(),

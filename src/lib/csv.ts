@@ -91,6 +91,11 @@ export function parseCsv(input: string, hasHeader = true): ParseResult {
     return r.slice(0, colCount).map(cell);
   });
 
+  // Drop trailing fully-empty rows — the near-universal artifact of a file
+  // that ends in a newline. Empty rows in the middle are kept (they can be
+  // meaningful separators); only the trailing ones go.
+  while (rows.length > 0 && rows[rows.length - 1].every((c) => c === '')) rows.pop();
+
   return {
     ok: true,
     grid: { headers, rows, delimiter, hadBom },
@@ -253,6 +258,66 @@ export function serializeCsv(grid: Grid, delimiter = ','): string {
   for (const row of grid.rows) lines.push(row.map(esc).join(delimiter));
   // CRLF is the safest line ending for spreadsheet apps across platforms.
   return lines.join('\r\n');
+}
+
+export type DedupeMode = {
+  /** Column indices that define identity. Empty means "the whole row". */
+  keyColumns: number[];
+  /** When duplicates are found, which occurrence to keep. */
+  keep: 'first' | 'last';
+  /** Compare case-insensitively and ignore surrounding whitespace. */
+  loose: boolean;
+};
+
+export type DedupeResult = { grid: Grid; removed: number; duplicateGroups: number };
+
+/**
+ * Remove duplicate rows. Identity is either the entire row or the selected key
+ * columns (e.g. a Transaction ID column). Order of kept rows is preserved.
+ */
+export function dedupeRows(grid: Grid, mode: DedupeMode): DedupeResult {
+  const cols = mode.keyColumns.length > 0 ? mode.keyColumns : grid.headers.map((_, i) => i);
+
+  const norm = (v: string) => (mode.loose ? v.trim().toLowerCase() : v);
+  const keyOf = (row: string[]) => cols.map((c) => norm(row[c] ?? '')).join(' ');
+
+  // Count occurrences per key so we can report how many groups had duplicates.
+  const counts = new Map<string, number>();
+  for (const row of grid.rows) {
+    const k = keyOf(row);
+    counts.set(k, (counts.get(k) ?? 0) + 1);
+  }
+  let duplicateGroups = 0;
+  for (const n of counts.values()) if (n > 1) duplicateGroups++;
+
+  let kept: string[][];
+  if (mode.keep === 'first') {
+    const seen = new Set<string>();
+    kept = grid.rows.filter((row) => {
+      const k = keyOf(row);
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  } else {
+    // Keep last: walk from the end, then restore original order.
+    const seen = new Set<string>();
+    const keepIdx = new Set<number>();
+    for (let i = grid.rows.length - 1; i >= 0; i--) {
+      const k = keyOf(grid.rows[i]);
+      if (!seen.has(k)) {
+        seen.add(k);
+        keepIdx.add(i);
+      }
+    }
+    kept = grid.rows.filter((_, i) => keepIdx.has(i));
+  }
+
+  return {
+    grid: { ...grid, rows: kept },
+    removed: grid.rows.length - kept.length,
+    duplicateGroups,
+  };
 }
 
 /** Human label for a delimiter, for the UI. */

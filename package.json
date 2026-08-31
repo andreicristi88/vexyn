@@ -22,7 +22,8 @@
     "satori-html": "^0.3.2",
     "svelte": "^5.56.3",
     "tailwindcss": "^4.3.1",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "write-excel-file": "^4.1.1"
   },
   "devDependencies": {
     "@fontsource/geist-mono": "^5.2.8",

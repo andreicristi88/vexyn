@@ -56,8 +56,8 @@ export type Tool = {
 export const TOOLS: Tool[] = [
   // --- Financial Data (the shared CSV engine — built first, lowest risk) ---
   { slug: 'csv-cleaner', zone: 'data', name: 'CSV Cleaner', description: 'Trim whitespace, remove empty rows, duplicates and messy headers.', icon: '🧹', available: true },
-  { slug: 'csv-to-excel', zone: 'data', name: 'CSV to Excel', description: 'Convert CSV to a real .xlsx file, with types preserved.', icon: '📗', available: false },
-  { slug: 'csv-deduplicator', zone: 'data', name: 'CSV Deduplicator', description: 'Find and remove duplicate rows, exact or by key column.', icon: '🔁', available: false },
+  { slug: 'csv-to-excel', zone: 'data', name: 'CSV to Excel', description: 'Convert CSV to a real .xlsx file, with values kept as text.', icon: '📗', available: true },
+  { slug: 'csv-deduplicator', zone: 'data', name: 'CSV Deduplicator', description: 'Find and remove duplicate rows, exact or by key column.', icon: '🔁', available: true },
   { slug: 'csv-merger', zone: 'data', name: 'CSV Merger', description: 'Combine several CSVs into one, aligning columns.', icon: '🔗', available: false },
   { slug: 'csv-to-json', zone: 'data', name: 'CSV to JSON', description: 'Turn a CSV into clean JSON records.', icon: '{ }', available: false },
   { slug: 'csv-to-qbo', zone: 'data', name: 'CSV to QBO', description: 'Convert a bank CSV to QuickBooks .qbo — normally a paid tool.', icon: '📥', available: false },

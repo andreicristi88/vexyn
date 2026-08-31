@@ -1,0 +1,92 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CsvCleaner from '../components/tools/CsvCleaner.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'CSV Cleaner';
+const description =
+  'Free CSV cleaner that runs entirely in your browser. Trim whitespace, remove empty rows and duplicates, fix messy headers, standardize delimiters. Your data is never uploaded.';
+
+const faqs = [
+  { q: 'Is my file uploaded anywhere?', a: 'No. The CSV is parsed and cleaned entirely in your browser with JavaScript. Open DevTools → Network while you use it — no requests fire. This matters for financial and personal data you would not want to send to a random web tool.' },
+  { q: 'What delimiters are supported?', a: 'Comma, semicolon, tab, and pipe are detected automatically. European exports that use semicolons work the same as comma files. The output is always comma-delimited so it opens cleanly in Excel and Google Sheets.' },
+  { q: 'Will it break account numbers or leading zeros?', a: 'No. Every value is kept as text, so "00123" stays "00123" and long card or IBAN numbers are not turned into scientific notation. This is the most common way other tools silently corrupt financial data.' },
+  { q: 'What does "clean headers" do?', a: 'It trims whitespace from column names and makes duplicate names unique (a second "Amount" column becomes "Amount (2)"), so downstream tools and spreadsheets do not merge or drop columns.' },
+  { q: 'How big a file can it handle?', a: 'Up to about 50 MB comfortably on a desktop — tens of thousands of rows. Everything runs on your CPU, so very large files depend on your machine. For multi-hundred-MB files, split them first.' },
+  { q: 'Does the download open correctly in Excel?', a: 'Yes. The file is UTF-8 with a byte-order mark and CRLF line endings, which is what Excel expects — accented names, €, and other characters come through correctly.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/csv-cleaner`,
+    description,
+    category: 'BusinessApplication',
+    features: [
+      'Trim whitespace and collapse double spaces',
+      'Remove empty rows, empty columns, and duplicate rows',
+      'Clean and de-duplicate headers',
+      'Automatic delimiter detection (comma, semicolon, tab, pipe)',
+      'Keeps values as text — no corrupted account numbers',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'CSV Cleaner', url: '/csv-cleaner' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">CSV Cleaner</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">CSV Cleaner</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop a messy CSV, get a clean one. Trim whitespace, remove empty rows and duplicates, fix headers — all in your browser. Nothing is uploaded.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your CSV is parsed and cleaned in your browser. Open DevTools → Network to verify — nothing is uploaded." />
+    <CsvCleaner client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">A CSV cleaner that respects your data</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Most online CSV tools upload your file to a server to process it. For a public dataset that is fine. For a bank export, a customer list, or a transaction report, it means handing sensitive data to a third party for a job your own browser can do. Vexyn parses and cleans the file locally with <a class="text-[color:var(--color-brand-400)] hover:underline" href="https://www.papaparse.com/" target="_blank" rel="noopener noreferrer">PapaParse</a>. The bytes never leave the tab — confirm it in the Network panel.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">What it fixes</h2>
+      <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6">
+        <li><strong class="text-[color:var(--color-text)]">Whitespace:</strong> stray spaces around values that break lookups and joins.</li>
+        <li><strong class="text-[color:var(--color-text)]">Empty rows and columns:</strong> the blank padding exports love to add.</li>
+        <li><strong class="text-[color:var(--color-text)]">Duplicate rows:</strong> exact repeats, kept once.</li>
+        <li><strong class="text-[color:var(--color-text)]">Messy headers:</strong> trimmed, and duplicate names made unique so nothing gets merged.</li>
+        <li><strong class="text-[color:var(--color-text)]">Weird delimiters:</strong> semicolon and tab files normalized to clean comma output.</li>
+      </ul>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Why values stay as text</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        The single most common way tools corrupt financial data is by guessing types: an account number like <code class="text-[color:var(--color-brand-400)]">00123</code> loses its leading zeros, a long card number turns into <code class="text-[color:var(--color-brand-400)]">1.23E+15</code>. This cleaner never coerces types — every value is preserved exactly as written.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map((f) => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  </div>
+</BaseLayout>

@@ -20,6 +20,7 @@
     "@tailwindcss/vite": "^4.3.1",
     "astro": "^6.4.7",
     "onnxruntime-web": "^1.20.1",
+    "papaparse": "^5.7.0",
     "satori-html": "^0.3.2",
     "svelte": "^5.56.3",
     "tailwindcss": "^4.3.1",
@@ -29,6 +30,7 @@
     "@fontsource/geist-mono": "^5.2.8",
     "@fontsource/geist-sans": "^5.2.5",
     "@resvg/resvg-js": "^2.6.2",
+    "@types/papaparse": "^5.5.2",
     "satori": "^0.26.0"
   }
 }

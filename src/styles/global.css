@@ -1,37 +1,39 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #f0f5ff;
-  --color-brand-100: #e0eaff;
-  --color-brand-300: #a5b4fc;
-  --color-brand-400: #818cf8;
-  --color-brand-500: #6366f1;
-  --color-brand-600: #4f46e5;
-  --color-brand-700: #4338ca;
+  /* Brand — emerald. The money/growth accent of a professional finance hub. */
+  --color-brand-50: #ecfdf5;
+  --color-brand-100: #d1fae5;
+  --color-brand-300: #6ee7b7;
+  --color-brand-400: #34d399;
+  --color-brand-500: #10b981;
+  --color-brand-600: #059669;
+  --color-brand-700: #047857;
 
-  --color-accent-400: #c084fc;
-  --color-accent-500: #a855f7;
-  --color-accent-600: #9333ea;
+  /* Accent — teal. Secondary highlight, cool sibling of the emerald brand. */
+  --color-accent-400: #2dd4bf;
+  --color-accent-500: #14b8a6;
+  --color-accent-600: #0d9488;
 
-  /* Dark mode (default) — near-black with cool tint */
-  --color-bg: #0a0a0f;
-  --color-surface: #13131a;
-  --color-surface-2: #1c1c26;
-  --color-surface-3: #25252f;
-  --color-border: #2a2a36;
-  --color-border-strong: #44445a;
+  /* Dark mode (default) — deep cool slate */
+  --color-bg: #0c1116;
+  --color-surface: #151c24;
+  --color-surface-2: #1c2632;
+  --color-surface-3: #243140;
+  --color-border: #263441;
+  --color-border-strong: #35485c;
 
-  --color-text: #f0f0f5;
-  --color-text-mute: #9090a0;
-  --color-text-dim: #808090;
+  --color-text: #e7edf3;
+  --color-text-mute: #93a1b0;
+  --color-text-dim: #647585;
 
-  --color-success: #10b981;
+  --color-success: #34d399;
   --color-warning: #f59e0b;
-  --color-danger: #ef4444;
+  --color-danger: #f87171;
 
-  /* Hero atmosphere tint — adapted per theme by .light override below */
-  --hero-glow-a: rgba(99, 102, 241, 0.18);
-  --hero-glow-b: rgba(168, 85, 247, 0.10);
+  /* Hero atmosphere tint — emerald + teal blooms */
+  --hero-glow-a: rgba(16, 185, 129, 0.14);
+  --hero-glow-b: rgba(20, 184, 166, 0.08);
 
   /* Card depth — flat on dark, subtle shadow on light */
   --card-shadow: none;
@@ -45,32 +47,35 @@
   --font-mono: 'Geist Mono', 'JetBrains Mono', 'Fira Code', monospace;
 }
 
-/* Light mode — "Dawn Mist" palette: cool gray-blue undertone that
-   complements the indigo/purple brand without going harsh-white. */
+/* Light mode — cool slate: a soft blue-gray canvas that keeps the emerald
+   brand crisp without going harsh-white. */
 :root.light {
-  --color-bg: #e8ebf1;
-  --color-surface: #f7f8fc;
-  --color-surface-2: #dee2ea;
-  --color-surface-3: #d2d7e0;
-  --color-border: #d4d8e1;
-  --color-border-strong: #b9bfcc;
+  --color-bg: #eef1f5;
+  --color-surface: #ffffff;
+  --color-surface-2: #e3e8ee;
+  --color-surface-3: #d5dce4;
+  --color-border: #dbe1e9;
+  --color-border-strong: #bcc6d1;
 
-  --color-text: #1a1d24;
-  --color-text-mute: #4d5460;
-  --color-text-dim: #7a8499;
+  --color-text: #0f1720;
+  --color-text-mute: #4b5866;
+  --color-text-dim: #7a8896;
 
-  /* Brand colors tuned slightly deeper for contrast on light backgrounds.
-     6366f1 reads as a touch hot on near-white; 5856d6 sits more calmly. */
-  --color-brand-400: #6d6fec;
-  --color-brand-500: #5b5fd8;
-  --color-brand-600: #4a4cbf;
+  /* Emerald deepened for contrast on light backgrounds — the bright #34d399
+     reads thin on near-white, #059669 holds. */
+  --color-brand-400: #10b981;
+  --color-brand-500: #059669;
+  --color-brand-600: #047857;
 
-  --color-accent-400: #b070f0;
-  --color-accent-500: #9b4fe0;
+  --color-accent-400: #14b8a6;
+  --color-accent-500: #0d9488;
 
-  /* Hero glow softened on light — strong indigo wash is jarring on near-white */
-  --hero-glow-a: rgba(91, 95, 216, 0.08);
-  --hero-glow-b: rgba(155, 79, 224, 0.06);
+  --color-success: #059669;
+  --color-danger: #dc2626;
+
+  /* Hero glow softened on light */
+  --hero-glow-a: rgba(16, 185, 129, 0.07);
+  --hero-glow-b: rgba(20, 184, 166, 0.05);
 
   /* Cards get subtle depth on light mode where pure-white-on-white loses
      hierarchy. On dark the bg-surface contrast does the same work. */

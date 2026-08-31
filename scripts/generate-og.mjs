@@ -10,14 +10,14 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
 
 const COLORS = {
-  bg: '#0a0a0f',
-  surface: '#13131a',
-  border: '#2a2a36',
-  brand: '#6366f1',
-  accent: '#a855f7',
-  text: '#f0f0f5',
-  textMute: '#9090a0',
-  textDim: '#606070',
+  bg: '#0c1116',
+  surface: '#151c24',
+  border: '#263441',
+  brand: '#10b981',
+  accent: '#14b8a6',
+  text: '#e7edf3',
+  textMute: '#93a1b0',
+  textDim: '#647585',
   success: '#10b981',
 };
 
@@ -25,11 +25,11 @@ const COLORS = {
 const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="96" height="96">
   <defs>
     <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#a855f7"/>
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="14" fill="#0a0a0f"/>
+  <rect width="64" height="64" rx="14" fill="#0c1116"/>
   <path d="M32 7 L54.5 15 L54.5 33 C54.5 44.5 44.5 54 32 57.5 C19.5 54 9.5 44.5 9.5 33 L9.5 15 Z" fill="url(#g)"/>
   <path d="M21.5 27.5 L32 43.5 L42.5 27.5" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 </svg>`;
@@ -64,7 +64,7 @@ function template({ title, subtitle, badge }) {
         justifyContent: 'space-between',
         padding: '72px',
         background: COLORS.bg,
-        backgroundImage: `radial-gradient(circle at 30% 0%, rgba(99,102,241,0.25), transparent 55%), radial-gradient(circle at 90% 100%, rgba(168,85,247,0.18), transparent 60%)`,
+        backgroundImage: `radial-gradient(circle at 30% 0%, rgba(16,185,129,0.20), transparent 55%), radial-gradient(circle at 90% 100%, rgba(20,184,166,0.14), transparent 60%)`,
         fontFamily: 'Geist',
         color: COLORS.text,
         position: 'relative',

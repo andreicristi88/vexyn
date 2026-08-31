@@ -28,7 +28,8 @@ const zoneAnchor: Record<string, string> = { data: 'data', business: 'business',
 <BaseLayout schema={schema}>
   <!-- Hero -->
   <section class="relative overflow-hidden border-b border-[color:var(--color-border)]">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 sm:pt-24 sm:pb-20 text-center">
+    <div class="absolute inset-0 glow pointer-events-none"></div>
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 sm:pt-24 sm:pb-20 text-center relative">
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface)] text-xs text-[color:var(--color-text-mute)] mb-6">
         <span class="inline-block w-1.5 h-1.5 rounded-full bg-[color:var(--color-success)]"></span>
         100% in your browser. Your data is never uploaded.
@@ -46,6 +47,15 @@ const zoneAnchor: Record<string, string> = { data: 'data', business: 'business',
         <a href="#tools" class="px-6 py-3 rounded-lg border border-[color:var(--color-border)] hover:border-[color:var(--color-border-strong)] bg-[color:var(--color-surface)] text-[color:var(--color-text)] font-medium transition-colors">
           Browse all tools
         </a>
+      </div>
+
+      <div class="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-[color:var(--color-text-mute)]">
+        {['No upload, ever', 'No signup', 'Open source (MIT)', 'Works offline'].map((label) => (
+          <span class="inline-flex items-center gap-1.5">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-400)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            {label}
+          </span>
+        ))}
       </div>
     </div>
   </section>

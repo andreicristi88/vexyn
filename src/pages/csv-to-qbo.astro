@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CsvToOfx from '../components/tools/CsvToOfx.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'CSV to QBO';
+const description =
+  'Free CSV to QBO converter that runs in your browser. Turn a bank CSV into a QuickBooks .qbo (Web Connect) file. Map your columns, control the dates. Nothing is uploaded.';
+
+const faqs = [
+  { q: 'What is a QBO file?', a: 'A .qbo file is QuickBooks Web Connect format — OFX with two extra Intuit tags. It lets you import bank transactions into QuickBooks when your bank does not offer a direct feed and only gives you a CSV.' },
+  { q: 'Will QuickBooks accept the file? (Read this)', a: 'It depends on the version. QuickBooks Desktop generally imports .qbo files created this way. QuickBooks Online is stricter and sometimes rejects manually-built QBO or requires the exact Intuit Bank ID (INTU.BID) of your real bank. If QuickBooks Online refuses the file, try the OFX version and QuickBooks Desktop, or enter your bank\'s INTU.BID in the field provided. We are honest about this because a broken import is worse than a clear warning.' },
+  { q: 'What is the INTU.BID field?', a: 'The Intuit Bank ID identifies your financial institution to QuickBooks. Some versions accept a generic value; some require your bank\'s specific ID. You can find your bank\'s INTU.BID from public OFX bank lists. Leave it blank to try without one.' },
+  { q: 'How do I avoid wrong dates and amounts?', a: 'You pick the date format and decimal separator explicitly, and the preview shows every parsed date and signed amount before you download. The tool never guesses silently — wrong dates in QuickBooks are a mess to undo.' },
+  { q: 'Is my bank data uploaded?', a: 'No. Everything runs in your browser. Open DevTools → Network — nothing is sent. Your financial data never leaves your device.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/csv-to-qbo`,
+    description,
+    category: 'FinanceApplication',
+    features: ['QuickBooks .qbo (Web Connect) output', 'Column mapping for any bank CSV', 'Explicit date format and decimal separator', 'Optional Intuit Bank ID', 'Runs entirely in your browser, no upload'],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'CSV to QBO', url: '/csv-to-qbo' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">CSV to QBO</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">CSV to QBO</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Convert a bank CSV into a QuickBooks .qbo file. Map your columns, pick your date format, and it is built in your browser — nothing uploaded.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your bank data is converted in your browser. Open DevTools → Network to verify — nothing is uploaded." />
+    <CsvToOfx format="qbo" client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">An honest note on QuickBooks Online</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        QuickBooks Desktop imports .qbo files created this way reliably. QuickBooks Online is stricter — it sometimes validates the Intuit Bank ID against known institutions and rejects manually-built files. If Online refuses the file, the honest options are: enter your bank's INTU.BID in the field, use the <a class="text-[color:var(--color-brand-400)] hover:underline" href="/csv-to-ofx">OFX version</a> with a different importer, or import into QuickBooks Desktop. We would rather tell you this up front than have you fight a silent failure.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map((f) => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  </div>
+</BaseLayout>

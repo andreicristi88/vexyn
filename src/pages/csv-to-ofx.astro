@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CsvToOfx from '../components/tools/CsvToOfx.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'CSV to OFX';
+const description =
+  'Free CSV to OFX converter that runs in your browser. Turn a bank CSV into an OFX file for Quicken, GnuCash, MoneyMoney and other finance apps. Map your columns, keep control of dates. Nothing is uploaded.';
+
+const faqs = [
+  { q: 'What is OFX and what imports it?', a: 'OFX (Open Financial Exchange) is the standard format personal-finance software imports transactions from. Quicken, GnuCash, MoneyMoney, Banktivity, and many others read OFX. If your bank only gives you a CSV, this converts it into an OFX those apps accept.' },
+  { q: 'How do I avoid wrong dates?', a: 'The single biggest risk in any bank-CSV conversion is 01/02 being read as Jan 2 in the US or Feb 1 in Europe. This tool never guesses silently: you pick the date format explicitly, and the preview shows every parsed date so you can confirm before downloading.' },
+  { q: 'What about European number formats?', a: 'Choose the decimal separator (dot or comma) and the tool handles thousands separators, currency symbols, parentheses for negatives, and CR/DR suffixes. The preview shows the parsed signed amounts.' },
+  { q: 'Where do transaction IDs come from?', a: 'If your CSV has a unique ID column, map it. If not, the tool generates a stable ID from each transaction so re-importing the same file will not create duplicates in your software.' },
+  { q: 'Is my bank data uploaded?', a: 'No. The whole conversion happens in your browser. Open DevTools → Network — nothing is sent. This is exactly the kind of file you should not hand to a random online converter.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/csv-to-ofx`,
+    description,
+    category: 'FinanceApplication',
+    features: ['Column mapping for any bank CSV', 'Explicit date format — no silent guessing', 'US and European number formats', 'Stable transaction IDs to avoid duplicates', 'Runs entirely in your browser, no upload'],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'CSV to OFX', url: '/csv-to-ofx' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">CSV to OFX</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">CSV to OFX</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Convert a bank CSV into an OFX file for Quicken, GnuCash and other finance apps. Map your columns, pick your date format, and the file is built in your browser — nothing uploaded.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your bank data is converted in your browser. Open DevTools → Network to verify — nothing is uploaded." />
+    <CsvToOfx format="ofx" client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Why this is normally a paid tool</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Converting a bank CSV to OFX correctly means solving the hard parts: telling day-first from month-first dates, parsing European number formats, generating stable transaction IDs so re-imports do not duplicate, and emitting the exact OFX structure finance software expects. That is why dedicated converters charge for it. Vexyn does it in your browser, for free, and — because your statement never leaves the tab — without the privacy trade-off of uploading your finances to a server.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
+      <div class="space-y-4">
+        {faqs.map((f) => (
+          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+            <h3 class="font-semibold mb-2">{f.q}</h3>
+            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  </div>
+</BaseLayout>

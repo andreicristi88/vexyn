@@ -1,70 +1,47 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { SITE, MODEL } from '../lib/constants';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema } from '../lib/seo';
+
+const title = 'About';
+const description = 'Vexyn is a growing set of free financial data tools that run entirely in your browser — no upload, no signup, no tracking.';
+const schema = breadcrumbSchema([
+  { name: 'Home', url: '/' },
+  { name: 'About', url: '/about' },
+]);
 ---
 
-<BaseLayout title="About" description="Why Vexyn exists: free AI image generation that runs entirely on your device. No account, no queue, no prompt logging — plus the terms that apply to what you make.">
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <h1 class="text-4xl font-bold mb-6">About Vexyn</h1>
 
-    <p class="text-lg text-[color:var(--color-text-mute)] leading-relaxed mb-6">
-      Vexyn is a free AI image generator that runs entirely in your browser. The model downloads to your
-      device once, then every image is produced by your own GPU. No account, no queue, no generation
-      limit — and your prompts physically cannot be read by us, because they never leave your machine.
-    </p>
+    <div class="prose-vexyn space-y-5 text-[color:var(--color-text-mute)] leading-relaxed">
+      <p>
+        Vexyn is a collection of free tools for working with financial data — cleaning CSVs, converting bank exports, reconciling Stripe reports, analyzing statements. The kind of jobs you normally reach for a paid service or a spreadsheet macro to do.
+      </p>
 
-    <h2 class="text-2xl font-bold mb-3 mt-10">Why this exists</h2>
-    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
-      Every popular AI image site routes your prompt to their servers: it waits in a queue, gets logged,
-      counts against a credit balance, and often sits behind a signup wall. We wanted the opposite
-      architecture — ship the model <em>to the user</em> and let their hardware do the work. That single
-      decision is what makes "free, unlimited, private" an engineering fact rather than a marketing claim
-      that erodes later.
-    </p>
+      <h2 class="text-2xl font-bold text-[color:var(--color-text)] mt-8 mb-2">The one rule</h2>
+      <p>
+        Everything runs in your browser. Your file is parsed, transformed and analyzed on your own device — it is never uploaded. That is not a policy we promise to keep; it is how the tools are built. There is no server that touches your data because there is no server in the loop at all. Open your browser's Network panel while you use any tool and you will see it: nothing goes out.
+      </p>
+      <p>
+        This matters most for exactly the data these tools handle. A bank statement, a customer payment report, a transaction export — this is the last kind of file you want to hand to an anonymous website. Local-first processing removes the question entirely.
+      </p>
 
-    <h2 class="text-2xl font-bold mb-3 mt-10">How it works</h2>
-    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
-      On first use, the page downloads <a href={MODEL.url} class="text-[color:var(--color-brand-400)] hover:underline" target="_blank" rel="noopener noreferrer">{MODEL.id}</a> —
-      a distilled Stable Diffusion model that produces an image in a single denoising step, small enough
-      to run in a browser. Inference runs through WebGPU via ONNX Runtime Web. The browser caches the
-      weights, so later visits skip the download. Disconnect from the internet after loading — it still
-      works.
-    </p>
+      <h2 class="text-2xl font-bold text-[color:var(--color-text)] mt-8 mb-2">Why it is free</h2>
+      <p>
+        Because the work happens on your device, there is no per-use server cost to recover. The tools are funded by unobtrusive display ads, which is why you will never see us promise "no ads" — that would be a promise we could not keep. What we do keep: no upload, no signup, no tracking, no accounts.
+      </p>
 
-    <h2 class="text-2xl font-bold mb-3 mt-10">Terms for what you generate</h2>
-    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-3">
-      The model is released under the <a href={MODEL.licenceUrl} class="text-[color:var(--color-brand-400)] hover:underline" target="_blank" rel="noopener noreferrer">OpenRAIL++ licence</a>.
-      Your images are yours, including for commercial use. The licence carries use restrictions that
-      apply to you as a user of this site. You may not use the generator to create content that:
-    </p>
-    <ul class="space-y-2 text-[color:var(--color-text-mute)] mb-6 list-disc pl-5">
-      <li>violates any law, or harms or exploits minors in any way;</li>
-      <li>creates or spreads verifiably false information with intent to harm others;</li>
-      <li>defames, disparages or harasses real people, or impersonates them without consent;</li>
-      <li>generates personal identifiable information to harm an individual;</li>
-      <li>discriminates against individuals or groups based on protected characteristics;</li>
-      <li>provides medical advice or is intended to be relied on in legal, financial or safety-critical decisions.</li>
-    </ul>
-    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
-      Because generation happens on your device, enforcement is your responsibility — exactly as it would
-      be if you ran the model locally yourself. These restrictions come from the model licence and are
-      passed on to you as it requires.
-    </p>
+      <h2 class="text-2xl font-bold text-[color:var(--color-text)] mt-8 mb-2">Open source</h2>
+      <p>
+        The code is on <a class="text-[color:var(--color-brand-400)] hover:underline" href={SITE.github} target="_blank" rel="noopener noreferrer">GitHub</a>. If you want to verify that a tool does what it says, read it.
+      </p>
 
-    <h2 class="text-2xl font-bold mb-3 mt-10">How the site is funded</h2>
-    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
-      Ads. That's it. Because your GPU does the compute, our costs stay near zero no matter how many
-      images you make — so there is no premium tier, no credit pack, and no reason to limit you.
-    </p>
-
-    <h2 class="text-2xl font-bold mb-3 mt-10">Open source</h2>
-    <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
-      Vexyn's code is open on <a href={SITE.github} class="text-[color:var(--color-brand-400)] hover:underline" target="_blank" rel="noopener noreferrer">GitHub</a>. Audit it, contribute, or fork it.
-    </p>
-
-    <h2 class="text-2xl font-bold mb-3 mt-10">Contact</h2>
-    <p class="text-[color:var(--color-text-mute)] leading-relaxed">
-      Ideas, bug reports, or just hello — open an issue on GitHub or email <a href={`mailto:${SITE.email}`} class="text-[color:var(--color-brand-400)] hover:underline">{SITE.email}</a>.
-    </p>
+      <h2 class="text-2xl font-bold text-[color:var(--color-text)] mt-8 mb-2">Contact</h2>
+      <p>
+        Questions, bug reports, or a tool you wish existed: <a class="text-[color:var(--color-brand-400)] hover:underline" href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+      </p>
+    </div>
   </div>
 </BaseLayout>

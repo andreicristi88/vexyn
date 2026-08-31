@@ -206,33 +206,9 @@ async function render(filename, element) {
 const pages = [
   {
     filename: 'og-default.png',
-    title: 'AI images that never leave your device.',
-    subtitle: 'Free AI image generator running on your own GPU. No account, no queue, no limits — your prompts stay private.',
+    title: 'Financial data tools that never leave your device.',
+    subtitle: 'Free tools to clean, convert and analyze CSVs, bank exports and Stripe reports — all in your browser. No upload, no signup.',
     badge: null,
-  },
-  {
-    filename: 'og/game-assets.png',
-    title: 'AI Game Asset Generator',
-    subtitle: 'Item icons, sprites and concept art — unlimited iterations on your own GPU. Free, no credits, no signup.',
-    badge: 'Game assets',
-  },
-  {
-    filename: 'og/wallpapers.png',
-    title: 'AI Wallpaper Generator',
-    subtitle: 'A wallpaper nobody else has. Describe the scene, reroll for free, no watermark.',
-    badge: 'Wallpapers',
-  },
-  {
-    filename: 'og/fantasy-characters.png',
-    title: 'Fantasy Character Portraits',
-    subtitle: 'D&D portraits, NPCs and party art. Free and unlimited — your GPU does the work.',
-    badge: 'Fantasy',
-  },
-  {
-    filename: 'og/stickers.png',
-    title: 'Sticker & Emote Generator',
-    subtitle: 'Discord stickers and Twitch emotes. Bold outlines, readable when tiny, free forever.',
-    badge: 'Stickers',
   },
 ];
 

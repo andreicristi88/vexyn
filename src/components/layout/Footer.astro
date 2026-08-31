@@ -1,77 +1,63 @@
 ---
 import { SITE } from '../../lib/constants';
+import { ZONES, toolsInZone } from '../../lib/tools';
 import Logo from '../ui/Logo.astro';
-import { getCollection } from 'astro:content';
 
 const year = new Date().getFullYear();
-const latestPosts = (await getCollection('blog'))
-  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
-  .slice(0, 4);
+
+// Show the available tools first in each zone, then fill up to 5 with the
+// roadmap so the footer reflects both what works and what is coming.
+function footerTools(zoneId: (typeof ZONES)[number]['id']) {
+  const list = toolsInZone(zoneId);
+  const available = list.filter((t) => t.available);
+  const coming = list.filter((t) => !t.available);
+  return [...available, ...coming].slice(0, 5);
+}
 ---
 
 <footer class="border-t border-[color:var(--color-border)] mt-24">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-      <div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div class="col-span-2 md:col-span-1">
         <div class="flex items-center gap-2 mb-3">
           <Logo size={28} />
           <span class="font-semibold">{SITE.name}</span>
         </div>
         <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">
-          {SITE.tagline} AI image generation that runs entirely on your device.
+          {SITE.tagline} Clean, convert and analyze financial data without uploading it anywhere.
         </p>
       </div>
 
-      <div>
-        <h3 class="text-sm font-semibold mb-3">Generate</h3>
-        <ul class="space-y-2 text-sm text-[color:var(--color-text-mute)]">
-          <li><a href="/" class="hover:text-[color:var(--color-text)]">Anything</a></li>
-          <li><a href="/games" class="hover:text-[color:var(--color-text)]">AI Games</a></li>
-          <li><a href="/anime" class="hover:text-[color:var(--color-text)]">AI Anime</a></li>
-          <li><a href="/art" class="hover:text-[color:var(--color-text)]">AI Art</a></li>
-          <li><a href="/design" class="hover:text-[color:var(--color-text)]">AI Design</a></li>
-          <li><a href="/fun" class="hover:text-[color:var(--color-text)]">AI Fun</a></li>
-        </ul>
-      </div>
-
-      <div>
-        <h3 class="text-sm font-semibold mb-3">Latest articles</h3>
-        <ul class="space-y-2 text-sm text-[color:var(--color-text-mute)]">
-          {latestPosts.map((post) => (
-            <li>
-              <a href={`/blog/${post.id.replace(/\.md$/, '')}`} class="hover:text-[color:var(--color-text)] line-clamp-2 leading-snug">
-                {post.data.title.replace(/ — 2026 step-by-step guide$/, '')}
-              </a>
-            </li>
-          ))}
-          <li class="pt-1">
-            <a href="/blog" class="text-[color:var(--color-brand-400)] hover:text-[color:var(--color-brand-300)] text-xs uppercase tracking-wider">All articles →</a>
-          </li>
-        </ul>
-      </div>
-
-      <div>
-        <h3 class="text-sm font-semibold mb-3">Links</h3>
-        <ul class="space-y-2 text-sm text-[color:var(--color-text-mute)]">
-          <li><a href="/about" class="hover:text-[color:var(--color-text)]">About</a></li>
-          <li><a href="/privacy" class="hover:text-[color:var(--color-text)]">Privacy</a></li>
-          <li>
-            <a href={SITE.github} target="_blank" rel="noopener noreferrer" class="hover:text-[color:var(--color-text)] inline-flex items-center gap-1.5">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-              GitHub
-            </a>
-          </li>
-          <li><a href="/sitemap-index.xml" class="hover:text-[color:var(--color-text)]">Sitemap</a></li>
-        </ul>
-      </div>
+      {ZONES.map((zone) => (
+        <div>
+          <h3 class="text-sm font-semibold mb-3">{zone.name}</h3>
+          <ul class="space-y-2 text-sm text-[color:var(--color-text-mute)]">
+            {footerTools(zone.id).map((t) => (
+              <li>
+                {t.available ? (
+                  <a href={`/${t.slug}`} class="hover:text-[color:var(--color-text)]">{t.name}</a>
+                ) : (
+                  <span class="text-[color:var(--color-text-dim)]">{t.name} <span class="text-[10px] uppercase tracking-wider">soon</span></span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
 
-    <div class="mt-12 pt-6 border-t border-[color:var(--color-border)] flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-[color:var(--color-text-dim)]">
-      <p>© {year} {SITE.name}. Built with privacy in mind.</p>
+    <div class="mt-10 pt-6 border-t border-[color:var(--color-border)] flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-[color:var(--color-text-dim)]">
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+        <a href="/about" class="hover:text-[color:var(--color-text-mute)]">About</a>
+        <a href="/privacy" class="hover:text-[color:var(--color-text-mute)]">Privacy</a>
+        <a href={SITE.github} target="_blank" rel="noopener noreferrer" class="hover:text-[color:var(--color-text-mute)]">GitHub</a>
+        <a href="/sitemap-index.xml" class="hover:text-[color:var(--color-text-mute)]">Sitemap</a>
+      </div>
       <p class="flex items-center gap-2">
         <span class="inline-block w-2 h-2 rounded-full bg-[color:var(--color-success)] animate-pulse"></span>
-        <span>No tracking. No cookies. No accounts.</span>
+        <span>No upload. No tracking. No accounts.</span>
       </p>
     </div>
+    <p class="mt-4 text-xs text-[color:var(--color-text-dim)]">© {year} {SITE.name}.</p>
   </div>
 </footer>

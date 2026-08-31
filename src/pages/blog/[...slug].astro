@@ -157,6 +157,18 @@ function fmtDate(d: Date): string {
       document
         .querySelectorAll('.prose-vexyn h2[id]')
         .forEach((h) => observer.observe(h));
+
+      // Smooth-scroll to the section without appending #hash to the URL.
+      // The href stays as a no-JS fallback.
+      for (const [id, link] of links) {
+        link.addEventListener('click', (e) => {
+          const target = id && document.getElementById(id);
+          if (!target) return; // let the browser handle it
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          setActive(id);
+        });
+      }
     </script>
   )}
 </BaseLayout>

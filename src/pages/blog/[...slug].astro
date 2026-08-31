@@ -14,8 +14,11 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
 const url = `${SITE.url}/blog/${post.id.replace(/\.md$/, '')}`;
+
+// Table of contents from the article's h2 headings. Astro auto-assigns ids.
+const toc = headings.filter((h) => h.depth === 2);
 
 const relatedTools = (post.data.related ?? [])
   .map((href: string) => TOOLS.find((t) => `/${t.slug}` === href))
@@ -53,7 +56,9 @@ function fmtDate(d: Date): string {
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description} schema={schema}>
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class={toc.length > 1 ? 'lg:grid lg:grid-cols-[1fr_15rem] lg:gap-12 lg:items-start' : ''}>
+    <div class="max-w-3xl min-w-0">
     <header class="mb-10">
       <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
         <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
@@ -98,13 +103,69 @@ function fmtDate(d: Date): string {
     <nav class="mt-12 pt-6 border-t border-[color:var(--color-border)]">
       <a href="/blog" class="text-sm text-[color:var(--color-brand-400)] hover:text-[color:var(--color-brand-300)] transition-colors">← All guides</a>
     </nav>
+    </div>
+
+    {toc.length > 1 && (
+      <aside class="hidden lg:block">
+        <div class="sticky top-24">
+          <p class="text-xs font-semibold uppercase tracking-wider text-[color:var(--color-text-dim)] mb-3">On this page</p>
+          <nav class="vexyn-toc border-l border-[color:var(--color-border)]">
+            <ul class="space-y-1 text-sm">
+              {toc.map((h) => (
+                <li>
+                  <a
+                    href={`#${h.slug}`}
+                    data-toc-link={h.slug}
+                    class="block -ml-px pl-4 py-1 border-l border-transparent text-[color:var(--color-text-mute)] hover:text-[color:var(--color-text)] hover:border-[color:var(--color-border-strong)] transition-colors leading-snug"
+                  >{h.text}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      </aside>
+    )}
+    </div>
   </div>
+
+  {toc.length > 1 && (
+    <script>
+      const links = new Map(
+        [...document.querySelectorAll('[data-toc-link]')].map((a) => [
+          a.getAttribute('data-toc-link'),
+          a,
+        ]),
+      );
+      let current: string | null = null;
+      const setActive = (id: string | null) => {
+        if (id === current) return;
+        if (current && links.get(current)) {
+          links.get(current)!.classList.remove('toc-active');
+        }
+        current = id;
+        if (id && links.get(id)) links.get(id)!.classList.add('toc-active');
+      };
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((e) => e.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+          if (visible[0]) setActive(visible[0].target.id);
+        },
+        { rootMargin: '-80px 0px -70% 0px', threshold: 0 },
+      );
+      document
+        .querySelectorAll('.prose-vexyn h2[id]')
+        .forEach((h) => observer.observe(h));
+    </script>
+  )}
 </BaseLayout>
 
 <style is:global>
   .prose-vexyn { color: var(--color-text); font-size: 1rem; line-height: 1.75; }
   .prose-vexyn > * + * { margin-top: 1.25em; }
-  .prose-vexyn h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2.5em; margin-bottom: 0.75em; letter-spacing: -0.01em; }
+  .prose-vexyn h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2.5em; margin-bottom: 0.75em; letter-spacing: -0.01em; scroll-margin-top: 6rem; }
+  .vexyn-toc a.toc-active { color: var(--color-brand-400); border-left-color: var(--color-brand-500); font-weight: 500; }
   .prose-vexyn h3 { font-size: 1.15rem; font-weight: 600; margin-top: 2em; margin-bottom: 0.5em; }
   .prose-vexyn p { color: var(--color-text); }
   .prose-vexyn a { color: var(--color-brand-400); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--color-brand-400) 30%, transparent); transition: border-color 0.15s; }

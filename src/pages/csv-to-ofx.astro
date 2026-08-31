@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
 import CsvToOfx from '../components/tools/CsvToOfx.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -55,16 +56,8 @@ const schema = combineSchemas(
       <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
         Converting a bank CSV to OFX correctly means solving the hard parts: telling day-first from month-first dates, parsing European number formats, generating stable transaction IDs so re-imports do not duplicate, and emitting the exact OFX structure finance software expects. That is why dedicated converters charge for it. Vexyn does it in your browser, for free, and — because your statement never leaves the tab — without the privacy trade-off of uploading your finances to a server.
       </p>
-
-      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
-      <div class="space-y-4">
-        {faqs.map((f) => (
-          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
-            <h3 class="font-semibold mb-2">{f.q}</h3>
-            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
-          </div>
-        ))}
-      </div>
     </article>
+
+    <Faq faqs={faqs} />
   </div>
 </BaseLayout>

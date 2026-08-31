@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
 import CsvToExcel from '../components/tools/CsvToExcel.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -60,16 +61,8 @@ const schema = combineSchemas(
       <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
         When you double-click a CSV, Excel guesses the type of every value. An account number like <code class="text-[color:var(--color-brand-400)]">00123</code> loses its leading zeros; a 16-digit card number becomes <code class="text-[color:var(--color-brand-400)]">1.23457E+15</code>; a value like <code class="text-[color:var(--color-brand-400)]">3-5</code> can turn into a date. Once saved, that damage is permanent. This converter writes every cell as text, so what you see in the CSV is exactly what lands in the spreadsheet.
       </p>
-
-      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
-      <div class="space-y-4">
-        {faqs.map((f) => (
-          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
-            <h3 class="font-semibold mb-2">{f.q}</h3>
-            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
-          </div>
-        ))}
-      </div>
     </article>
+
+    <Faq faqs={faqs} />
   </div>
 </BaseLayout>

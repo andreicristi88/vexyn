@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
 import CsvToJson from '../components/tools/CsvToJson.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -49,16 +50,6 @@ const schema = combineSchemas(
     <PrivacyNote text="Your CSV is converted in your browser. Open DevTools → Network to verify — nothing is uploaded." />
     <CsvToJson client:load />
 
-    <article class="prose mt-16 max-w-3xl">
-      <h2 class="text-2xl font-bold mb-4">FAQ</h2>
-      <div class="space-y-4">
-        {faqs.map((f) => (
-          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
-            <h3 class="font-semibold mb-2">{f.q}</h3>
-            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
-          </div>
-        ))}
-      </div>
-    </article>
+    <Faq faqs={faqs} />
   </div>
 </BaseLayout>

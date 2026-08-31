@@ -1,0 +1,40 @@
+---
+// Shared, elegant FAQ accordion. Answers stay in the DOM (inside <details>),
+// so the FAQPage structured data and Google's crawler still read every answer.
+interface FaqItem {
+  q: string;
+  a: string;
+}
+interface Props {
+  faqs: FaqItem[];
+  title?: string;
+  id?: string;
+}
+const { faqs, title = 'Frequently asked questions', id } = Astro.props;
+---
+
+<section id={id} class="vexyn-faq mt-16 max-w-3xl scroll-mt-24">
+  <div class="flex items-center gap-3 mb-6">
+    <span class="grid place-items-center w-9 h-9 rounded-lg bg-[color:var(--color-brand-500)]/12 border border-[color:var(--color-brand-500)]/25 text-[color:var(--color-brand-400)]" aria-hidden="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </span>
+    <h2 class="text-2xl font-bold tracking-tight">{title}</h2>
+  </div>
+
+  <div class="rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] divide-y divide-[color:var(--color-border)] overflow-hidden">
+    {faqs.map((f) => (
+      <details class="faq-item group">
+        <summary class="flex items-center justify-between gap-4 cursor-pointer list-none px-5 py-4 select-none transition-colors hover:bg-[color:var(--color-surface-2)]">
+          <span class="font-semibold leading-snug group-open:text-[color:var(--color-brand-400)] transition-colors">{f.q}</span>
+          <svg class="faq-chevron shrink-0 text-[color:var(--color-text-dim)] group-open:text-[color:var(--color-brand-400)] transition-transform duration-200" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <p class="px-5 pb-5 -mt-1 text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<style>
+  .faq-item > summary::-webkit-details-marker { display: none; }
+  details[open] .faq-chevron { transform: rotate(180deg); }
+</style>

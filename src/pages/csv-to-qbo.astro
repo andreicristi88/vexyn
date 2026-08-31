@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
 import CsvToOfx from '../components/tools/CsvToOfx.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -55,16 +56,8 @@ const schema = combineSchemas(
       <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
         QuickBooks Desktop imports .qbo files created this way reliably. QuickBooks Online is stricter — it sometimes validates the Intuit Bank ID against known institutions and rejects manually-built files. If Online refuses the file, the honest options are: enter your bank's INTU.BID in the field, use the <a class="text-[color:var(--color-brand-400)] hover:underline" href="/csv-to-ofx">OFX version</a> with a different importer, or import into QuickBooks Desktop. We would rather tell you this up front than have you fight a silent failure.
       </p>
-
-      <h2 class="text-2xl font-bold mb-4 mt-10">FAQ</h2>
-      <div class="space-y-4">
-        {faqs.map((f) => (
-          <div class="p-5 rounded-lg bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
-            <h3 class="font-semibold mb-2">{f.q}</h3>
-            <p class="text-sm text-[color:var(--color-text-mute)] leading-relaxed">{f.a}</p>
-          </div>
-        ))}
-      </div>
     </article>
+
+    <Faq faqs={faqs} />
   </div>
 </BaseLayout>

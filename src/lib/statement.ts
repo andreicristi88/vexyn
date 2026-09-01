@@ -413,13 +413,18 @@ export const CATEGORY_RULES: CategoryRule[] = [
   { category: 'Income', keywords: ['salary', 'payroll', 'wages', 'dividend', 'refund', 'interest earned'] },
 ];
 
-/** Best-effort category for one transaction. First matching rule wins. */
-export function categorize(t: Txn): string {
-  const hay = (t.description || t.merchant || '').toLowerCase();
+/** Best-effort category from a raw description string. First match wins. */
+export function categorizeText(text: string): string {
+  const hay = (text || '').toLowerCase();
   for (const rule of CATEGORY_RULES) {
     if (rule.keywords.some((k) => hay.includes(k))) return rule.category;
   }
   return 'Uncategorized';
+}
+
+/** Best-effort category for one transaction. First matching rule wins. */
+export function categorize(t: Txn): string {
+  return categorizeText(t.description || t.merchant || '');
 }
 
 export type CategoryRow = { category: string; total: number; count: number };

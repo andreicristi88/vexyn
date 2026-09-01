@@ -82,7 +82,7 @@ export const TOOLS: Tool[] = [
   { slug: 'transaction-categorizer', zone: 'personal', name: 'Transaction Categorizer', description: 'Auto-assign categories to raw transactions.', icon: '🏷', available: false },
   { slug: 'duplicate-transaction-finder', zone: 'personal', name: 'Duplicate Transaction Finder', description: 'Spot double charges and duplicate entries.', icon: '⚠️', available: false },
   { slug: 'merchant-analyzer', zone: 'personal', name: 'Merchant Analyzer', description: 'See who you pay most, grouped by merchant.', icon: '🏪', available: false },
-  { slug: 'cash-flow-analyzer', zone: 'personal', name: 'Cash Flow Analyzer', description: 'Track money in vs money out, month by month.', icon: '🌊', available: false },
+  { slug: 'cash-flow-analyzer', zone: 'personal', name: 'Cash Flow Analyzer', description: 'Track money in vs money out, month by month.', icon: '🌊', available: true },
   { slug: 'net-worth-analyzer', zone: 'personal', name: 'Net Worth Analyzer', description: 'Combine accounts into one net-worth view over time.', icon: '📐', available: false },
 ];
 

@@ -68,7 +68,7 @@ export const TOOLS: Tool[] = [
   { slug: 'stripe-csv-cleaner', zone: 'business', name: 'Stripe CSV Cleaner', description: 'Turn a raw Stripe export into a clean, readable sheet.', icon: '💳', available: false },
   { slug: 'stripe-payout-analyzer', zone: 'business', name: 'Stripe Payout Analyzer', description: 'See exactly what each payout contains, net of fees.', icon: '💸', available: false },
   { slug: 'stripe-reconciliation', zone: 'business', name: 'Stripe Reconciliation', description: 'Match charges, refunds and fees to payouts.', icon: '⚖️', available: false },
-  { slug: 'invoice-reconciliation', zone: 'business', name: 'Invoice Reconciliation', description: 'Match invoices against payments received.', icon: '🧾', available: false },
+  { slug: 'invoice-reconciliation', zone: 'business', name: 'Invoice Reconciliation', description: 'Match invoices against payments received.', icon: '🧾', available: true },
   { slug: 'bank-reconciliation', zone: 'business', name: 'Bank Reconciliation', description: 'Reconcile your ledger against the bank statement.', icon: '🏦', available: true },
   { slug: 'transaction-matcher', zone: 'business', name: 'Transaction Matcher', description: 'Match two lists of transactions and surface the gaps.', icon: '🔍', available: true },
   { slug: 'revenue-analyzer', zone: 'business', name: 'Revenue Analyzer', description: 'Break revenue down by period, product and customer.', icon: '📈', available: true },

@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import InvoiceReconciliation from '../components/tools/InvoiceReconciliation.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Invoice Reconciliation';
+const description =
+  'Free invoice reconciliation tool. Match invoices you issued against payments received, see exactly which invoices are unpaid and how much is outstanding, and export the list — all in your browser.';
+
+const faqs = [
+  { q: 'Are my files uploaded?', a: 'No. Your invoices and payments are matched entirely in your browser. Open DevTools → Network — your files are never sent out.' },
+  { q: 'How does it match a payment to an invoice?', a: 'By amount and date: a payment matches an invoice when the amounts agree (within your tolerance) and the payment falls within the "paid within" window after the invoice. It does not read invoice numbers, so keep the window realistic for how long your customers take to pay.' },
+  { q: 'What counts as unpaid?', a: 'An invoice with no matching payment in the file. Their total is your outstanding amount — the money you have billed but not yet received.' },
+  { q: 'What are "unmatched payments"?', a: 'Payments that did not line up with any invoice — an overpayment, a payment for an invoice not in your file, or a duplicate. Worth a look before you chase anyone.' },
+  { q: 'Which export format should I use?', a: 'Whichever your system takes: Generic CSV, QuickBooks CSV, Xero CSV, QIF or JSON. You can export the unpaid invoices, the unmatched payments, or the paid set.' },
+  { q: 'How reliable is it?', a: 'Matching is deterministic on amount and date, so results are repeatable and every row is accounted for. Because it matches on amount rather than invoice number, two invoices for the same amount close in time can pair with the wrong payment — tighten the window and review if the totals look off.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/invoice-reconciliation`,
+    description,
+    category: 'FinanceApplication',
+    features: [
+      'Matches invoices against payments received',
+      'Shows unpaid invoices and the outstanding total',
+      'Flags payments that match no invoice',
+      'Exports any set to CSV, QuickBooks, Xero, QIF, JSON',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Invoice Reconciliation', url: '/invoice-reconciliation' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Invoice Reconciliation</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Invoice Reconciliation</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop your invoices and the payments you received, and see instantly which invoices are still unpaid and how much is outstanding. Everything runs in your browser, and the list exports to any accounting software.
+      </p>
+    </header>
+
+    <PrivacyNote text="Both files are matched in your browser. Open DevTools → Network to verify — your files are never uploaded." />
+    <InvoiceReconciliation client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Who still owes you, at a glance</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Chasing unpaid invoices starts with knowing which ones they are. This tool matches every invoice you issued against the payments that came in and isolates the ones with no payment attached, so your outstanding total and your follow-up list appear in one step instead of a manual cross-check.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Export and act</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Take the unpaid list into your accounting software or a reminder workflow — export it as Generic CSV, QuickBooks CSV, Xero CSV, QIF or JSON. The unmatched payments are worth exporting too, to sort out an overpayment or a mis-keyed amount. Your data never leaves the browser while you do it.
+      </p>
+    </article>
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

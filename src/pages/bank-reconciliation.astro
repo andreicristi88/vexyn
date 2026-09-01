@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import BankReconciliation from '../components/tools/BankReconciliation.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Bank Reconciliation';
+const description =
+  'Free bank reconciliation tool. Match your ledger against the bank statement, see exactly what is uncleared or unrecorded, and export the gaps to any accounting software — entirely in your browser.';
+
+const faqs = [
+  { q: 'Are my files uploaded?', a: 'No. Your ledger and the bank statement are compared entirely in your browser. Open DevTools → Network — your files are never sent out. Financial records should stay on your device.' },
+  { q: 'What does the tool actually check?', a: 'It pairs each transaction in your ledger with a matching one on the bank statement (by amount and date), then reports the two sides that did not pair: entries in your books the bank has not shown yet, and entries on the bank you have not recorded. Those unmatched items are exactly what a difference in balances comes down to.' },
+  { q: 'What are "in ledger, not bank" and "on bank, not ledger"?', a: 'The first are uncleared items — a cheque you wrote that has not cashed, a deposit in transit. The second are things you still need to record — a bank fee, interest, a direct debit you forgot. Clear both and your books reconcile.' },
+  { q: 'Why let dates differ by a few days?', a: 'A payment you record on the day you make it often clears the bank a day or two later. The date window lets those still match. Start at three days and tighten if you get false pairs.' },
+  { q: 'Which export format should I use?', a: 'Whichever your software imports: Generic CSV for spreadsheets, QuickBooks CSV (Credit/Debit columns), Xero CSV, QIF for Quicken/GnuCash, or JSON. You can export any of the three buckets.' },
+  { q: 'Is the reconciliation exact?', a: 'The matching is deterministic on amount and date, and every row lands in exactly one bucket, so the arithmetic is exact. It does not read descriptions, so two unrelated transactions with the same amount and date could pair — keep the date window tight and review the matched set if the totals look off.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/bank-reconciliation`,
+    description,
+    category: 'FinanceApplication',
+    features: [
+      'Matches a ledger against a bank statement',
+      'Shows uncleared and unrecorded items separately',
+      'Explains the balance difference item by item',
+      'Exports the gaps to CSV, QuickBooks, Xero, QIF, JSON',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Bank Reconciliation', url: '/bank-reconciliation' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Bank Reconciliation</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Bank Reconciliation</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop your ledger and the bank statement, and see whether they agree — and if not, exactly which items explain the gap. Everything runs in your browser, and the discrepancies export to any accounting software.
+      </p>
+    </header>
+
+    <PrivacyNote text="Both files are reconciled in your browser. Open DevTools → Network to verify — your files are never uploaded." />
+    <BankReconciliation client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Does it balance, and if not, why</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Reconciliation is one question with a long answer: do my books match the bank? This tool answers it in one screen. It pairs the transactions that agree and isolates the ones that do not, so a difference between two balances stops being a mystery and becomes a short list of uncleared and unrecorded items you can act on.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Straight into your accounting software</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        The unrecorded items on the bank — fees, interest, a forgotten direct debit — usually need entering into your books. Export them as Generic CSV, QuickBooks CSV, Xero CSV, QIF or JSON and import them, instead of retyping. Your ledger and statement never leave the browser while you do it.
+      </p>
+    </article>
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

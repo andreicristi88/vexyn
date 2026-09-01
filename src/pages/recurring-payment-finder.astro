@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import RecurringPaymentFinder from '../components/tools/RecurringPaymentFinder.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Recurring Payment Finder';
+const description =
+  'Free recurring payment finder for your bank statement. Detect every repeating payment — in and out, weekly to yearly — from any CSV, entirely in your browser. Your statement is never uploaded.';
+
+const faqs = [
+  { q: 'Is my bank statement uploaded?', a: 'No. The CSV is read and scanned in your browser. Open DevTools → Network — your file is never sent out.' },
+  { q: 'How is this different from the Subscription Finder?', a: 'The Subscription Finder focuses on money going out — subscriptions and bills. This tool detects any repeating payment in either direction, so it also surfaces recurring income like salary, rent you receive, or regular transfers. Toggle between payments out and payments in.' },
+  { q: 'What cadences does it detect?', a: 'Weekly, every two weeks, monthly, quarterly and yearly. A payment is flagged when the same payee recurs at a stable amount with consistent gaps between charges.' },
+  { q: 'What does “unconfirmed” mean?', a: 'Only two matching payments were found — enough to suggest a pattern but possibly a coincidence. Three or more consistent payments remove the label.' },
+  { q: 'It missed one I know repeats. Why?', a: 'Usually the amount changes each time, the payee is written differently, or the date range is too short. Detection is deliberately conservative to avoid false positives.' },
+  { q: 'Does it handle European formats and any currency?', a: 'Yes. Choose day-first dates and the comma decimal in the selectors and set your currency symbol; values are parsed exactly as specified.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/recurring-payment-finder`,
+    description,
+    category: 'FinanceApplication',
+    features: [
+      'Finds repeating payments in and out of a bank CSV',
+      'Detects weekly, monthly, quarterly and yearly cadences',
+      'Recurring income view (salary, rent, transfers)',
+      'Flags two-payment matches as unconfirmed',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Recurring Payment Finder', url: '/recurring-payment-finder' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Recurring Payment Finder</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Recurring Payment Finder</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop a few months of bank statement CSV and see every payment that repeats — going out or coming in, from weekly to yearly. Everything runs in your browser; your statement is never uploaded.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your statement is scanned in your browser. Open DevTools → Network to verify — your file is never uploaded." />
+    <RecurringPaymentFinder client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Every payment on a schedule</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Some payments repeat so reliably you stop seeing them: a subscription, a standing order, rent, a salary landing every month. This tool reads a few months of statement and picks out everything that recurs at a regular interval — in both directions — so the rhythm of your money is laid out plainly.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Conservative and honest</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Detection needs a stable amount and a consistent gap, and it labels two-payment matches as unconfirmed. It is a signal to review, not a certainty — confirm against your statement before acting on it. Looking only for subscriptions and bills? The <a class="text-[color:var(--color-brand-400)]" href="/subscription-finder">Subscription Finder</a> is the focused version.
+      </p>
+    </article>
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

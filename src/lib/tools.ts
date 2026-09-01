@@ -77,7 +77,7 @@ export const TOOLS: Tool[] = [
   // --- Personal Finance ---
   { slug: 'bank-statement-analyzer', zone: 'personal', name: 'Bank Statement Analyzer', description: 'Understand where your money goes from a bank export.', icon: '🔎', available: true },
   { slug: 'subscription-finder', zone: 'personal', name: 'Subscription Finder', description: 'Find every recurring charge hiding in your statement.', icon: '🔔', available: true },
-  { slug: 'recurring-payment-finder', zone: 'personal', name: 'Recurring Payment Finder', description: 'Detect all repeating payments and their cadence.', icon: '🔄', available: false },
+  { slug: 'recurring-payment-finder', zone: 'personal', name: 'Recurring Payment Finder', description: 'Detect all repeating payments and their cadence.', icon: '🔄', available: true },
   { slug: 'spending-analyzer', zone: 'personal', name: 'Spending Analyzer', description: 'Categorize and chart your spending over time.', icon: '💰', available: true },
   { slug: 'transaction-categorizer', zone: 'personal', name: 'Transaction Categorizer', description: 'Auto-assign categories to raw transactions.', icon: '🏷', available: true },
   { slug: 'duplicate-transaction-finder', zone: 'personal', name: 'Duplicate Transaction Finder', description: 'Spot double charges and duplicate entries.', icon: '⚠️', available: true },

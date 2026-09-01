@@ -222,6 +222,110 @@ export function cashFlowByMonth(txns: Txn[]): MonthFlow[] {
     .sort((a, b) => a.month.localeCompare(b.month));
 }
 
+/** Whole-day gap between two YYYYMMDD dates. */
+export function daysBetween(a: string, b: string): number {
+  const d = (s: string) => Date.UTC(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8));
+  return Math.round((d(b) - d(a)) / 86400000);
+}
+
+export type Cadence = 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'yearly';
+
+const CADENCE_WINDOWS: { cadence: Cadence; min: number; max: number; perYear: number }[] = [
+  { cadence: 'weekly', min: 6, max: 8, perYear: 52 },
+  { cadence: 'biweekly', min: 12, max: 16, perYear: 26 },
+  { cadence: 'monthly', min: 27, max: 32, perYear: 12 },
+  { cadence: 'quarterly', min: 85, max: 95, perYear: 4 },
+  { cadence: 'yearly', min: 350, max: 380, perYear: 1 },
+];
+
+function classifyGap(gap: number): Cadence | null {
+  for (const w of CADENCE_WINDOWS) if (gap >= w.min && gap <= w.max) return w.cadence;
+  return null;
+}
+
+function median(nums: number[]): number {
+  const s = [...nums].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+export type Recurring = {
+  merchant: string;
+  /** typical (median) absolute amount per charge */
+  amount: number;
+  cadence: Cadence;
+  count: number;
+  first: string; // ISO
+  last: string; // ISO
+  /** normalized cost per month, for ranking and totals */
+  monthlyCost: number;
+  /** true when backed by 3+ charges (2 charges = a guess) */
+  confident: boolean;
+};
+
+/**
+ * Detect recurring charges: transactions to the same merchant, at a stable
+ * amount, spaced at a regular cadence. Conservative by design — a wrong "you
+ * have a subscription" is annoying, so it needs a consistent gap and a stable
+ * amount, and flags 2-charge matches as unconfirmed.
+ *
+ * direction 'out' (default) finds subscriptions/bills; 'in' finds recurring
+ * income like salary.
+ */
+export function detectRecurring(txns: Txn[], direction: 'out' | 'in' = 'out'): Recurring[] {
+  const pool = txns.filter((t) => (direction === 'out' ? t.amount < 0 : t.amount > 0));
+
+  // Group by merchant, then split each merchant into amount clusters.
+  const byMerch = new Map<string, Txn[]>();
+  for (const t of pool) {
+    const arr = byMerch.get(t.merchant) ?? [];
+    arr.push(t);
+    byMerch.set(t.merchant, arr);
+  }
+
+  const out: Recurring[] = [];
+  for (const [merchant, list] of byMerch) {
+    list.sort((a, b) => a.ymd.localeCompare(b.ymd));
+
+    // Cluster by absolute amount (tolerance: 2% or 1 unit, whichever larger).
+    const clusters: Txn[][] = [];
+    for (const t of list) {
+      const amt = Math.abs(t.amount);
+      let placed = false;
+      for (const c of clusters) {
+        const ref = Math.abs(c[0].amount);
+        if (Math.abs(amt - ref) <= Math.max(1, ref * 0.02)) { c.push(t); placed = true; break; }
+      }
+      if (!placed) clusters.push([t]);
+    }
+
+    for (const c of clusters) {
+      if (c.length < 2) continue;
+      const gaps: number[] = [];
+      for (let i = 1; i < c.length; i++) gaps.push(daysBetween(c[i - 1].ymd, c[i].ymd));
+      // Every gap must fall in the SAME cadence window.
+      const cadences = gaps.map(classifyGap);
+      const cadence = cadences[0];
+      if (!cadence || cadences.some((x) => x !== cadence)) continue;
+
+      const amt = round2(median(c.map((t) => Math.abs(t.amount))));
+      const perYear = CADENCE_WINDOWS.find((w) => w.cadence === cadence)!.perYear;
+      out.push({
+        merchant,
+        amount: amt,
+        cadence,
+        count: c.length,
+        first: c[0].date,
+        last: c[c.length - 1].date,
+        monthlyCost: round2((amt * perYear) / 12),
+        confident: c.length >= 3,
+      });
+    }
+  }
+
+  return out.sort((a, b) => b.monthlyCost - a.monthlyCost);
+}
+
 export type MerchantRow = { merchant: string; total: number; count: number };
 
 /**

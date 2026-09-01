@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import SubscriptionFinder from '../components/tools/SubscriptionFinder.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Subscription Finder';
+const description =
+  'Free subscription finder for your bank statement. Spot every recurring charge — subscriptions, memberships and bills — from any CSV export, entirely in your browser. Your statement is never uploaded.';
+
+const faqs = [
+  { q: 'Is my bank statement uploaded?', a: 'No. The CSV is read and scanned in your browser. Open DevTools → Network — your file is never sent out. Bank statements are exactly what you should not paste into a random online tool.' },
+  { q: 'How does it decide something is a subscription?', a: 'It looks for the same merchant charged a stable amount at a regular interval — weekly, every two weeks, monthly, quarterly or yearly. If the gaps between charges are consistent and the amount barely moves, it flags it. Irregular spending at the same shop is not flagged.' },
+  { q: 'What does “unconfirmed” mean?', a: 'It means only two matching charges were found, which is the minimum to suggest a pattern but could be a coincidence. Three or more consistent charges drop the label. Either way, confirm against your statement before you cancel anything.' },
+  { q: 'How much history should I export?', a: 'At least three months. A monthly subscription needs a few cycles to show up as a pattern — with one month of data there is nothing to repeat.' },
+  { q: 'It missed a subscription I know I have. Why?', a: 'Usually the amount changed (a price rise or a plan change breaks the stable-amount match), the merchant name is written very differently each time, or the date range is too short. It is deliberately conservative to avoid false alarms.' },
+  { q: 'Does it handle European formats and any currency?', a: 'Yes. Pick day-first dates and the comma decimal in the selectors, and set your currency symbol. Amounts and dates are parsed exactly as you specify.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/subscription-finder`,
+    description,
+    category: 'FinanceApplication',
+    features: [
+      'Finds recurring charges from a bank CSV',
+      'Detects weekly, monthly, quarterly and yearly cadences',
+      'Estimates monthly and yearly cost of your subscriptions',
+      'Flags two-charge matches as unconfirmed',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Subscription Finder', url: '/subscription-finder' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Subscription Finder</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Subscription Finder</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop a few months of bank statement CSV and see every recurring charge — subscriptions, memberships and bills — with what they cost you a month and a year. Everything runs in your browser; your statement is never uploaded.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your statement is scanned in your browser. Open DevTools → Network to verify — your file is never uploaded." />
+    <SubscriptionFinder client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">The subscriptions you forgot about</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        The most expensive subscriptions are the ones you stopped noticing. This tool reads a few months of statement and surfaces every charge that repeats on a schedule, adds up what they cost per month and per year, and puts the biggest first — so the €12 here and £8 there that quietly total hundreds a year become visible.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Conservative on purpose</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        A false “you have a subscription” is worse than a miss, so the detection is strict: it needs a stable amount and a consistent interval, and it labels two-charge matches as unconfirmed. It is a prompt to go look, not a bill. Always confirm against your statement before cancelling anything.
+      </p>
+    </article>
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

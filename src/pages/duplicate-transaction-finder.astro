@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import DuplicateTransactionFinder from '../components/tools/DuplicateTransactionFinder.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Duplicate Transaction Finder';
+const description =
+  'Free duplicate transaction finder for your bank statement. Spot likely double charges — same merchant, same amount, close together — from any CSV, entirely in your browser. Your statement is never uploaded.';
+
+const faqs = [
+  { q: 'Is my bank statement uploaded?', a: 'No. The CSV is read and checked in your browser. Open DevTools → Network — your file is never sent out.' },
+  { q: 'How is this different from removing duplicate rows?', a: 'The CSV Deduplicator removes rows that are exact copies. This tool is looking for something subtler: two separate transactions to the same merchant for the same amount a few days apart — the signature of a double charge — even when the rows are not identical.' },
+  { q: 'Won’t it flag legitimate repeat purchases?', a: 'Sometimes, yes. Buying the same €3 coffee twice in a week looks identical to a double charge from the data alone. That is why nothing is removed — the tool surfaces suspects for you to judge, and you can tighten the day window to reduce noise.' },
+  { q: 'What does the day window do?', a: 'It sets how close together two identical charges must be to count as suspicious. One day catches same/next-day double posts; seven days catches slower duplicates but flags more coincidences. Three days is a good default.' },
+  { q: 'What counts as “the same amount”?', a: 'Exactly the same value after parsing — same sign and same figure. A refund (opposite sign) is never grouped with a charge.' },
+  { q: 'Does it handle European formats and any currency?', a: 'Yes. Pick day-first dates and the comma decimal in the selectors and set your currency symbol; values are parsed exactly as specified.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/duplicate-transaction-finder`,
+    description,
+    category: 'FinanceApplication',
+    features: [
+      'Finds likely double charges in a bank CSV',
+      'Same merchant, same amount, within a chosen day window',
+      'Sums what is tied up in the extra copies',
+      'Surfaces suspects to review — never auto-removes',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Duplicate Transaction Finder', url: '/duplicate-transaction-finder' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Duplicate Transaction Finder</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Duplicate Transaction Finder</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop a bank statement CSV and spot likely double charges — the same merchant billing the same amount a few days apart. Everything runs in your browser; your statement is never uploaded.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your statement is checked in your browser. Open DevTools → Network to verify — your file is never uploaded." />
+    <DuplicateTransactionFinder client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Catching the charge that hit twice</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Double charges are easy to miss in a long statement: a payment that posted twice, a retry that went through after the first one succeeded, a subscription billed on two cards. This tool groups transactions that share a merchant and an exact amount within a few days and puts the most suspicious first.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">A prompt to check, not a verdict</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Some matches are real double charges; some are just two identical, legitimate purchases. The data alone cannot tell them apart, so nothing is ever removed — the tool shows you the candidates and you decide. Confirm against your statement before disputing anything with your bank.
+      </p>
+    </article>
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

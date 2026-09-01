@@ -123,11 +123,15 @@ export function buildTransactions(
 
 // Payment-processor and channel prefixes that sit in front of the real merchant
 // name. Stripped conservatively so variants of one merchant group together.
+// Pure payment channel / processor prefixes only — NOT real brand names like
+// Amazon or Google, which are the merchant we want to keep. Processors that
+// prefix a real name with "*" (PAYPAL *SPOTIFY, SQ *CAFE) are handled by the
+// "*" rule below, so they don't all need listing here.
 const PREFIXES = [
   'pos', 'purchase', 'payment', 'card payment', 'visa', 'mastercard', 'debit card',
   'contactless', 'chip and pin', 'online', 'recurring', 'direct debit', 'dd',
   'sepa', 'transfer to', 'transfer from', 'bill payment to', 'payment to', 'payment from',
-  'paypal', 'sq', 'tst', 'amzn mktp', 'amzn', 'amazon', 'google', 'apple pay', 'sumup',
+  'paypal', 'sumup',
 ];
 
 /**
@@ -159,7 +163,7 @@ export function normalizeMerchant(raw: string): string {
   }
   // Collapse leftover punctuation and whitespace
   s = s.replace(/[^a-z0-9&' ]+/gi, ' ').replace(/\s+/g, ' ').trim();
-  if (!s) return raw.trim() || 'Unknown';
+  if (!s) return titleCase((raw.trim() || 'unknown').toLowerCase());
 
   // Keep the first few meaningful words — merchant names are usually short
   const words = s.split(' ').filter((w) => w.length > 1 || /\d/.test(w));
@@ -324,6 +328,62 @@ export function detectRecurring(txns: Txn[], direction: 'out' | 'in' = 'out'): R
   }
 
   return out.sort((a, b) => b.monthlyCost - a.monthlyCost);
+}
+
+export type DuplicateGroup = {
+  merchant: string;
+  amount: number; // signed, the shared value
+  count: number;
+  dates: string[]; // ISO, chronological
+  /** largest gap in days within the cluster — small = more suspicious */
+  spanDays: number;
+};
+
+/**
+ * Find likely double charges: two or more transactions to the same merchant,
+ * for the same amount, within `windowDays` of each other. This is a suspicion
+ * (a genuine daily coffee at the same price would match too), so it is scoped
+ * tightly and always presented for the user to judge — never auto-removed.
+ */
+export function findDuplicateCharges(txns: Txn[], windowDays = 3): DuplicateGroup[] {
+  // Key by merchant + exact rounded amount (sign included).
+  const groups = new Map<string, Txn[]>();
+  for (const t of txns) {
+    const key = `${t.merchant}|${round2(t.amount).toFixed(2)}`;
+    const arr = groups.get(key) ?? [];
+    arr.push(t);
+    groups.set(key, arr);
+  }
+
+  const out: DuplicateGroup[] = [];
+  for (const list of groups.values()) {
+    if (list.length < 2) continue;
+    list.sort((a, b) => a.ymd.localeCompare(b.ymd));
+    // Chain consecutive transactions that are within the window into clusters.
+    let cluster: Txn[] = [list[0]];
+    const flush = () => {
+      if (cluster.length >= 2) {
+        out.push({
+          merchant: cluster[0].merchant,
+          amount: round2(cluster[0].amount),
+          count: cluster.length,
+          dates: cluster.map((t) => t.date),
+          spanDays: daysBetween(cluster[0].ymd, cluster[cluster.length - 1].ymd),
+        });
+      }
+      cluster = [];
+    };
+    for (let i = 1; i < list.length; i++) {
+      if (daysBetween(list[i - 1].ymd, list[i].ymd) <= windowDays) cluster.push(list[i]);
+      else { flush(); cluster = [list[i]]; }
+    }
+    flush();
+  }
+
+  // Most suspicious first: more copies, then tighter span, then larger amount.
+  return out.sort(
+    (a, b) => b.count - a.count || a.spanDays - b.spanDays || Math.abs(b.amount) - Math.abs(a.amount),
+  );
 }
 
 export type MerchantRow = { merchant: string; total: number; count: number };

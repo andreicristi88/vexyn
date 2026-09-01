@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import RevenueAnalyzer from '../components/tools/RevenueAnalyzer.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Revenue Analyzer';
+const description =
+  'Free revenue analyzer. Break your sales down by month and by product or customer from any CSV — Stripe, PayPal, an invoicing export — entirely in your browser. Export the summary; nothing is uploaded.';
+
+const faqs = [
+  { q: 'Is my sales data uploaded?', a: 'No. The CSV is read and summed in your browser. Open DevTools → Network — your file is never sent out.' },
+  { q: 'What CSV works?', a: 'Any sales or revenue export with a date column, an amount column, and optionally a column to group by — product, plan, customer, SKU, category. That covers Stripe, PayPal, most invoicing tools and a plain spreadsheet.' },
+  { q: 'How do I break revenue down by product or customer?', a: 'Pick that column in the "Group by" selector. The tool then totals revenue per value in that column and ranks them, so your biggest products or customers rise to the top. Switch to "By month" for the time view.' },
+  { q: 'Does it handle refunds?', a: 'If refunds appear as negative amounts in the file, they net against revenue correctly. A month or product with more refunds than sales shows as a negative total.' },
+  { q: 'Can I export the breakdown?', a: 'Yes. "Download summary CSV" gives you the current view — by group or by month — as a clean CSV with the total and record count per row, ready for a spreadsheet or a report.' },
+  { q: 'Does it handle European formats and any currency?', a: 'Yes. Choose day-first dates and the comma decimal if that matches your export, and set the currency symbol. Values are parsed exactly as specified, never guessed.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/revenue-analyzer`,
+    description,
+    category: 'FinanceApplication',
+    features: [
+      'Revenue by month and by product or customer',
+      'Group by any column in your export',
+      'Nets refunds against sales',
+      'Download the breakdown as CSV',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Revenue Analyzer', url: '/revenue-analyzer' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Revenue Analyzer</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Revenue Analyzer</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop a sales export and see where the money comes from — by month, and by product or customer. Everything runs in your browser, and the breakdown exports to a clean CSV.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your sales data is analyzed in your browser. Open DevTools → Network to verify — your file is never uploaded." />
+    <RevenueAnalyzer client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Where the money actually comes from</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        A revenue total hides more than it reveals. This tool splits it two ways: across time, so you can see the trend month to month, and across whatever you group by — product, plan, customer — so the handful of lines carrying the business become obvious. Point it at a Stripe, PayPal or invoicing export and pick the column to group on.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Just the arithmetic, done right</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Every figure is a plain sum of the rows you mapped — refunds net against sales, nothing is inferred. The file is parsed with the date and number formats you choose, so a European export is read as day-first and comma-decimal exactly when you say so, and the totals you get are ones you can trust.
+      </p>
+    </article>
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

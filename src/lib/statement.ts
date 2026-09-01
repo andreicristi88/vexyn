@@ -152,6 +152,10 @@ export function normalizeMerchant(raw: string): string {
   s = s.replace(/\bx{2,}\d+/gi, ' ');
   s = s.replace(/\b\d[\d\/.:-]{3,}\b/g, ' '); // dates, ref numbers
   s = s.replace(/\b\d{4,}\b/g, ' '); // long numbers
+  // Alphanumeric reference codes (a token with both a letter and a digit, 3+
+  // chars) — e.g. Amazon's "A1B2C" — so the same merchant does not split.
+  s = s.replace(/\b(?=[a-z0-9]*\d)(?=[a-z0-9]*[a-z])[a-z0-9]{3,}\b/gi, ' ');
+  s = s.replace(/\b\d+\b/g, ' '); // standalone store/branch numbers
   // Drop leading channel prefixes, possibly several
   let changed = true;
   while (changed) {

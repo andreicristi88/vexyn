@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import TransactionMatcher from '../components/tools/TransactionMatcher.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Transaction Matcher';
+const description =
+  'Free transaction matcher. Compare two CSVs — your records against the bank, invoices against payments — and see what matches and what is missing from each. Runs in your browser, exports to any accounting software.';
+
+const faqs = [
+  { q: 'Are my files uploaded?', a: 'No. Both CSVs are read and compared entirely in your browser. Open DevTools → Network — your files are never sent out. This matters for financial records you would not hand to a random web tool.' },
+  { q: 'How does it decide two transactions match?', a: 'Two rows match when their amounts are within the tolerance you set (exact by default) and their dates are within the day window you set (same day by default). Loosen either when the two sources record things slightly differently.' },
+  { q: 'What do "only in List A" and "only in List B" mean?', a: 'They are the rows that could not be paired: present in one file but with no match in the other. In a reconciliation, these are exactly the discrepancies to investigate — a missing payment, a duplicate, a fee one side recorded and the other did not.' },
+  { q: 'Which format should I export?', a: 'Whichever your accounting software imports. Generic CSV suits spreadsheets and most systems; QuickBooks CSV splits money in and out into Credit/Debit columns; Xero CSV matches its bank-statement layout; QIF works with Quicken, GnuCash and many others; JSON for developers.' },
+  { q: 'Can it match across different date and number formats?', a: 'Yes. Each file has its own date-format and decimal-separator setting, so you can compare a US-formatted export against a European one — each is parsed exactly as you specify, never guessed.' },
+  { q: 'Is the matching reliable?', a: 'It is deterministic first-fit on amount and date, so the same inputs always give the same result, and every row lands in exactly one bucket. It does not read descriptions, so two different transactions with the same amount and date can pair — widen the date window only as much as you need, and check the results.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/transaction-matcher`,
+    description,
+    category: 'FinanceApplication',
+    features: [
+      'Compares two transaction CSVs and finds the gaps',
+      'Adjustable amount tolerance and date window',
+      'Independent date/number formats per file',
+      'Exports to CSV, QuickBooks, Xero, QIF and JSON',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Transaction Matcher', url: '/transaction-matcher' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Transaction Matcher</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Transaction Matcher</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop two CSVs and see what lines up and what does not — your records against the bank, invoices against payments, one export against another. Everything runs in your browser, and you can export the result to any accounting software.
+      </p>
+    </header>
+
+    <PrivacyNote text="Both files are compared in your browser. Open DevTools → Network to verify — your files are never uploaded." />
+    <TransactionMatcher client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Reconciliation, without the spreadsheet gymnastics</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Matching two lists of transactions by hand — VLOOKUPs, sorting, eyeballing — is slow and error-prone. This tool pairs them for you on amount and date, then shows the three things you care about: what matched, what is in the first list only, and what is in the second only. The unmatched rows are your reconciliation work list.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Export to whatever you run</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        The result is not a dead end. Export any of the three sets to Generic CSV, QuickBooks CSV, Xero CSV, QIF or JSON, so the discrepancies land straight in your accounting software instead of another manual re-entry. As always, the files are parsed with the date and number formats you choose, and nothing leaves your browser.
+      </p>
+    </article>
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

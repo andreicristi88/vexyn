@@ -70,7 +70,7 @@ export const TOOLS: Tool[] = [
   { slug: 'stripe-reconciliation', zone: 'business', name: 'Stripe Reconciliation', description: 'Match charges, refunds and fees to payouts.', icon: '⚖️', available: false },
   { slug: 'invoice-reconciliation', zone: 'business', name: 'Invoice Reconciliation', description: 'Match invoices against payments received.', icon: '🧾', available: false },
   { slug: 'bank-reconciliation', zone: 'business', name: 'Bank Reconciliation', description: 'Reconcile your ledger against the bank statement.', icon: '🏦', available: false },
-  { slug: 'transaction-matcher', zone: 'business', name: 'Transaction Matcher', description: 'Match two lists of transactions and surface the gaps.', icon: '🔍', available: false },
+  { slug: 'transaction-matcher', zone: 'business', name: 'Transaction Matcher', description: 'Match two lists of transactions and surface the gaps.', icon: '🔍', available: true },
   { slug: 'revenue-analyzer', zone: 'business', name: 'Revenue Analyzer', description: 'Break revenue down by period, product and customer.', icon: '📈', available: false },
   { slug: 'saas-metrics', zone: 'business', name: 'SaaS Metrics', description: 'MRR, churn and growth from a subscriptions export.', icon: '📊', available: false },
 

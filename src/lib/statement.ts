@@ -386,6 +386,61 @@ export function findDuplicateCharges(txns: Txn[], windowDays = 3): DuplicateGrou
   );
 }
 
+/**
+ * Keyword-based category rules. First matching rule wins, so more specific
+ * brands sit above generic words. This is intentionally simple and transparent
+ * (the list is exported) — it is a best-effort starting point, not an
+ * authoritative classification. Real-world descriptions are messy; expect to
+ * correct some. Matching is done on the lowercased raw description.
+ */
+export type CategoryRule = { category: string; keywords: string[] };
+
+export const CATEGORY_RULES: CategoryRule[] = [
+  { category: 'Software & subscriptions', keywords: ['spotify', 'netflix', 'disney', 'hbo', 'adobe', 'github', 'notion', 'openai', 'chatgpt', 'dropbox', 'icloud', 'youtube premium', 'microsoft', 'office 365', 'apple.com/bill', 'audible', 'patreon', 'subscription'] },
+  { category: 'Fuel', keywords: ['shell', 'bp ', 'exxon', 'chevron', 'esso', 'texaco', 'petrol', 'fuel', 'gas station', 'omv', 'petrom', 'mol '] },
+  { category: 'Transport', keywords: ['uber', 'lyft', 'bolt', 'taxi', 'tfl', 'transit', 'metro', 'railway', 'train', ' rail', 'trainline', 'parking', 'toll', 'mta', 'transport'] },
+  { category: 'Groceries', keywords: ['tesco', 'sainsbury', 'aldi', 'lidl', 'kroger', 'walmart', 'whole foods', 'carrefour', 'mega image', 'kaufland', 'grocery', 'supermarket', 'safeway', 'costco', 'trader joe'] },
+  { category: 'Dining & takeaway', keywords: ['restaurant', 'cafe', 'coffee', 'starbucks', 'mcdonald', 'kfc', 'burger', 'pizza', 'uber eats', 'ubereats', 'deliveroo', 'just eat', 'doordash', 'grubhub', 'bistro', 'diner', 'takeaway', 'pub ', 'costa'] },
+  { category: 'Travel', keywords: ['hotel', 'airbnb', 'booking.com', 'expedia', 'ryanair', 'easyjet', 'airline', 'airways', 'flight', 'wizz air', 'hostel'] },
+  { category: 'Health & fitness', keywords: ['pharmacy', 'chemist', 'doctor', 'dental', 'dentist', 'clinic', 'hospital', 'gym', 'fitness', 'boots', 'cvs', 'walgreens', 'health'] },
+  { category: 'Entertainment', keywords: ['cinema', 'movie', 'theatre', 'theater', 'steam', 'playstation', 'xbox', 'nintendo', 'concert', 'ticketmaster', 'event'] },
+  { category: 'Utilities & telecom', keywords: ['electric', 'energy', 'water bill', 'utility', 'broadband', 'internet', 'vodafone', 'verizon', 'at&t', 'comcast', 'o2 ', 'ee ', 'three ', 'orange', 'telekom', 'mobile', 'wireless'] },
+  { category: 'Rent & housing', keywords: ['rent', 'mortgage', 'landlord', 'letting', 'housing', 'property'] },
+  { category: 'Cash & ATM', keywords: ['atm', 'cash withdrawal', 'cashpoint', 'withdrawal', 'cash machine'] },
+  { category: 'Fees & interest', keywords: ['overdraft', 'interest charge', 'service fee', 'monthly fee', 'commission', 'bank charge', 'atm fee', 'foreign exchange fee', 'non-sterling'] },
+  { category: 'Transfers', keywords: ['transfer', 'zelle', 'venmo', 'standing order', 'faster payment', 'wise', 'revolut', 'sepa', 'sent to', 'received from'] },
+  { category: 'Shopping', keywords: ['amazon', 'ebay', 'etsy', 'ikea', 'target', 'zara', 'h&m', 'nike', 'aliexpress', 'asos', 'store', 'shop'] },
+  { category: 'Income', keywords: ['salary', 'payroll', 'wages', 'dividend', 'refund', 'interest earned'] },
+];
+
+/** Best-effort category for one transaction. First matching rule wins. */
+export function categorize(t: Txn): string {
+  const hay = (t.description || t.merchant || '').toLowerCase();
+  for (const rule of CATEGORY_RULES) {
+    if (rule.keywords.some((k) => hay.includes(k))) return rule.category;
+  }
+  return 'Uncategorized';
+}
+
+export type CategoryRow = { category: string; total: number; count: number };
+
+/** Spending (or income) grouped by best-effort category, largest first. */
+export function byCategory(txns: Txn[], direction: 'out' | 'in' = 'out'): CategoryRow[] {
+  const map = new Map<string, { total: number; count: number }>();
+  for (const t of txns) {
+    if (direction === 'out' && t.amount >= 0) continue;
+    if (direction === 'in' && t.amount < 0) continue;
+    const cat = categorize(t);
+    const row = map.get(cat) ?? { total: 0, count: 0 };
+    row.total += Math.abs(t.amount);
+    row.count++;
+    map.set(cat, row);
+  }
+  return [...map.entries()]
+    .map(([category, r]) => ({ category, total: round2(r.total), count: r.count }))
+    .sort((a, b) => b.total - a.total);
+}
+
 export type MerchantRow = { merchant: string; total: number; count: number };
 
 /**

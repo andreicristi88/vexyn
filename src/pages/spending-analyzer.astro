@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import SpendingAnalyzer from '../components/tools/SpendingAnalyzer.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Spending Analyzer';
+const description =
+  'Free spending analyzer for your bank statement. See your spending broken down by category from any CSV export, with a chart — entirely in your browser. Your statement is never uploaded.';
+
+const faqs = [
+  { q: 'Is my bank statement uploaded?', a: 'No. The CSV is read and categorized in your browser. Open DevTools → Network — your file is never sent out.' },
+  { q: 'How are categories assigned?', a: 'By keyword matching on each transaction’s description — for example, a description containing “tesco” or “aldi” maps to Groceries, “uber” or “train” to Transport. It is a transparent, best-effort rule set, not an authoritative classification, so treat it as a starting point.' },
+  { q: 'Why is so much “Uncategorized”?', a: 'Some banks write cryptic descriptions that match no keyword, and every bank names things differently. Uncategorized simply means no rule matched — the amount is still counted in the total, just not in a named category.' },
+  { q: 'Can I fix a wrong category?', a: 'Not yet — this version assigns categories automatically and does not save per-transaction overrides. It is built to show you the shape of your spending quickly, not to be a bookkeeping ledger. Sanity-check the big categories against your statement.' },
+  { q: 'Can I see income by category too?', a: 'Yes — toggle to Income. The same grouping runs on money coming in, though income usually falls into a couple of categories only.' },
+  { q: 'Does it handle European formats and any currency?', a: 'Yes. Pick day-first dates and the comma decimal in the selectors and set your currency symbol; values are parsed exactly as specified, never guessed.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/spending-analyzer`,
+    description,
+    category: 'FinanceApplication',
+    features: [
+      'Spending broken down by category with a chart',
+      'Keyword-based, transparent categorization',
+      'Spending and income views',
+      'Works with any bank CSV via column mapping',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Spending Analyzer', url: '/spending-analyzer' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Spending Analyzer</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Spending Analyzer</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop a bank statement CSV and see your spending by category, at a glance. Everything runs in your browser; your statement is never uploaded.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your statement is categorized in your browser. Open DevTools → Network to verify — your file is never uploaded." />
+    <SpendingAnalyzer client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">The shape of your spending</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        A total tells you how much; categories tell you where. This tool sorts your transactions into everyday buckets — groceries, transport, dining, subscriptions and the rest — and charts them, so the categories quietly eating your budget become obvious.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Transparent, best-effort categories</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Categorization here is a plain keyword rule set, not a black box or a claim of accuracy. It matches common merchant names and terms and leaves anything unrecognized in “Uncategorized” rather than guessing. It is meant to reveal the shape of your spending fast — check the big categories against your statement before drawing conclusions.
+      </p>
+    </article>
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

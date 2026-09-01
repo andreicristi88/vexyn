@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import NetWorthAnalyzer from '../components/tools/NetWorthAnalyzer.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Net Worth Analyzer';
+const description =
+  'Free net worth calculator. Add your accounts — assets and liabilities — and see your net worth with a breakdown, entirely in your browser. Nothing is uploaded; entries stay on your device.';
+
+const faqs = [
+  { q: 'Is my data uploaded?', a: 'No. Everything runs in your browser and your entries are saved to this device’s local storage only — never sent to a server. Open DevTools → Network to confirm nothing is transmitted.' },
+  { q: 'How is net worth calculated?', a: 'Net worth = total assets − total liabilities. Assets are what you own (cash, savings, investments, property, vehicles); liabilities are what you owe (credit cards, loans, mortgage). The result is a snapshot of today.' },
+  { q: 'Do my entries persist if I come back?', a: 'Yes, on the same browser and device — they are stored locally. Clearing your browser data, using private mode, or switching device or browser starts fresh. They are never synced anywhere.' },
+  { q: 'What should count as an asset vs a liability?', a: 'Assets: anything with positive value you could convert to cash — bank balances, investments, a home or car’s value. Liabilities: outstanding balances you owe — card debt, student or car loans, the remaining mortgage. Enter the current balance of each.' },
+  { q: 'Does it track net worth over time?', a: 'Not yet — this version is a clean snapshot. Note the figure each month yourself if you want to track the trend; time-series tracking may come later.' },
+  { q: 'Which currency and number format does it accept?', a: 'Set any currency symbol. Amounts accept both dot and comma decimals (1,234.56 or 1.234,56); the last separator is treated as the decimal point.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/net-worth-analyzer`,
+    description,
+    category: 'FinanceApplication',
+    features: [
+      'Net worth from your assets and liabilities',
+      'Breakdown of what your assets are made of',
+      'Entries saved locally on your device',
+      'Any currency, dot or comma decimals',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Net Worth Analyzer', url: '/net-worth-analyzer' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Net Worth Analyzer</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Net Worth Analyzer</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Add your accounts — what you own and what you owe — and see your net worth with a breakdown of where it sits. Everything runs in your browser; entries are saved on your device only.
+      </p>
+    </header>
+
+    <PrivacyNote text="This runs in your browser and saves entries to your device only — nothing is uploaded. Verify in DevTools → Network." />
+    <NetWorthAnalyzer client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">One number that matters</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Income and spending tell you about the flow; net worth tells you about the position. Add each account once — balances, investments, property on one side; card debt, loans and the mortgage on the other — and the tool nets them into a single figure and shows what your assets are actually made of.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Private by design</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        A picture of everything you own is about as sensitive as data gets, which is exactly why this never leaves your browser. Entries are kept in your device’s local storage so they are there when you come back, and nowhere else. Come back monthly and note the figure to watch it move.
+      </p>
+    </article>
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

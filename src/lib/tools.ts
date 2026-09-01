@@ -83,7 +83,7 @@ export const TOOLS: Tool[] = [
   { slug: 'duplicate-transaction-finder', zone: 'personal', name: 'Duplicate Transaction Finder', description: 'Spot double charges and duplicate entries.', icon: '⚠️', available: true },
   { slug: 'merchant-analyzer', zone: 'personal', name: 'Merchant Analyzer', description: 'See who you pay most, grouped by merchant.', icon: '🏪', available: true },
   { slug: 'cash-flow-analyzer', zone: 'personal', name: 'Cash Flow Analyzer', description: 'Track money in vs money out, month by month.', icon: '🌊', available: true },
-  { slug: 'net-worth-analyzer', zone: 'personal', name: 'Net Worth Analyzer', description: 'Combine accounts into one net-worth view over time.', icon: '📐', available: false },
+  { slug: 'net-worth-analyzer', zone: 'personal', name: 'Net Worth Analyzer', description: 'Combine accounts into one net-worth view with a breakdown.', icon: '📐', available: true },
 ];
 
 export function toolsInZone(zone: ZoneId): Tool[] {

@@ -60,8 +60,8 @@ export const TOOLS: Tool[] = [
   { slug: 'csv-deduplicator', zone: 'data', name: 'CSV Deduplicator', description: 'Find and remove duplicate rows, exact or by key column.', icon: '🔁', available: true },
   { slug: 'csv-merger', zone: 'data', name: 'CSV Merger', description: 'Combine several CSVs into one, aligning columns by name.', icon: '🔗', available: true },
   { slug: 'csv-to-json', zone: 'data', name: 'CSV to JSON', description: 'Turn a CSV into clean JSON records.', icon: '{ }', available: true },
-  { slug: 'csv-to-qbo', zone: 'data', name: 'CSV to QBO', description: 'Convert a bank CSV to QuickBooks .qbo — normally a paid tool.', icon: '📥', available: true },
-  { slug: 'csv-to-ofx', zone: 'data', name: 'CSV to OFX', description: 'Convert a bank CSV to OFX for import — normally paid.', icon: '📤', available: true },
+  { slug: 'csv-to-qbo', zone: 'data', name: 'CSV to QBO', description: 'Convert a bank CSV to a QuickBooks .qbo file for import.', icon: '📥', available: true },
+  { slug: 'csv-to-ofx', zone: 'data', name: 'CSV to OFX', description: 'Convert a bank CSV to OFX for import into finance software.', icon: '📤', available: true },
   { slug: 'bank-csv-formatter', zone: 'data', name: 'Bank CSV Formatter', description: 'Reshape any bank export into a clean, standard layout.', icon: '🏛', available: true },
 
   // --- Business Finance ---

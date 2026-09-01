@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import MerchantAnalyzer from '../components/tools/MerchantAnalyzer.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Merchant Analyzer';
+const description =
+  'Free merchant analyzer for your bank statement. See who you pay most — grouped and ranked by merchant — from any CSV export, entirely in your browser. Your statement is never uploaded.';
+
+const faqs = [
+  { q: 'Is my bank statement uploaded?', a: 'No. The CSV is read and grouped entirely in your browser. Open DevTools → Network — your file is never sent out.' },
+  { q: 'How does it decide what counts as one merchant?', a: 'It cleans each description into a best-effort merchant label — stripping card masks, reference numbers, dates and payment-processor prefixes like "PAYPAL *" — then groups matching labels. It is deliberately conservative, so it rarely merges two different merchants, but occasionally the same merchant appears under two labels if the bank wrote it two very different ways.' },
+  { q: 'Can I see who pays me, not just who I pay?', a: 'Yes. Toggle between "Who you pay" (spending) and "Who pays you" (income). The same grouping runs on the money-in side.' },
+  { q: 'Why does one merchant show a count higher than I expect?', a: 'The count is how many transactions grouped under that label. A subscription billed monthly shows up as many transactions to the same merchant — that is the point. To find recurring charges specifically, the Subscription Finder is the better tool.' },
+  { q: 'Does it handle European number and date formats?', a: 'Yes — pick day-first dates and the comma decimal in the selectors. Amounts and dates are parsed exactly as you specify, never auto-guessed.' },
+  { q: 'Are the totals accurate?', a: 'Each merchant total is a plain sum of its transactions. The only interpretive step is grouping descriptions into merchants; the arithmetic is exact. Spot-check the top merchant against your statement to confirm the grouping matches what you expect.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/merchant-analyzer`,
+    description,
+    category: 'FinanceApplication',
+    features: [
+      'Groups transactions by merchant and ranks them',
+      'Spending (who you pay) and income (who pays you) views',
+      'Best-effort merchant cleanup from raw descriptions',
+      'Works with any bank CSV via column mapping',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Merchant Analyzer', url: '/merchant-analyzer' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Merchant Analyzer</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Merchant Analyzer</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop a bank statement CSV and see who you pay most — grouped and ranked by merchant. Everything runs in your browser; your statement is never uploaded.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your statement is analyzed in your browser. Open DevTools → Network to verify — your file is never uploaded." />
+    <MerchantAnalyzer client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">Where your money actually goes</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        A statement lists hundreds of transactions but never adds them up by who you paid. This tool groups every transaction under a cleaned-up merchant name and ranks them, so the handful of places that take most of your money rise to the top — often a surprise.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Best-effort grouping, honestly labelled</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Bank descriptions are messy: <code class="text-[color:var(--color-brand-400)]">POS 1234 **** TESCO STORES 5678</code> and <code class="text-[color:var(--color-brand-400)]">TESCO STORES LONDON</code> are the same shop written two ways. The analyzer strips the noise and groups what it can, staying conservative so it does not lump different merchants together. It is a summary to explore, not an accounting record.
+      </p>
+    </article>
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

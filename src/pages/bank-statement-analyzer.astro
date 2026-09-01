@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import BankStatementAnalyzer from '../components/tools/BankStatementAnalyzer.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Bank Statement Analyzer';
+const description =
+  'Free bank statement analyzer. Drop a CSV and get an instant overview — money in vs out, top spending, subscriptions and possible double charges — entirely in your browser. Your statement is never uploaded.';
+
+const faqs = [
+  { q: 'Is my bank statement uploaded?', a: 'No. The CSV is read and analyzed entirely in your browser. Open DevTools → Network — your file is never sent out. This is exactly the kind of data you should not paste into a random online tool.' },
+  { q: 'What does the overview show?', a: 'Money in vs money out with totals and a net figure, a month-by-month chart, your top spending by merchant, detected recurring charges with an estimated monthly cost, and any suspected double charges — all on one page.' },
+  { q: 'What CSV works?', a: 'Any bank export with a date column, a description column, and either a single signed amount or separate debit/credit columns. You map the columns yourself, so it is not tied to any one bank.' },
+  { q: 'Which numbers are exact and which are estimates?', a: 'The totals, the monthly chart and the merchant spending are exact sums of the rows you mapped. The recurring-charge and double-charge panels are best-effort detections meant as prompts to review, not accounting facts.' },
+  { q: 'It skipped rows — why?', a: 'A row is skipped only when its date or amount cannot be read, and the count is shown. That is almost always the wrong date format or decimal separator — adjust the two selectors and the rows return. Nothing is guessed.' },
+  { q: 'Does it work with European formats and any currency?', a: 'Yes. Choose day-first dates and the comma decimal in the selectors and set your currency symbol; values are parsed exactly as specified.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/bank-statement-analyzer`,
+    description,
+    category: 'FinanceApplication',
+    features: [
+      'One-page overview of any bank statement CSV',
+      'Money in vs out with a monthly chart',
+      'Top spending by merchant',
+      'Detected subscriptions and possible double charges',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Bank Statement Analyzer', url: '/bank-statement-analyzer' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Bank Statement Analyzer</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Bank Statement Analyzer</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop a bank statement CSV and get the whole picture at once — in vs out, where your money goes, what recurs, and what looks charged twice. Everything runs in your browser; your statement is never uploaded.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your statement is analyzed in your browser. Open DevTools → Network to verify — your file is never uploaded." />
+    <BankStatementAnalyzer client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">One statement, the whole picture</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Instead of running four tools, this one reads your statement once and lays out everything worth knowing: the totals and net, a monthly in-versus-out chart, the merchants taking most of your money, the charges that repeat on a schedule, and any payments that look duplicated. Each panel links to the dedicated tool when you want the full breakdown.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Exact where it can be, honest where it can’t</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        The money figures are plain sums of your rows — nothing to get subtly wrong. The recurring and duplicate panels are heuristics: useful signals, clearly labelled as suggestions to check, never presented as certainties. As always, the file is parsed with the date and number formats you choose, never guessed.
+      </p>
+    </article>
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

@@ -3,6 +3,29 @@
 This is the authoritative pattern for every article on `vexyn.app/blog/`.
 Modelled on the folositor.ro guide structure, which has proven SEO traction.
 
+> **Update (Sep 2026), finance era — read this first.** The live guides now
+> use conventions that override some of the older rules below. When they
+> conflict, follow these:
+> - **Title:** plain `How to <do the thing>` — no `— 2026 step-by-step guide`
+>   suffix. Freshness comes from `pubDate`, not the title. Match the live
+>   guides (e.g. "How to analyze your spending from a bank statement").
+> - **`category` is required** in the frontmatter and MUST equal one of the
+>   category names in `src/pages/blog/index.astro` (`CATEGORIES`). A new topic
+>   area means adding a category there first, or the guide falls into
+>   "More guides".
+> - **Section headings carry NO "Step N —" prefix.** The guide page
+>   auto-numbers every `<h2>` with a CSS counter (badge on the page + matching
+>   number in the sticky table of contents), so a manual "Step 1 —" would
+>   double-number. Use plain action headings ("Load the statement and scan").
+> - **"Sources cited" is optional** for how-to-use-our-tool guides (see
+>   `clean-messy-bank-csv.md`), required when you state external facts/specs.
+>   NEVER fabricate a citation or a statistic — omit the section rather than
+>   invent a source. Correctness outranks the E-E-A-T nicety.
+>
+> The editorial structure, voice rules and FAQ/Glossary requirements below all
+> still apply. The current reference guides are the finance ones in
+> `src/content/blog/` (e.g. `analyze-spending-bank-statement.md`).
+
 > For the technical SEO infrastructure that every page (not just blog
 > posts) must respect — schema, headings, OG images, internal linking,
 > Cloudflare deploy gotcha — see [`seo-checklist.md`](./seo-checklist.md).
@@ -27,10 +50,11 @@ Every article starts with:
 
 ```yaml
 ---
-title: <topic action> — <year> step-by-step guide
+title: How to <do the thing>          # plain, no year/step-by-step suffix
 description: <150-160 char summary that matches search intent>
 pubDate: YYYY-MM-DD
 updatedDate: YYYY-MM-DD   # optional, set when re-editing significantly
+category: '<one of CATEGORIES in src/pages/blog/index.astro>'   # required
 tags: ['primary-topic', 'category', 'guide']
 related: ['/tool-slug-1', '/tool-slug-2']
 ---

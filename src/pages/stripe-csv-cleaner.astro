@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import StripeCsvCleaner from '../components/tools/StripeCsvCleaner.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Stripe CSV Cleaner';
+const description =
+  'Free Stripe CSV cleaner. Turn a raw Stripe payments export into a clean, readable sheet with fees and a net column worked out — and export it to any accounting software, entirely in your browser.';
+
+const faqs = [
+  { q: 'Is my Stripe export uploaded?', a: 'No. The CSV is read and cleaned entirely in your browser. Open DevTools → Network — your file is never sent out. A payments export is exactly the kind of data you should not hand to a random web tool.' },
+  { q: 'Which Stripe export does it take?', a: 'The Payments export (Payments → Export), either the default columns or the all-columns version — the tool finds the columns it needs by name. It reads the id, created date, amount, fee, amount refunded, currency, status, description and customer email.' },
+  { q: 'How is the Net column calculated?', a: 'Net = Amount − Fee − Amount Refunded, per payment. It is the amount that actually reaches your balance after Stripe’s cut and any refund. Stripe gives you the pieces but not this figure, so the cleaner works it out and totals it.' },
+  { q: 'What does "only successful payments" do?', a: 'It hides rows that never completed — incomplete or failed attempts (statuses that are not paid, refunded or succeeded). Turn it on to see just the money that actually moved.' },
+  { q: 'Can I export it to my accounting software?', a: 'Yes. "Clean CSV" gives you a tidy sheet with the key columns and the net. Or export the net amounts as Generic CSV, QuickBooks CSV, Xero CSV, QIF or JSON to import them straight in.' },
+  { q: 'Does it handle any currency?', a: 'Yes — it reads the currency from the export and totals in it. Amounts are read as Stripe writes them (dot-decimal); if you re-saved the file in a European Excel, it detects the comma decimal too.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/stripe-csv-cleaner`,
+    description,
+    category: 'FinanceApplication',
+    features: [
+      'Cleans a raw Stripe payments export',
+      'Works out the net amount after fees and refunds',
+      'Totals gross, fees, refunds and net',
+      'Exports to CSV, QuickBooks, Xero, QIF, JSON',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Stripe CSV Cleaner', url: '/stripe-csv-cleaner' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Stripe CSV Cleaner</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Stripe CSV Cleaner</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop a Stripe payments export and get a clean, readable sheet — the columns that matter, plus the net you actually keep after fees and refunds. Everything runs in your browser, and it exports to any accounting software.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your Stripe export is cleaned in your browser. Open DevTools → Network to verify — your file is never uploaded." />
+    <StripeCsvCleaner client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">The 80-column export, made readable</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        A Stripe payments export is thorough to a fault — dozens of columns, most of them empty on any given row. This tool keeps the handful you actually read (date, description, customer, amount, fee, refund, status) and drops the rest, so a wall of data becomes a sheet you can scan.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">The number Stripe makes you calculate</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        The export lists your gross amount and the fee separately and leaves the arithmetic to you. The cleaner adds the column you were going to work out anyway — net, after the fee and any refund — and totals gross, fees, refunds and net across the file, so you know exactly what landed in your balance.
+      </p>
+    </article>
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

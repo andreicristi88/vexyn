@@ -65,7 +65,7 @@ export const TOOLS: Tool[] = [
   { slug: 'bank-csv-formatter', zone: 'data', name: 'Bank CSV Formatter', description: 'Reshape any bank export into a clean, standard layout.', icon: '🏛', available: true },
 
   // --- Business Finance ---
-  { slug: 'stripe-csv-cleaner', zone: 'business', name: 'Stripe CSV Cleaner', description: 'Turn a raw Stripe export into a clean, readable sheet.', icon: '💳', available: false },
+  { slug: 'stripe-csv-cleaner', zone: 'business', name: 'Stripe CSV Cleaner', description: 'Turn a raw Stripe export into a clean, readable sheet.', icon: '💳', available: true },
   { slug: 'stripe-payout-analyzer', zone: 'business', name: 'Stripe Payout Analyzer', description: 'See exactly what each payout contains, net of fees.', icon: '💸', available: false },
   { slug: 'stripe-reconciliation', zone: 'business', name: 'Stripe Reconciliation', description: 'Match charges, refunds and fees to payouts.', icon: '⚖️', available: false },
   { slug: 'invoice-reconciliation', zone: 'business', name: 'Invoice Reconciliation', description: 'Match invoices against payments received.', icon: '🧾', available: true },

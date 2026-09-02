@@ -29,7 +29,11 @@
       interval: guess(res.grid.headers, [/interval|billing.?period|frequency|cycle|recurring.?period/]),
       quantity: guess(res.grid.headers, [/quantity|qty|seats|units/]),
       status: guess(res.grid.headers, [/status|state/]),
-      plan: guess(res.grid.headers, [/^plan$|product|tier|package|subscription.?name/]),
+      plan: (() => {
+        // Prefer a readable name column (Product) over an id-like Plan/price column.
+        const readable = guess(res.grid.headers, [/product|tier|package|subscription.?name/]);
+        return readable >= 0 ? readable : guess(res.grid.headers, [/^plan$/]);
+      })(),
       currency: guess(res.grid.headers, [/currency/]),
     };
     const amtCol = map.amount;

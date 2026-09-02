@@ -9,6 +9,8 @@ interface Props {
   description?: string;
   image?: string;
   noindex?: boolean;
+  /** Skip the value suffix on the title (for content pages like guides). */
+  plainTitle?: boolean;
   schema?: Record<string, any>;
 }
 
@@ -17,12 +19,21 @@ const {
   description = SITE.description,
   image = '/og-default.png',
   noindex = false,
+  plainTitle = false,
   schema,
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, SITE.url).toString();
 const ogImage = new URL(image, SITE.url).toString();
-const fullTitle = title === SITE.title ? title : `${title} — ${SITE.name}`;
+// Tool/static page names are short ("CSV Cleaner"). Add a value suffix so the
+// title carries a keyword and length search engines prefer, while long content
+// titles (guides) and the homepage stay as they are.
+const fullTitle =
+  title === SITE.title
+    ? title
+    : !plainTitle && title.length < 34
+      ? `${title} — ${SITE.name} · Free, no upload`
+      : `${title} — ${SITE.name}`;
 ---
 
 <!doctype html>

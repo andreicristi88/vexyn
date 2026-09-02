@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import StripeReconciliation from '../components/tools/StripeReconciliation.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Stripe Reconciliation';
+const description =
+  'Free Stripe reconciliation tool. Group your itemized balance report by category and by payout, tie charges, refunds and fees to what left your balance, and reconcile the total — all in your browser.';
+
+const faqs = [
+  { q: 'Is my balance report uploaded?', a: 'No. The CSV is read and grouped in your browser. Open DevTools → Network — your file is never sent out.' },
+  { q: 'Which Stripe report does it need?', a: 'The itemized balance report — Reporting → Reports → Balance summary → the itemized "balance change from activity" export. That is the one file that ties every charge, refund and fee to the payout it settled in.' },
+  { q: 'How does the reconciliation work?', a: 'It groups every balance transaction by Stripe’s reporting category (charge, refund, fee, payout, adjustment…) and sums the net of each. By construction the sum of all net lines equals the change in your Stripe balance for the period — so it should match the balance figure on the report’s own summary.' },
+  { q: 'What is the "by payout" table?', a: 'Balance transactions carry the id of the payout that settled them. Grouping by that id shows what each payout was actually made of — the net of the charges, refunds and fees it paid out.' },
+  { q: 'Why does it say to verify against my dashboard?', a: 'Stripe’s report column names have changed across versions. This tool matches them flexibly and does exact arithmetic, but the first time you use it, cross-check the total against the balance summary in your dashboard to confirm the columns were read as intended.' },
+  { q: 'Can I export the result?', a: 'Yes — the by-category breakdown exports as a clean CSV for your books or a month-end reconciliation working paper.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/stripe-reconciliation`,
+    description,
+    category: 'FinanceApplication',
+    features: [
+      'Groups the itemized balance report by category',
+      'Ties charges, refunds and fees to each payout',
+      'Reconciles to the net balance change',
+      'Exports the breakdown as CSV',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Stripe Reconciliation', url: '/stripe-reconciliation' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Stripe Reconciliation</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Stripe Reconciliation</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop your itemized Stripe balance report and see it reconciled: every charge, refund and fee grouped by category and tied to the payout it settled, summing to the exact change in your balance. All in your browser.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your balance report is grouped in your browser. Open DevTools → Network to verify — your file is never uploaded." />
+    <StripeReconciliation client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">From a wall of balance transactions to a reconciliation</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        The gap between "Stripe paid me X" and "I earned Y" is fees and refunds, spread across hundreds of balance transactions. This tool collapses that report into the picture your accountant wants: totals by category, a breakdown of what each payout settled, and a bottom line that ties out to the change in your balance.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Exact arithmetic, honestly scoped</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        The sums are exact — the only interpretation is Stripe’s own reporting category and payout id, which the report provides. It is built to Stripe’s documented itemized format with flexible column matching, so verify the total against your dashboard’s balance summary the first time. Nothing leaves your browser while you reconcile.
+      </p>
+    </article>
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

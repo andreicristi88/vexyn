@@ -194,6 +194,83 @@ export function parseStripePayouts(grid: Grid, decimal: '.' | ',' = '.'): Payout
   };
 }
 
+// --- Balance change from activity (itemized) → reconciliation --------------
+// Built to Stripe's documented itemized balance report. Column names have
+// varied across report versions, so detection tries several candidates.
+// VALIDATE against a real "Balance summary → Itemized" export.
+
+const BAL_CATEGORY = ['reporting_category', 'Reporting Category', 'Type', 'type'];
+const BAL_GROSS = ['gross', 'Gross', 'Amount', 'amount'];
+const BAL_FEE = ['fee', 'Fee'];
+const BAL_NET = ['net', 'Net'];
+const BAL_PAYOUT = ['automatic_payout_id', 'payout_id', 'Payout ID', 'Automatic Payout ID'];
+const BAL_ID = ['balance_transaction_id', 'id', 'Balance Transaction ID'];
+const BAL_CREATED = ['created', 'created_utc', 'Created (UTC)', 'Created date (UTC)', 'balance_transaction_created_at'];
+
+export function isBalanceReport(headers: string[]): boolean {
+  return findColAny(headers, BAL_CATEGORY) >= 0 && findColAny(headers, BAL_NET) >= 0 && findColAny(headers, BAL_ID) >= 0;
+}
+
+export type CategoryTotal = { category: string; count: number; gross: number; fee: number; net: number };
+export type PayoutTotal = { payoutId: string; count: number; net: number };
+
+export type Reconciliation = {
+  byCategory: CategoryTotal[];
+  byPayout: PayoutTotal[];
+  totals: { gross: number; fee: number; net: number; count: number; currency: string };
+  /** net of everything that is NOT a payout — the money earned into the balance */
+  activityNet: number;
+  /** net of payout rows — money that left the balance to your bank (negative) */
+  payoutNet: number;
+};
+
+/**
+ * Group an itemized balance report by reporting category and by payout. The
+ * sum of the `net` column is, by construction, the change in your Stripe
+ * balance for the period — that is the figure to reconcile against the
+ * report's own summary. Falls back to net = gross − fee when there is no net
+ * column.
+ */
+export function reconcileBalance(grid: Grid, decimal: '.' | ',' = '.'): Reconciliation {
+  const h = grid.headers;
+  const cCat = findColAny(h, BAL_CATEGORY);
+  const cGross = findColAny(h, BAL_GROSS);
+  const cFee = findColAny(h, BAL_FEE);
+  const cNet = findColAny(h, BAL_NET);
+  const cPayout = findColAny(h, BAL_PAYOUT);
+  const cCurrency = findCol(h, 'Currency') >= 0 ? findCol(h, 'Currency') : findCol(h, 'currency');
+
+  const cats = new Map<string, { count: number; gross: number; fee: number; net: number }>();
+  const payouts = new Map<string, { count: number; net: number }>();
+  let gross = 0, fee = 0, net = 0, activityNet = 0, payoutNet = 0, count = 0, currency = '';
+
+  for (const r of grid.rows) {
+    const category = ((cCat >= 0 ? r[cCat] ?? '' : '').trim() || 'uncategorized').toLowerCase();
+    const g = money(r[cGross], decimal);
+    const f = money(r[cFee], decimal);
+    const n = cNet >= 0 ? money(r[cNet], decimal) : round2(g - f);
+    const cur = (cCurrency >= 0 ? r[cCurrency] ?? '' : '').trim().toUpperCase();
+    if (cur && !currency) currency = cur;
+
+    const c = cats.get(category) ?? { count: 0, gross: 0, fee: 0, net: 0 };
+    c.count++; c.gross += g; c.fee += f; c.net += n; cats.set(category, c);
+
+    gross += g; fee += f; net += n; count++;
+    if (/payout/.test(category)) payoutNet += n; else activityNet += n;
+
+    const pid = cPayout >= 0 ? (r[cPayout] ?? '').trim() : '';
+    if (pid) { const p = payouts.get(pid) ?? { count: 0, net: 0 }; p.count++; p.net += n; payouts.set(pid, p); }
+  }
+
+  return {
+    byCategory: [...cats.entries()].map(([category, v]) => ({ category, count: v.count, gross: round2(v.gross), fee: round2(v.fee), net: round2(v.net) })).sort((a, b) => Math.abs(b.net) - Math.abs(a.net)),
+    byPayout: [...payouts.entries()].map(([payoutId, v]) => ({ payoutId, count: v.count, net: round2(v.net) })).sort((a, b) => Math.abs(b.net) - Math.abs(a.net)),
+    totals: { gross: round2(gross), fee: round2(fee), net: round2(net), count, currency },
+    activityNet: round2(activityNet),
+    payoutNet: round2(payoutNet),
+  };
+}
+
 // --- Subscriptions export → SaaS metrics ----------------------------------
 
 /** True when the grid looks like a Stripe subscriptions export. */

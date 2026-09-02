@@ -1,13 +1,25 @@
 <script lang="ts">
   // Net worth is a position across accounts, not a single statement — so this
-  // is a manual calculator rather than a CSV parser. Entries are saved to this
-  // browser's localStorage only (never sent anywhere).
+  // is a manual calculator rather than a CSV parser.
+  //
+  // PERSISTENCE IS OPT-IN. This is the only tool on the site whose data
+  // outlives the tab, and account balances are about the most sensitive thing
+  // a visitor can type here. Saving them unprompted means a shared or work
+  // computer keeps them in plain text indefinitely, readable by anyone who
+  // opens the browser. So it only writes when the visitor asks, and they can
+  // wipe it in one click.
+  //
+  // Not encrypted, deliberately: a key kept next to the data on the same
+  // device protects nothing, and a passphrase prompt is the wrong price for a
+  // calculator. The honest fix is storing less, and saying so plainly.
 
   type Kind = 'asset' | 'liability';
   type Account = { id: number; name: string; kind: Kind; balance: string };
 
   let sym = $state('$');
   let accounts = $state<Account[]>([]);
+  let remember = $state(false);
+  let hasSaved = $state(false);
   let nextId = 1;
 
   const STORAGE = 'vexyn-networth-v1';
@@ -20,7 +32,10 @@
     ];
   }
 
-  // Load once on mount (guarded — storage can throw or be empty).
+  // Load once on mount (guarded — storage can throw or be empty). Anything
+  // already stored was written under the previous always-on behaviour, so it
+  // is restored and the toggle switched on rather than dropping data the
+  // visitor expects to still be there.
   $effect(() => {
     try {
       const raw = localStorage.getItem(STORAGE);
@@ -29,6 +44,8 @@
         if (Array.isArray(data?.accounts) && data.accounts.length) {
           accounts = data.accounts.map((a: Account) => ({ ...a, id: nextId++ }));
           if (typeof data.sym === 'string') sym = data.sym;
+          remember = true;
+          hasSaved = true;
           return;
         }
       }
@@ -36,12 +53,44 @@
     accounts = seed();
   });
 
-  // Persist on change (guarded).
+  // Persist on change — but only once asked. Reading the state outside the
+  // guard keeps this effect subscribed, so enabling the toggle later still
+  // picks up subsequent edits.
   $effect(() => {
+    const snapshot = JSON.stringify({ accounts, sym });
+    if (!remember) return;
     try {
-      localStorage.setItem(STORAGE, JSON.stringify({ accounts, sym }));
+      localStorage.setItem(STORAGE, snapshot);
+      hasSaved = true;
     } catch {}
   });
+
+  function setRemember(on: boolean) {
+    remember = on;
+    if (on) {
+      try {
+        localStorage.setItem(STORAGE, JSON.stringify({ accounts, sym }));
+        hasSaved = true;
+      } catch {}
+    } else {
+      forget();
+    }
+  }
+
+  /**
+   * Wipe the stored copy. What is on screen stays until the tab closes.
+   *
+   * This also switches remembering back off. Leaving it on would re-save the
+   * data on the very next keystroke, so "Clear saved data" would only appear
+   * to work — the worst kind of privacy control.
+   */
+  function forget() {
+    remember = false;
+    try {
+      localStorage.removeItem(STORAGE);
+    } catch {}
+    hasSaved = false;
+  }
 
   function num(s: string): number {
     let x = (s || '').replace(/[^0-9.,-]/g, '');
@@ -83,7 +132,7 @@
 
 <div class="space-y-4">
   <div class="flex flex-wrap items-center justify-between gap-3">
-    <p class="text-sm text-[color:var(--color-text-mute)]">Enter what you own and what you owe. Nothing leaves your browser — entries are saved on this device only.</p>
+    <p class="text-sm text-[color:var(--color-text-mute)]">Enter what you own and what you owe. Nothing leaves your browser, and nothing is kept after you close the tab unless you ask.</p>
     <label class="text-xs text-[color:var(--color-text-mute)] flex items-center gap-1.5">Currency
       <input bind:value={sym} maxlength="3" class="w-16 px-2 py-1 rounded-lg bg-[color:var(--color-surface-2)] border border-[color:var(--color-border)] text-xs" />
     </label>
@@ -161,8 +210,29 @@
     </div>
   {/if}
 
-  <div class="flex items-center justify-between">
-    <button class="text-xs text-[color:var(--color-text-mute)] hover:text-[color:var(--color-text)]" on:click={clearAll}>Reset to example</button>
-    <p class="text-xs text-[color:var(--color-text-dim)]">Saved on this device only. Net worth = assets − liabilities, a snapshot of today.</p>
+  <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+    <div class="flex items-center gap-4">
+      <button class="text-xs text-[color:var(--color-text-mute)] hover:text-[color:var(--color-text)]" on:click={clearAll}>Reset to example</button>
+      {#if hasSaved}
+        <button class="text-xs text-[color:var(--color-danger)] hover:underline" on:click={forget}>Clear saved data</button>
+      {/if}
+    </div>
+    <label class="flex items-center gap-2 text-xs text-[color:var(--color-text-mute)] cursor-pointer">
+      <input
+        type="checkbox"
+        checked={remember}
+        on:change={(e) => setRemember(e.currentTarget.checked)}
+        class="rounded"
+      />
+      Remember these accounts on this device
+    </label>
   </div>
+  <p class="text-xs text-[color:var(--color-text-dim)]">
+    {#if remember}
+      Saved unencrypted in this browser's storage, so anyone using this computer could read it — avoid it on a shared or work machine. It never leaves your device, and “Clear saved data” removes it.
+    {:else}
+      Your entries live only in this tab and disappear when you close it. Tick the box to keep them for next time.
+    {/if}
+    Net worth = assets − liabilities, a snapshot of today.
+  </p>
 </div>

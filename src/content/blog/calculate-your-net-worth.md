@@ -44,7 +44,7 @@ Enter the amount you would need to pay to clear each one today. The gap between 
 
 Open the [Net Worth Analyzer](/net-worth-analyzer). Add each account as an asset or a liability with its current balance, and it totals both sides, subtracts them, and shows a breakdown of what your assets are actually made of.
 
-A picture of everything you own is about as sensitive as personal data gets, so it should never leave your machine. Vexyn's calculator saves your entries in your browser's local storage — on your device only, never sent anywhere — so they are there when you come back, and nowhere else. You can confirm nothing is transmitted in the Network panel of your browser's developer tools.
+A picture of everything you own is about as sensitive as personal data gets, so it should never leave your machine — and ideally should not be sitting around on it either. Vexyn's calculator sends nothing anywhere, and by default stores nothing: your entries live in the tab and are gone when you close it. If you want them next month, tick "Remember these accounts on this device" and they are kept in that browser's storage, unencrypted, with a one-click "Clear saved data" to remove them. On a shared or work computer, leave the box unticked. You can confirm nothing is transmitted in the Network panel of your browser's developer tools.
 
 ## Track it over time
 
@@ -74,7 +74,7 @@ No — enter the home's full market value as an asset and the remaining mortgage
 
 ### Is it safe to enter my balances into an online calculator?
 
-Only if it keeps the data local. [Vexyn's Net Worth Analyzer](/net-worth-analyzer) stores your entries in your browser on your device and sends nothing to a server, which you can verify in the Network panel. Avoid any calculator that uploads or requires an account.
+Only if it keeps the data local. [Vexyn's Net Worth Analyzer](/net-worth-analyzer) sends nothing to a server, which you can verify in the Network panel, and does not even store your entries unless you ask it to. Avoid any calculator that uploads or requires an account.
 
 ### How often should I calculate my net worth?
 

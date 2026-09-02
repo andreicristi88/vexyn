@@ -12,9 +12,9 @@ const description =
   'Free net worth calculator. Add your accounts — assets and liabilities — and see your net worth with a breakdown, entirely in your browser. Nothing is uploaded; entries stay on your device.';
 
 const faqs = [
-  { q: 'Is my data uploaded?', a: 'No. Everything runs in your browser and your entries are saved to this device’s local storage only — never sent to a server. Open DevTools → Network to confirm nothing is transmitted.' },
+  { q: 'Is my data uploaded?', a: 'No. Everything runs in your browser and nothing is ever sent to a server. By default your entries are not stored either — they live in the tab and are gone when you close it. Open DevTools → Network to confirm nothing is transmitted.' },
   { q: 'How is net worth calculated?', a: 'Net worth = total assets − total liabilities. Assets are what you own (cash, savings, investments, property, vehicles); liabilities are what you owe (credit cards, loans, mortgage). The result is a snapshot of today.' },
-  { q: 'Do my entries persist if I come back?', a: 'Yes, on the same browser and device — they are stored locally. Clearing your browser data, using private mode, or switching device or browser starts fresh. They are never synced anywhere.' },
+  { q: 'Do my entries persist if I come back?', a: 'Only if you tick “Remember these accounts on this device”. That is off by default, because balances are sensitive and a shared computer would otherwise keep them indefinitely. With it on they are stored unencrypted in this browser, on this device, and “Clear saved data” removes them. Clearing browser data, private mode, or another browser or device starts fresh. Nothing is ever synced.' },
   { q: 'What should count as an asset vs a liability?', a: 'Assets: anything with positive value you could convert to cash — bank balances, investments, a home or car’s value. Liabilities: outstanding balances you owe — card debt, student or car loans, the remaining mortgage. Enter the current balance of each.' },
   { q: 'Does it track net worth over time?', a: 'Not yet — this version is a clean snapshot. Note the figure each month yourself if you want to track the trend; time-series tracking may come later.' },
   { q: 'Which currency and number format does it accept?', a: 'Set any currency symbol. Amounts accept both dot and comma decimals (1,234.56 or 1.234,56); the last separator is treated as the decimal point.' },
@@ -29,7 +29,7 @@ const schema = combineSchemas(
     features: [
       'Net worth from your assets and liabilities',
       'Breakdown of what your assets are made of',
-      'Entries saved locally on your device',
+      'Optional save to this device, off by default',
       'Any currency, dot or comma decimals',
       'Runs entirely in your browser, no upload',
     ],
@@ -52,11 +52,11 @@ const schema = combineSchemas(
       </div>
       <h1 class="text-4xl font-bold tracking-tight mb-3">Net Worth Analyzer</h1>
       <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
-        Add your accounts — what you own and what you owe — and see your net worth with a breakdown of where it sits. Everything runs in your browser; entries are saved on your device only.
+        Add your accounts — what you own and what you owe — and see your net worth with a breakdown of where it sits. Everything runs in your browser, and nothing is kept after you close the tab unless you ask.
       </p>
     </header>
 
-    <PrivacyNote text="This runs in your browser and saves entries to your device only — nothing is uploaded. Verify in DevTools → Network." />
+    <PrivacyNote text="This runs in your browser and nothing is uploaded. Your entries are not even stored unless you tick “Remember these accounts on this device”. Verify in DevTools → Network." />
     <NetWorthAnalyzer client:load />
 
     <article class="prose mt-16 max-w-3xl">
@@ -67,7 +67,7 @@ const schema = combineSchemas(
 
       <h2 class="text-2xl font-bold mb-4 mt-10">Private by design</h2>
       <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
-        A picture of everything you own is about as sensitive as data gets, which is exactly why this never leaves your browser. Entries are kept in your device’s local storage so they are there when you come back, and nowhere else. Come back monthly and note the figure to watch it move.
+        A picture of everything you own is about as sensitive as data gets, which is exactly why this never leaves your browser — and why it is not saved by default either. Your entries live in the tab and vanish when you close it, unless you tick “Remember these accounts on this device”. That keeps them in this browser's storage, unencrypted, so use it on your own machine rather than a shared one, and clear it with one click when you are done. Come back monthly and note the figure to watch it move.
       </p>
     </article>
 

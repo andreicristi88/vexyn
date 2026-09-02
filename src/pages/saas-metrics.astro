@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import SaasMetrics from '../components/tools/SaasMetrics.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'SaaS Metrics';
+const description =
+  'Free SaaS metrics calculator. Get MRR, ARR, ARPU and churn from a Stripe subscriptions export — normalized across monthly and yearly plans — entirely in your browser. Nothing is uploaded.';
+
+const faqs = [
+  { q: 'Is my subscriptions export uploaded?', a: 'No. The CSV is read and totalled in your browser. Open DevTools → Network — your file is never sent out.' },
+  { q: 'Which export does it use?', a: 'The Stripe subscriptions export (Billing → Subscriptions → Export). It reads the amount, billing interval, quantity, status, currency and plan/product columns.' },
+  { q: 'How is MRR calculated?', a: 'MRR is the sum of every paying subscription normalized to a monthly figure: monthly plans as-is, yearly plans divided by 12, weekly and daily scaled accordingly, each times its quantity. Trials are counted separately and excluded, because they are not yet paying.' },
+  { q: 'What does "lost MRR" mean here?', a: 'It is the combined monthly value of the subscriptions in your file that are canceled or ended. It is a plain snapshot of what those cancellations were worth — not a cohort churn rate, which needs a defined period and a starting base the export alone does not give.' },
+  { q: 'What is ARPU?', a: 'Average revenue per user: MRR divided by the number of paying subscriptions. A quick read on how much each active subscription is worth per month.' },
+  { q: 'Does it handle mixed currencies?', a: 'It totals in the currency it finds and shows it. If your subscriptions span several currencies, convert them to one before analyzing, since adding different currencies together would be meaningless.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/saas-metrics`,
+    description,
+    category: 'FinanceApplication',
+    features: [
+      'MRR, ARR, ARPU from a Stripe subscriptions export',
+      'Normalizes monthly, yearly, weekly and daily plans',
+      'Active, trialing and canceled counts',
+      'MRR broken down by plan, with CSV export',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'SaaS Metrics', url: '/saas-metrics' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">SaaS Metrics</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">SaaS Metrics</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop a Stripe subscriptions export and get MRR, ARR, ARPU and your cancellations — with monthly and yearly plans normalized correctly. Everything runs in your browser; nothing is uploaded.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your subscriptions export is analyzed in your browser. Open DevTools → Network to verify — your file is never uploaded." />
+    <SaasMetrics client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">MRR, without the spreadsheet formula</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Recurring revenue is only comparable once every plan is on the same footing. This tool does that normalization — a yearly plan counts as a twelfth of its price each month, quantities are multiplied in, trials are set aside — and gives you MRR, ARR and ARPU from a raw subscriptions export, plus the breakdown by plan.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Honest about what it can and cannot say</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        The revenue figures are exact arithmetic on your export. Churn is shown as the count and lost MRR of canceled subscriptions in the file — a useful snapshot, deliberately not dressed up as a cohort churn rate, which needs a time window and a starting base a single export does not contain. Mixed currencies are not summed blindly; convert to one first.
+      </p>
+    </article>
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

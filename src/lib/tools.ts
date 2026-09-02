@@ -72,7 +72,7 @@ export const TOOLS: Tool[] = [
   { slug: 'bank-reconciliation', zone: 'business', name: 'Bank Reconciliation', description: 'Reconcile your ledger against the bank statement.', icon: '🏦', available: true },
   { slug: 'transaction-matcher', zone: 'business', name: 'Transaction Matcher', description: 'Match two lists of transactions and surface the gaps.', icon: '🔍', available: true },
   { slug: 'revenue-analyzer', zone: 'business', name: 'Revenue Analyzer', description: 'Break revenue down by period, product and customer.', icon: '📈', available: true },
-  { slug: 'saas-metrics', zone: 'business', name: 'SaaS Metrics', description: 'MRR, churn and growth from a subscriptions export.', icon: '📊', available: false },
+  { slug: 'saas-metrics', zone: 'business', name: 'SaaS Metrics', description: 'MRR, churn and growth from a subscriptions export.', icon: '📊', available: true },
 
   // --- Personal Finance ---
   { slug: 'bank-statement-analyzer', zone: 'personal', name: 'Bank Statement Analyzer', description: 'Understand where your money goes from a bank export.', icon: '🔎', available: true },

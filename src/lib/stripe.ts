@@ -104,3 +104,96 @@ export function cleanStripePayments(grid: Grid, decimal: '.' | ',' = '.'): Strip
     totals: { gross: round2(gross), fees: round2(fees), refunds: round2(refunds), net: round2(net), count: rows.length, currency },
   };
 }
+
+// --- Subscriptions export → SaaS metrics ----------------------------------
+
+/** True when the grid looks like a Stripe subscriptions export. */
+export function isStripeSubscriptions(headers: string[]): boolean {
+  const has = (n: string) => findCol(headers, n) >= 0;
+  return has('Status') && has('Interval') && has('Amount') && (has('Product') || has('Plan') || has('id'));
+}
+
+/** Billing interval → number of times it bills per month (for MRR). */
+function monthlyFactor(interval: string): number {
+  switch (interval.toLowerCase().trim()) {
+    case 'day': return 365 / 12;
+    case 'week': return 52 / 12;
+    case 'month': return 1;
+    case 'year': return 1 / 12;
+    default: return 1;
+  }
+}
+
+// A subscription counts toward MRR while it is live and billing.
+const LIVE = /^(active|past_due|trialing)$/i;
+const PAYING = /^(active|past_due)$/i;
+
+export type PlanRow = { plan: string; mrr: number; count: number };
+
+export type SaasMetrics = {
+  mrr: number;
+  arr: number;
+  arpu: number; // MRR / paying subscriptions
+  activeCount: number; // paying (active + past_due)
+  trialingCount: number;
+  canceledCount: number;
+  lostMrr: number; // MRR of canceled/ended subscriptions
+  byPlan: PlanRow[];
+  currency: string;
+};
+
+/**
+ * MRR, ARR and churn signals from a Stripe subscriptions export. MRR is the
+ * monthly-normalized amount of paying subscriptions (yearly plans ÷ 12, and so
+ * on), times quantity. Trials are counted but excluded from MRR because they
+ * are not yet paying. "Churn" here is the count and lost MRR of canceled
+ * subscriptions in the file — a plain figure, not a cohort churn rate.
+ */
+export function saasMetrics(grid: Grid, decimal: '.' | ',' = '.'): SaasMetrics {
+  const h = grid.headers;
+  const cAmount = findCol(h, 'Amount');
+  const cInterval = findCol(h, 'Interval');
+  const cQty = findCol(h, 'Quantity');
+  const cStatus = findCol(h, 'Status');
+  const cCurrency = findCol(h, 'Currency');
+  const cPlan = findCol(h, 'Product') >= 0 ? findCol(h, 'Product') : findCol(h, 'Plan');
+
+  let mrr = 0, activeCount = 0, trialingCount = 0, canceledCount = 0, lostMrr = 0, currency = '';
+  const plans = new Map<string, { mrr: number; count: number }>();
+
+  for (const r of grid.rows) {
+    const status = (cStatus >= 0 ? r[cStatus] ?? '' : '').trim();
+    if (!status) continue;
+    const amount = money(r[cAmount], decimal);
+    const qty = cQty >= 0 ? Math.max(1, parseInt((r[cQty] ?? '1').trim(), 10) || 1) : 1;
+    const interval = cInterval >= 0 ? r[cInterval] ?? 'month' : 'month';
+    const monthly = round2(amount * qty * monthlyFactor(interval));
+    const cur = (cCurrency >= 0 ? r[cCurrency] ?? '' : '').trim().toUpperCase();
+    if (cur && !currency) currency = cur;
+
+    if (/^trialing$/i.test(status)) trialingCount++;
+    if (PAYING.test(status)) {
+      activeCount++;
+      mrr += monthly;
+      const plan = (cPlan >= 0 ? (r[cPlan] ?? '').trim() : '') || '(unnamed plan)';
+      const p = plans.get(plan) ?? { mrr: 0, count: 0 };
+      p.mrr += monthly; p.count++; plans.set(plan, p);
+    } else if (!LIVE.test(status)) {
+      canceledCount++;
+      lostMrr += monthly;
+    }
+  }
+
+  mrr = round2(mrr);
+  return {
+    mrr,
+    arr: round2(mrr * 12),
+    arpu: activeCount ? round2(mrr / activeCount) : 0,
+    activeCount,
+    trialingCount,
+    canceledCount,
+    lostMrr: round2(lostMrr),
+    byPlan: [...plans.entries()].map(([plan, v]) => ({ plan, mrr: round2(v.mrr), count: v.count })).sort((a, b) => b.mrr - a.mrr),
+    currency,
+  };
+}

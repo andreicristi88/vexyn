@@ -186,8 +186,10 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
     const d = String(r.day).slice(0, 10);
     (byDay[d] ||= { hum: 0, bot: 0, pv: 0 });
     const v = Number(r.visitors || 0);
-    if (r.cls === 'bot') byDay[d].bot += v; else byDay[d].hum += v;
-    byDay[d].pv += Number(r.pv || 0);
+    // Bots contribute to the bot visitor count only; "Views" counts human
+    // pageviews so it matches the human-only KPIs above.
+    if (r.cls === 'bot') byDay[d].bot += v;
+    else { byDay[d].hum += v; byDay[d].pv += Number(r.pv || 0); }
   }
   // Referrers → readable sources.
   const bySource: Record<string, number> = {};

@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import StripePayoutAnalyzer from '../components/tools/StripePayoutAnalyzer.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Stripe Payout Analyzer';
+const description =
+  'Free Stripe payout analyzer. Turn a payouts export into a clear view of what you were paid out and when, with totals by status — entirely in your browser, and exportable to any accounting software.';
+
+const faqs = [
+  { q: 'Is my payouts export uploaded?', a: 'No. The CSV is read in your browser. Open DevTools → Network — your file is never sent out.' },
+  { q: 'Which export does it use?', a: 'The Stripe payouts export (Balances → Payouts → Export). It reads the id, amount, currency, arrival and created dates, status and type by name, with flexible matching for Stripe’s slightly different report versions.' },
+  { q: 'What does "total paid out" include?', a: 'Every payout that was not failed, canceled or returned — the money that reached, or is on its way to, your bank. Failed and canceled payouts are shown separately in the status breakdown, not added to the total.' },
+  { q: 'Can it show the fees inside each payout?', a: 'Not from the payouts export alone — that file lists payout amounts, not the individual charges and fees that make them up. To break a payout down into its charges, refunds and fees, use the reconciliation report (balance change from activity), which the Stripe Reconciliation tool reads.' },
+  { q: 'Can I export it?', a: 'Yes — a clean CSV of the payouts, or the amounts as Generic CSV, QuickBooks CSV, Xero CSV, QIF or JSON for your accounting software.' },
+  { q: 'Does it handle any currency?', a: 'Yes, it reads and totals in the currency in the file. Amounts are read as Stripe writes them; a European-re-saved file with comma decimals is detected too.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/stripe-payout-analyzer`,
+    description,
+    category: 'FinanceApplication',
+    features: [
+      'Totals what Stripe paid out and when',
+      'Breakdown by payout status',
+      'Average payout and count',
+      'Exports to CSV, QuickBooks, Xero, QIF, JSON',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Stripe Payout Analyzer', url: '/stripe-payout-analyzer' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Stripe Payout Analyzer</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Stripe Payout Analyzer</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Drop a Stripe payouts export and see what you were actually paid out, when it arrived, and how it splits by status. Everything runs in your browser, and it exports to any accounting software.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your payouts export is read in your browser. Open DevTools → Network to verify — your file is never uploaded." />
+    <StripePayoutAnalyzer client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">What actually hit your bank</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Stripe pays you in batches, on a schedule, and the payouts screen is a long scroll. This tool totals what was paid out, shows the average and the count, and splits it by status so a failed or in-transit payout does not quietly distort the figure you think reached your account.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Built to Stripe’s export — verify against yours</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        It reads Stripe’s documented payouts columns with flexible matching, so a real export should slot straight in. Stripe’s report formats have shifted over time, so give the numbers a glance against your dashboard the first time. For the charges and fees that make up each payout, pair this with the reconciliation report.
+      </p>
+    </article>
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

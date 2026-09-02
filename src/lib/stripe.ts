@@ -19,6 +19,15 @@ function findCol(headers: string[], name: string): number {
   return headers.findIndex((h) => h.toLowerCase().trim() === n);
 }
 
+/** First header (by index) that matches any of the candidate names. */
+function findColAny(headers: string[], names: string[]): number {
+  for (const name of names) {
+    const i = findCol(headers, name);
+    if (i >= 0) return i;
+  }
+  return -1;
+}
+
 /** True when the grid looks like a Stripe payments (unified_payments) export. */
 export function isStripePayments(headers: string[]): boolean {
   const has = (n: string) => findCol(headers, n) >= 0;
@@ -102,6 +111,86 @@ export function cleanStripePayments(grid: Grid, decimal: '.' | ',' = '.'): Strip
   return {
     rows,
     totals: { gross: round2(gross), fees: round2(fees), refunds: round2(refunds), net: round2(net), count: rows.length, currency },
+  };
+}
+
+// --- Payouts export --------------------------------------------------------
+// Built to Stripe's documented Payouts export columns, with flexible header
+// matching so a real export slots in. VALIDATE against a real file — column
+// names have drifted across Stripe report versions.
+
+const PAYOUT_ARRIVAL = ['Arrival Date (UTC)', 'Arrival date (UTC)', 'Arrival Date', 'arrival_date'];
+const PAYOUT_CREATED = ['Created date (UTC)', 'Created (UTC)', 'Created', 'created_utc'];
+
+export function isStripePayouts(headers: string[]): boolean {
+  const has = (n: string) => findCol(headers, n) >= 0;
+  return has('id') && has('Amount') && findColAny(headers, PAYOUT_ARRIVAL) >= 0;
+}
+
+export type StripePayout = {
+  id: string;
+  arrival: string; // ISO
+  created: string; // ISO
+  amount: number;
+  currency: string;
+  status: string;
+  type: string;
+  description: string;
+};
+
+export type PayoutResult = {
+  rows: StripePayout[];
+  totals: { paidOut: number; count: number; average: number; currency: string; byStatus: { status: string; count: number; total: number }[] };
+};
+
+/** Reduce a Stripe Payouts export to rows + totals. */
+export function parseStripePayouts(grid: Grid, decimal: '.' | ',' = '.'): PayoutResult {
+  const h = grid.headers;
+  const cId = findCol(h, 'id');
+  const cArrival = findColAny(h, PAYOUT_ARRIVAL);
+  const cCreated = findColAny(h, PAYOUT_CREATED);
+  const cAmount = findCol(h, 'Amount');
+  const cCurrency = findCol(h, 'Currency');
+  const cStatus = findCol(h, 'Status');
+  const cType = findColAny(h, ['Type', 'Method', 'Source Type', 'Destination Type']);
+  const cDesc = findColAny(h, ['Description', 'Statement Descriptor']);
+
+  const rows: StripePayout[] = [];
+  let paidOut = 0;
+  let currency = '';
+  const byStatusMap = new Map<string, { count: number; total: number }>();
+
+  for (const r of grid.rows) {
+    const amount = money(r[cAmount], decimal);
+    const status = (cStatus >= 0 ? r[cStatus] ?? '' : '').trim() || 'unknown';
+    const cur = (cCurrency >= 0 ? r[cCurrency] ?? '' : '').trim().toUpperCase();
+    if (cur && !currency) currency = cur;
+    // "Paid out" = money that left Stripe or is on the way (not failed/canceled).
+    if (!/fail|cancel|return/i.test(status)) paidOut += amount;
+    const b = byStatusMap.get(status) ?? { count: 0, total: 0 };
+    b.count++; b.total += amount; byStatusMap.set(status, b);
+    rows.push({
+      id: cId >= 0 ? (r[cId] ?? '').trim() : '',
+      arrival: isoDate(cArrival >= 0 ? r[cArrival] : ''),
+      created: isoDate(cCreated >= 0 ? r[cCreated] : ''),
+      amount,
+      currency: cur,
+      status,
+      type: cType >= 0 ? (r[cType] ?? '').trim() : '',
+      description: cDesc >= 0 ? (r[cDesc] ?? '').trim() : '',
+    });
+  }
+
+  const count = rows.length;
+  return {
+    rows,
+    totals: {
+      paidOut: round2(paidOut),
+      count,
+      average: count ? round2(paidOut / count) : 0,
+      currency,
+      byStatus: [...byStatusMap.entries()].map(([status, v]) => ({ status, count: v.count, total: round2(v.total) })).sort((a, b) => b.total - a.total),
+    },
   };
 }
 

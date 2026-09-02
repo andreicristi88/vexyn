@@ -66,7 +66,7 @@ export const TOOLS: Tool[] = [
 
   // --- Business Finance ---
   { slug: 'stripe-csv-cleaner', zone: 'business', name: 'Stripe CSV Cleaner', description: 'Turn a raw Stripe export into a clean, readable sheet.', icon: '💳', available: true },
-  { slug: 'stripe-payout-analyzer', zone: 'business', name: 'Stripe Payout Analyzer', description: 'See exactly what each payout contains, net of fees.', icon: '💸', available: false },
+  { slug: 'stripe-payout-analyzer', zone: 'business', name: 'Stripe Payout Analyzer', description: 'See what Stripe paid out and when, with totals by status.', icon: '💸', available: true },
   { slug: 'stripe-reconciliation', zone: 'business', name: 'Stripe Reconciliation', description: 'Match charges, refunds and fees to payouts.', icon: '⚖️', available: false },
   { slug: 'invoice-reconciliation', zone: 'business', name: 'Invoice Reconciliation', description: 'Match invoices against payments received.', icon: '🧾', available: true },
   { slug: 'bank-reconciliation', zone: 'business', name: 'Bank Reconciliation', description: 'Reconcile your ledger against the bank statement.', icon: '🏦', available: true },

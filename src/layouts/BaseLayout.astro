@@ -104,12 +104,31 @@ const fullTitle =
     </main>
     <Footer />
 
-    <!-- First-party, cookieless pageview beacon → /api/hit (Analytics Engine). -->
+    <!--
+      First-party, cookieless pageview beacon → /api/hit (Analytics Engine).
+
+      OWN-VISIT EXCLUSION: open any page with `?vx-ignore=1` and this browser
+      stops sending hits for good; `?vx-ignore=0` undoes it. Without it the
+      owner's own clicks land as ordinary visitors and quietly distort which
+      pages look popular — on folositor.ro a page read as a two-day #1 purely
+      from self-visits, and the ranking led to a wrong call about what content
+      to keep building.
+
+      The flag lives in localStorage, so it is per-browser and per-device: set
+      it again on your phone, and in any other browser or private window.
+    -->
     <script is:inline>
-      try {
-        var b = JSON.stringify({ p: location.pathname, r: document.referrer, w: navigator.webdriver ? 1 : 0 });
-        navigator.sendBeacon('/api/hit', new Blob([b], { type: 'application/json' }));
-      } catch (e) {}
+      (function () {
+        try {
+          var q = location.search;
+          if (q.indexOf('vx-ignore=1') > -1) localStorage.setItem('vx-ignore', '1');
+          if (q.indexOf('vx-ignore=0') > -1) localStorage.removeItem('vx-ignore');
+          if (localStorage.getItem('vx-ignore') === '1') return;
+          var b = JSON.stringify({ p: location.pathname, r: document.referrer, w: navigator.webdriver ? 1 : 0 });
+          if (navigator.sendBeacon) navigator.sendBeacon('/api/hit', new Blob([b], { type: 'application/json' }));
+          else fetch('/api/hit', { method: 'POST', body: b, keepalive: true });
+        } catch (e) {}
+      })();
     </script>
   </body>
 </html>

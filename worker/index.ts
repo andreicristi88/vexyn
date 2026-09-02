@@ -93,6 +93,7 @@ function sourceOf(ref: string): string {
   if (host.includes('copilot')) return 'Copilot';
   if (host.includes('gemini.google') || host.includes('bard.google')) return 'Gemini';
   if (host.includes('grok') || host === 'x.ai') return 'Grok';
+  if (host.includes('mistral') || host.includes('lechat')) return 'Le Chat';
   if (host.includes('google')) return 'Google';
   if (host.includes('bing')) return 'Bing';
   if (host.includes('duckduckgo')) return 'DuckDuckGo';
@@ -110,6 +111,30 @@ function sourceOf(ref: string): string {
   if (host.includes('github')) return 'GitHub';
   return host || 'Direct / unknown';
 }
+
+/**
+ * Which search index actually served a visit.
+ *
+ * DuckDuckGo and Yahoo serve their web results from Bing's index, so they
+ * belong with Bing when you are judging which index sends traffic — read as
+ * separate rows they make Bing look smaller than it is. Kept separate on
+ * purpose: Brave runs its own index, and Ecosia mixes sources, so folding
+ * either into Bing would be a convenient assumption rather than a fact.
+ *
+ * Why it matters: Bing Webmaster Tools reports only bing.com clicks, so it
+ * systematically under-reports what the Bing index actually sends you.
+ */
+function searchIndexOf(source: string): string | null {
+  if (source === 'Bing' || source === 'DuckDuckGo' || source === 'Yahoo') return 'Bing index';
+  if (source === 'Google') return 'Google index';
+  if (source === 'Brave' || source === 'Ecosia') return 'Own or mixed index';
+  return null;
+}
+
+// Sources that are AI assistants rather than search engines. Reported both
+// per-assistant and as one total: AI citation is a growth channel worth seeing
+// whole, and robots.txt deliberately allows the crawlers that produce it.
+const AI_ASSISTANTS = new Set(['ChatGPT', 'Claude', 'Perplexity', 'Copilot', 'Gemini', 'Grok', 'Le Chat']);
 
 // POST /api/hit — one pageview. Always answers 204, never blocks the page.
 async function trackHit(request: Request, env: Env): Promise<Response> {
@@ -175,7 +200,7 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
   const [daily, pages, refs, countries, devices, totals] = await Promise.all([
     q(`SELECT toStartOfDay(timestamp) AS day, blob7 AS cls, count(DISTINCT blob5) AS visitors, sum(_sample_interval) AS pv FROM ${DATASET} WHERE ${since} GROUP BY day, cls ORDER BY day DESC`),
     q(`SELECT blob1 AS path, sum(_sample_interval) AS pv, count(DISTINCT blob5) AS visitors FROM ${DATASET} WHERE ${human} GROUP BY path ORDER BY pv DESC LIMIT 40`),
-    q(`SELECT blob2 AS ref, sum(_sample_interval) AS pv FROM ${DATASET} WHERE ${human} GROUP BY ref`),
+    q(`SELECT blob2 AS ref, sum(_sample_interval) AS pv, count(DISTINCT blob5) AS visitors FROM ${DATASET} WHERE ${human} GROUP BY ref`),
     q(`SELECT blob3 AS country, sum(_sample_interval) AS pv FROM ${DATASET} WHERE ${human} GROUP BY country ORDER BY pv DESC LIMIT 25`),
     q(`SELECT blob6 AS device, sum(_sample_interval) AS pv FROM ${DATASET} WHERE ${human} GROUP BY device ORDER BY pv DESC LIMIT 15`),
     q(`SELECT count(DISTINCT blob5) AS visitors, sum(_sample_interval) AS pv FROM ${DATASET} WHERE ${human}`),
@@ -191,13 +216,37 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
     if (r.cls === 'bot') byDay[d].bot += v;
     else { byDay[d].hum += v; byDay[d].pv += Number(r.pv || 0); }
   }
-  // Referrers → readable sources.
-  const bySource: Record<string, number> = {};
+  // Referrers → readable sources. Visitor counts are summed per source, so a
+  // person who arrived from two different referrers counts once in each — fine
+  // for comparing channels, not a distinct-people total.
+  const bySource: Record<string, { pv: number; viz: number }> = {};
   for (const r of refs) {
     const s = sourceOf(r.ref || '');
-    bySource[s] = (bySource[s] || 0) + Number(r.pv || 0);
+    (bySource[s] ||= { pv: 0, viz: 0 });
+    bySource[s].pv += Number(r.pv || 0);
+    bySource[s].viz += Number(r.visitors || 0);
   }
-  const sources = Object.entries(bySource).sort((a, b) => b[1] - a[1]).slice(0, 20);
+  const sources = Object.entries(bySource)
+    .sort((a, b) => b[1].pv - a[1].pv)
+    .slice(0, 20)
+    .map(([s, m]) => [s, m.pv] as [string, number]);
+
+  // Search traffic regrouped by the index behind each source.
+  const byIndex: Record<string, { pv: number; viz: number }> = {};
+  for (const [s, m] of Object.entries(bySource)) {
+    const idx = searchIndexOf(s);
+    if (!idx) continue;
+    (byIndex[idx] ||= { pv: 0, viz: 0 });
+    byIndex[idx].pv += m.pv;
+    byIndex[idx].viz += m.viz;
+  }
+  const indexRows = Object.entries(byIndex).sort((a, b) => b[1].pv - a[1].pv);
+
+  // AI assistants: per assistant, plus the channel as a whole.
+  const aiRows = Object.entries(bySource)
+    .filter(([s]) => AI_ASSISTANTS.has(s))
+    .sort((a, b) => b[1].pv - a[1].pv);
+  const aiTotal = aiRows.reduce((t, [, m]) => ({ pv: t.pv + m.pv, viz: t.viz + m.viz }), { pv: 0, viz: 0 });
 
   const totVisitors = Number(totals[0]?.visitors || 0);
   const totPv = Number(totals[0]?.pv || 0);
@@ -209,6 +258,29 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
       .map(([label, n]) => `<tr><td class="l"><span class="bar" style="width:${Math.max(2, (n / top) * 100)}%"></span><span class="lbl">${esc(label)}</span></td><td class="n">${n.toLocaleString()}</td></tr>`)
       .join('')}</table></div>`;
   };
+
+  // Visitors + views side by side, with an optional total row and a footnote
+  // explaining how to read the panel.
+  const table2 = (
+    title: string,
+    note: string,
+    rows: [string, { pv: number; viz: number }][],
+    total?: { pv: number; viz: number },
+  ) =>
+    `<div class="card"><h2>${esc(title)}</h2>${
+      rows.length === 0
+        ? '<p class="note">Nothing in this window.</p>'
+        : `<table><tr><td class="l"><span class="lbl" style="color:var(--mute)">Source</span></td><td class="n">Visitors</td><td class="n">Views</td></tr>${rows
+            .map(
+              ([l, m]) =>
+                `<tr><td class="l"><span class="lbl">${esc(l)}</span></td><td class="n">${m.viz.toLocaleString()}</td><td class="n">${m.pv.toLocaleString()}</td></tr>`,
+            )
+            .join('')}${
+            total
+              ? `<tr class="tot"><td class="l"><span class="lbl">Total</span></td><td class="n hum">${total.viz.toLocaleString()}</td><td class="n hum">${total.pv.toLocaleString()}</td></tr>`
+              : ''
+          }</table>`
+    }<p class="note">${esc(note)}</p></div>`;
 
   const dayLink = (d: string) => `?key=${encodeURIComponent(key)}&days=${days}${d === zi ? '' : `&zi=${d}`}`;
   const dayRows = Object.entries(byDay)
@@ -243,6 +315,8 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
   .daily td{border-bottom:1px solid var(--border)}
   .daily a{color:var(--text);text-decoration:none}.daily a:hover{color:var(--brand)}
   .daily tr.sel td{background:color-mix(in srgb,var(--brand) 12%,transparent)}
+  .note{font-size:12px;color:var(--mute);margin:8px 0 0;white-space:normal;line-height:1.45}
+  .tot td{border-top:1px solid var(--border);font-weight:600}
   @media(max-width:640px){.grid{grid-template-columns:1fr}}
   </style></head><body>
   <div class="top"><h1>Vexyn analytics <span style="color:var(--mute);font-weight:400">· ${zi ? esc(zi) : days + ' days'}</span></h1><div class="nav">${zi ? `<a href="?key=${encodeURIComponent(key)}&days=${days}">← all days</a>` : ''}${daysNav}</div></div>
@@ -256,6 +330,17 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
     <div class="card wide daily"><h2>By day — humans / bots / pageviews</h2><table><tr><td>Day</td><td class="n">Humans</td><td class="n">Bots</td><td class="n">Views</td></tr>${dayRows || '<tr><td colspan=4>No data yet.</td></tr>'}</table></div>
     ${list('Top pages', pages.map((r) => [r.path || '/', Number(r.pv || 0)] as [string, number]))}
     ${list('Sources', sources)}
+    ${table2(
+      'Search traffic by index',
+      'DuckDuckGo and Yahoo serve Bing’s index, so they count toward it; read as separate rows they make Bing look smaller than it is. Brave runs its own index and Ecosia mixes sources, so both stay separate. Bing Webmaster Tools reports only bing.com clicks — less than the Bing index actually sends you.',
+      indexRows,
+    )}
+    ${table2(
+      'AI assistant traffic',
+      'Visits from a link inside a conversation with an AI assistant. Worth watching as one channel: robots.txt deliberately allows the AI search crawlers that produce these citations, while blocking the training-only ones.',
+      aiRows,
+      aiTotal,
+    )}
     ${list('Countries', countries.map((r) => [r.country || 'XX', Number(r.pv || 0)] as [string, number]))}
     ${list('Devices', devices.map((r) => [r.device || 'Other', Number(r.pv || 0)] as [string, number]))}
   </div>

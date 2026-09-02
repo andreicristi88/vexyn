@@ -42,8 +42,11 @@ const fullTitle =
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="generator" content={Astro.generator} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
-    <link rel="apple-touch-icon" href="/favicon.svg?v=2" />
+    <!-- Tab icon: the bare shield, same artwork as the on-page logo. Apple's
+         home-screen icon must be a PNG with its own background — iOS composites
+         a transparent icon onto black — so it uses the dark-backed logo. -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3" />
+    <link rel="apple-touch-icon" href="/logo-256.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="canonical" href={canonical} />
 
@@ -78,10 +81,6 @@ const fullTitle =
       href="https://cdn.jsdelivr.net/npm/@fontsource/geist-sans@5/files/geist-sans-latin-600-normal.woff2" />
     <link rel="preload" as="font" type="font/woff2" crossorigin
       href="https://cdn.jsdelivr.net/npm/@fontsource/geist-sans@5/files/geist-sans-latin-700-normal.woff2" />
-
-    <!-- PWA manifest + Apple touch icon -->
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="apple-touch-icon" href="/favicon.svg?v=2" />
 
     <script is:inline>
       const stored = localStorage.getItem('theme');

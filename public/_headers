@@ -6,6 +6,11 @@
   Permissions-Policy: interest-cohort=()
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   Cache-Control: public, max-age=0, must-revalidate
+  # Content-Security-Policy se injecteaza AICI la build de scripts/generate-csp.mjs,
+  # care hash-uieste fiecare script inline din dist/. Nu-l scrie de mana: hash-urile
+  # se schimba la orice editare a scripturilor inline. Linia de mai jos e un
+  # comentariu, deci un build fara script livreaza fara CSP, nu cu unul stricat.
+  #CSP#
 
 # Assets cu hash din build — cache infinit (Astro pune hash in filename)
 /_astro/*

@@ -46,7 +46,11 @@
       );
       const data = [headerRow, ...dataRows];
 
-      const blob = (await writeXlsxFile(data as any, {})) as Blob;
+      // write-excel-file v4's browser build returns { toBlob(), toFile() } —
+      // NOT a Blob and not a promise. Awaiting the call yields that object,
+      // which then blows up in createObjectURL, so the blob must be asked for
+      // explicitly. The `as any` casts here previously hid exactly that.
+      const blob: Blob = await (writeXlsxFile(data as any, {}) as any).toBlob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

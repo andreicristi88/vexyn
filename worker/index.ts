@@ -162,8 +162,15 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
     return j.data || [];
   }
 
+  // Optional single-day drill-down: ?zi=YYYY-MM-DD restricts the page/source/
+  // country/device panels to that day. The daily table stays on the full window
+  // so you can click between days.
+  const zi = (url.searchParams.get('zi') || '').match(/^\d{4}-\d{2}-\d{2}$/)?.[0] || '';
   const since = `timestamp >= toStartOfDay(now()) - INTERVAL '${days - 1}' DAY`;
-  const human = `${since} AND blob7 != 'bot'`;
+  const windowClause = zi
+    ? `timestamp >= toDateTime('${zi} 00:00:00') AND timestamp < toDateTime('${zi} 00:00:00') + INTERVAL '1' DAY`
+    : since;
+  const human = `${windowClause} AND blob7 != 'bot'`;
 
   const [daily, pages, refs, countries, devices, totals] = await Promise.all([
     q(`SELECT toStartOfDay(timestamp) AS day, blob7 AS cls, count(DISTINCT blob5) AS visitors, sum(_sample_interval) AS pv FROM ${DATASET} WHERE ${since} GROUP BY day, cls ORDER BY day DESC`),
@@ -201,9 +208,10 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
       .join('')}</table></div>`;
   };
 
+  const dayLink = (d: string) => `?key=${encodeURIComponent(key)}&days=${days}${d === zi ? '' : `&zi=${d}`}`;
   const dayRows = Object.entries(byDay)
     .sort((a, b) => b[0].localeCompare(a[0]))
-    .map(([d, v]) => `<tr><td>${d}</td><td class="n hum">${v.hum.toLocaleString()}</td><td class="n bot">${v.bot.toLocaleString()}</td><td class="n">${v.pv.toLocaleString()}</td></tr>`)
+    .map(([d, v]) => `<tr class="${d === zi ? 'sel' : ''}"><td><a href="${dayLink(d)}">${d}</a></td><td class="n hum">${v.hum.toLocaleString()}</td><td class="n bot">${v.bot.toLocaleString()}</td><td class="n">${v.pv.toLocaleString()}</td></tr>`)
     .join('');
 
   const daysNav = [7, 14, 30, 90]
@@ -231,9 +239,12 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
   td.n{text-align:right;font-variant-numeric:tabular-nums;color:var(--mute);padding-left:12px;white-space:nowrap}
   td.n.hum{color:var(--brand)}td.n.bot{color:var(--danger)}
   .daily td{border-bottom:1px solid var(--border)}
+  .daily a{color:var(--text);text-decoration:none}.daily a:hover{color:var(--brand)}
+  .daily tr.sel td{background:color-mix(in srgb,var(--brand) 12%,transparent)}
   @media(max-width:640px){.grid{grid-template-columns:1fr}}
   </style></head><body>
-  <div class="top"><h1>Vexyn analytics <span style="color:var(--mute);font-weight:400">· ${days} days</span></h1><div class="nav">${daysNav}</div></div>
+  <div class="top"><h1>Vexyn analytics <span style="color:var(--mute);font-weight:400">· ${zi ? esc(zi) : days + ' days'}</span></h1><div class="nav">${zi ? `<a href="?key=${encodeURIComponent(key)}&days=${days}">← all days</a>` : ''}${daysNav}</div></div>
+  ${zi ? `<p style="color:var(--mute);margin:-6px 0 14px">Pages, sources, countries and devices below show <b style="color:var(--text)">${esc(zi)}</b> only. Click another day in the table to switch, or “← all days”.</p>` : ''}
   <div class="kpis">
     <div class="kpi"><div class="v">${totVisitors.toLocaleString()}</div><div class="k">Visitors (humans)</div></div>
     <div class="kpi"><div class="v">${totPv.toLocaleString()}</div><div class="k">Pageviews</div></div>

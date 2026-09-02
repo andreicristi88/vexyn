@@ -103,5 +103,13 @@ const fullTitle =
       <slot />
     </main>
     <Footer />
+
+    <!-- First-party, cookieless pageview beacon → /api/hit (Analytics Engine). -->
+    <script is:inline>
+      try {
+        var b = JSON.stringify({ p: location.pathname, r: document.referrer, w: navigator.webdriver ? 1 : 0 });
+        navigator.sendBeacon('/api/hit', new Blob([b], { type: 'application/json' }));
+      } catch (e) {}
+    </script>
   </body>
 </html>

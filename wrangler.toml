@@ -1,14 +1,28 @@
 name = "vexyn"
+main = "worker/index.ts"
 compatibility_date = "2024-11-01"
 
-# Vexyn is a fully static Astro site — no SSR, no Functions, no Workers
-# runtime code. Workers Static Assets serves the built /dist directory
-# directly.
-#
-# There is deliberately no server-side generation endpoint. Every image is
-# produced inside the visitor's browser, which is what lets the privacy
-# claim be absolute rather than conditional. If a device cannot run the
-# model, it is told so plainly — we do not fall back to a server.
+# Vexyn is a static Astro site served from /dist by Workers Static Assets
+# (free, no Worker invocation). The Worker in worker/index.ts runs ONLY for
+# /api/* (run_worker_first below), so pageviews stay free and only the two
+# analytics endpoints invoke it:
+#   POST /api/hit           — record a pageview into Analytics Engine
+#   GET  /api/stats?key=... — key-protected first-party dashboard (cookieless)
 [assets]
 directory = "./dist"
+binding = "ASSETS"
 not_found_handling = "404-page"
+run_worker_first = ["/api/*"]
+
+# First-party, cookieless analytics (free tier: 100k writes/day).
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "vexyn_web"
+
+[vars]
+# Same Cloudflare account as folositor — verify this is Vexyn's account id.
+CF_ACCOUNT_ID = "c3702785f3ce40a8eebfa35b9f110d6d"
+
+# Secrets to set once (wrangler secret put, or the Cloudflare dashboard):
+#   STATS_API_TOKEN — a Cloudflare API token with Account Analytics: Read
+#   STATS_KEY       — the password for /api/stats?key=...

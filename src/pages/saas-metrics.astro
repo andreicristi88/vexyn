@@ -8,11 +8,11 @@ import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../li
 
 const title = 'SaaS Metrics';
 const description =
-  'Free SaaS metrics calculator. Get MRR, ARR, ARPU and churn from a Stripe subscriptions export — normalized across monthly and yearly plans — entirely in your browser. Nothing is uploaded.';
+  'Free SaaS metrics calculator. Get MRR, ARR, ARPU and churn from any subscriptions export — Stripe, Chargebee, Paddle or a spreadsheet — normalized across monthly and yearly plans, in your browser. Nothing is uploaded.';
 
 const faqs = [
   { q: 'Is my subscriptions export uploaded?', a: 'No. The CSV is read and totalled in your browser. Open DevTools → Network — your file is never sent out.' },
-  { q: 'Which export does it use?', a: 'The Stripe subscriptions export (Billing → Subscriptions → Export). It reads the amount, billing interval, quantity, status, currency and plan/product columns.' },
+  { q: 'Which export does it use?', a: 'Any subscriptions CSV — from Stripe, Chargebee, Paddle, or a plain spreadsheet. You map the columns (amount, billing interval, quantity, status, plan), so it is not tied to one provider. Common column names are detected automatically; adjust the mapping if a column is wrong.' },
   { q: 'How is MRR calculated?', a: 'MRR is the sum of every paying subscription normalized to a monthly figure: monthly plans as-is, yearly plans divided by 12, weekly and daily scaled accordingly, each times its quantity. Trials are counted separately and excluded, because they are not yet paying.' },
   { q: 'What does "lost MRR" mean here?', a: 'It is the combined monthly value of the subscriptions in your file that are canceled or ended. It is a plain snapshot of what those cancellations were worth — not a cohort churn rate, which needs a defined period and a starting base the export alone does not give.' },
   { q: 'What is ARPU?', a: 'Average revenue per user: MRR divided by the number of paying subscriptions. A quick read on how much each active subscription is worth per month.' },
@@ -26,7 +26,8 @@ const schema = combineSchemas(
     description,
     category: 'FinanceApplication',
     features: [
-      'MRR, ARR, ARPU from a Stripe subscriptions export',
+      'MRR, ARR, ARPU from any subscriptions export',
+      'Works with Stripe, Chargebee, Paddle or a spreadsheet',
       'Normalizes monthly, yearly, weekly and daily plans',
       'Active, trialing and canceled counts',
       'MRR broken down by plan, with CSV export',
@@ -51,7 +52,7 @@ const schema = combineSchemas(
       </div>
       <h1 class="text-4xl font-bold tracking-tight mb-3">SaaS Metrics</h1>
       <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
-        Drop a Stripe subscriptions export and get MRR, ARR, ARPU and your cancellations — with monthly and yearly plans normalized correctly. Everything runs in your browser; nothing is uploaded.
+        Drop a subscriptions export — from Stripe, Chargebee, Paddle or a spreadsheet — and get MRR, ARR, ARPU and your cancellations, with monthly and yearly plans normalized correctly. Everything runs in your browser; nothing is uploaded.
       </p>
     </header>
 

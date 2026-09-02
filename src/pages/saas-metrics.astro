@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Faq from '../components/ui/Faq.astro';
+import RelatedGuides from '../components/ui/RelatedGuides.astro';
 import SaasMetrics from '../components/tools/SaasMetrics.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -70,6 +71,8 @@ const schema = combineSchemas(
         The revenue figures are exact arithmetic on your export. Churn is shown as the count and lost MRR of canceled subscriptions in the file — a useful snapshot, deliberately not dressed up as a cohort churn rate, which needs a time window and a starting base a single export does not contain. Mixed currencies are not summed blindly; convert to one first.
       </p>
     </article>
+
+    <RelatedGuides />
 
     <Faq faqs={faqs} />
   </div>

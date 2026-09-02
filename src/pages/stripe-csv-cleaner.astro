@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Faq from '../components/ui/Faq.astro';
+import RelatedGuides from '../components/ui/RelatedGuides.astro';
 import StripeCsvCleaner from '../components/tools/StripeCsvCleaner.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -69,6 +70,8 @@ const schema = combineSchemas(
         The export lists your gross amount and the fee separately and leaves the arithmetic to you. The cleaner adds the column you were going to work out anyway — net, after the fee and any refund — and totals gross, fees, refunds and net across the file, so you know exactly what landed in your balance.
       </p>
     </article>
+
+    <RelatedGuides />
 
     <Faq faqs={faqs} />
   </div>

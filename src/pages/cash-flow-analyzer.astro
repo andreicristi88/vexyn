@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Faq from '../components/ui/Faq.astro';
+import RelatedGuides from '../components/ui/RelatedGuides.astro';
 import CashFlowAnalyzer from '../components/tools/CashFlowAnalyzer.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -69,6 +70,8 @@ const schema = combineSchemas(
         Every bank names its columns differently and formats dates and numbers differently. Rather than guess — and risk reading <code class="text-[color:var(--color-brand-400)]">01/02</code> as the wrong month, or a comma as a thousands separator — you pick the date, amount and format explicitly. It is one extra step that makes the totals trustworthy.
       </p>
     </article>
+
+    <RelatedGuides />
 
     <Faq faqs={faqs} />
   </div>

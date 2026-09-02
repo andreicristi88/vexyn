@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Faq from '../components/ui/Faq.astro';
+import RelatedGuides from '../components/ui/RelatedGuides.astro';
 import StripeReconciliation from '../components/tools/StripeReconciliation.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -69,6 +70,8 @@ const schema = combineSchemas(
         The sums are exact — the only interpretation is Stripe’s own reporting category and payout id, which the report provides. It is built to Stripe’s documented itemized format with flexible column matching, so verify the total against your dashboard’s balance summary the first time. Nothing leaves your browser while you reconcile.
       </p>
     </article>
+
+    <RelatedGuides />
 
     <Faq faqs={faqs} />
   </div>

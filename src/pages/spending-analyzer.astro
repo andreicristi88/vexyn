@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Faq from '../components/ui/Faq.astro';
+import RelatedGuides from '../components/ui/RelatedGuides.astro';
 import SpendingAnalyzer from '../components/tools/SpendingAnalyzer.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -69,6 +70,8 @@ const schema = combineSchemas(
         Categorization here is a plain keyword rule set, not a black box or a claim of accuracy. It matches common merchant names and terms and leaves anything unrecognized in “Uncategorized” rather than guessing. It is meant to reveal the shape of your spending fast — check the big categories against your statement before drawing conclusions.
       </p>
     </article>
+
+    <RelatedGuides />
 
     <Faq faqs={faqs} />
   </div>

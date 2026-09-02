@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Faq from '../components/ui/Faq.astro';
+import RelatedGuides from '../components/ui/RelatedGuides.astro';
 import NetWorthAnalyzer from '../components/tools/NetWorthAnalyzer.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -69,6 +70,8 @@ const schema = combineSchemas(
         A picture of everything you own is about as sensitive as data gets, which is exactly why this never leaves your browser. Entries are kept in your device’s local storage so they are there when you come back, and nowhere else. Come back monthly and note the figure to watch it move.
       </p>
     </article>
+
+    <RelatedGuides />
 
     <Faq faqs={faqs} />
   </div>

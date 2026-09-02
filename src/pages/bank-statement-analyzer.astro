@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Faq from '../components/ui/Faq.astro';
+import RelatedGuides from '../components/ui/RelatedGuides.astro';
 import BankStatementAnalyzer from '../components/tools/BankStatementAnalyzer.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -69,6 +70,8 @@ const schema = combineSchemas(
         The money figures are plain sums of your rows — nothing to get subtly wrong. The recurring and duplicate panels are heuristics: useful signals, clearly labelled as suggestions to check, never presented as certainties. As always, the file is parsed with the date and number formats you choose, never guessed.
       </p>
     </article>
+
+    <RelatedGuides />
 
     <Faq faqs={faqs} />
   </div>

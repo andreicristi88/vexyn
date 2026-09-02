@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Faq from '../components/ui/Faq.astro';
+import RelatedGuides from '../components/ui/RelatedGuides.astro';
 import BankCsvFormatter from '../components/tools/BankCsvFormatter.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -57,6 +58,8 @@ const schema = combineSchemas(
         No two banks export the same way. One uses a single signed amount, another splits debit and credit into two columns; one writes dates day-first, another month-first; column names and order vary endlessly. This tool lets you map that mess to one standard layout, so your own spreadsheets, importers and the other tools here always receive the same tidy columns.
       </p>
     </article>
+
+    <RelatedGuides />
 
     <Faq faqs={faqs} />
   </div>

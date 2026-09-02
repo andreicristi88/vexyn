@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Faq from '../components/ui/Faq.astro';
+import RelatedGuides from '../components/ui/RelatedGuides.astro';
 import TransactionMatcher from '../components/tools/TransactionMatcher.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -69,6 +70,8 @@ const schema = combineSchemas(
         The result is not a dead end. Export any of the three sets to Generic CSV, QuickBooks CSV, Xero CSV, QIF or JSON, so the discrepancies land straight in your accounting software instead of another manual re-entry. As always, the files are parsed with the date and number formats you choose, and nothing leaves your browser.
       </p>
     </article>
+
+    <RelatedGuides />
 
     <Faq faqs={faqs} />
   </div>

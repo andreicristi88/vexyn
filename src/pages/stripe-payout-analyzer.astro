@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Faq from '../components/ui/Faq.astro';
+import RelatedGuides from '../components/ui/RelatedGuides.astro';
 import StripePayoutAnalyzer from '../components/tools/StripePayoutAnalyzer.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -69,6 +70,8 @@ const schema = combineSchemas(
         It reads Stripe’s documented payouts columns with flexible matching, so a real export should slot straight in. Stripe’s report formats have shifted over time, so give the numbers a glance against your dashboard the first time. For the charges and fees that make up each payout, pair this with the reconciliation report.
       </p>
     </article>
+
+    <RelatedGuides />
 
     <Faq faqs={faqs} />
   </div>

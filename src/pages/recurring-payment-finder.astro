@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Faq from '../components/ui/Faq.astro';
+import RelatedGuides from '../components/ui/RelatedGuides.astro';
 import RecurringPaymentFinder from '../components/tools/RecurringPaymentFinder.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -69,6 +70,8 @@ const schema = combineSchemas(
         Detection needs a stable amount and a consistent gap, and it labels two-payment matches as unconfirmed. It is a signal to review, not a certainty — confirm against your statement before acting on it. Looking only for subscriptions and bills? The <a class="text-[color:var(--color-brand-400)]" href="/subscription-finder">Subscription Finder</a> is the focused version.
       </p>
     </article>
+
+    <RelatedGuides />
 
     <Faq faqs={faqs} />
   </div>

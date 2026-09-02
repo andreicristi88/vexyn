@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Faq from '../components/ui/Faq.astro';
+import RelatedGuides from '../components/ui/RelatedGuides.astro';
 import BankReconciliation from '../components/tools/BankReconciliation.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -69,6 +70,8 @@ const schema = combineSchemas(
         The unrecorded items on the bank — fees, interest, a forgotten direct debit — usually need entering into your books. Export them as Generic CSV, QuickBooks CSV, Xero CSV, QIF or JSON and import them, instead of retyping. Your ledger and statement never leave the browser while you do it.
       </p>
     </article>
+
+    <RelatedGuides />
 
     <Faq faqs={faqs} />
   </div>

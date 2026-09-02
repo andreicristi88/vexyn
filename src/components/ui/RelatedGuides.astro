@@ -1,0 +1,40 @@
+---
+/**
+ * Surfaces the guides that funnel to this tool, by inverting each guide's
+ * `related` frontmatter (guides list the tool paths they point at). Drop it on
+ * a tool page with no props — it matches on the current pathname — so the
+ * tool ↔ guide link is bidirectional: guides link down to the tool, the tool
+ * links back up to the guides.
+ */
+import { getCollection } from 'astro:content';
+import RelatedReading from './RelatedReading.astro';
+
+interface Props {
+  /** Tool path to match against each guide's `related`. Defaults to this page. */
+  path?: string;
+  heading?: string;
+}
+
+const { path, heading = 'Related guides' } = Astro.props;
+// With build.format: 'file', Astro.url.pathname is "/csv-to-json.html". Strip
+// the extension (and any trailing slash / index) so it matches the clean tool
+// paths guides store in `related` (e.g. "/csv-to-json").
+const toolPath =
+  (path ?? Astro.url.pathname)
+    .replace(/\.html$/, '')
+    .replace(/\/index$/, '')
+    .replace(/\/$/, '') || '/';
+
+const guides = (await getCollection('blog'))
+  .filter((p) => (p.data.related ?? []).some((r) => r.replace(/\/$/, '') === toolPath))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .slice(0, 4);
+
+const articles = guides.map((p) => ({
+  href: `/blog/${p.id.replace(/\.md$/, '')}`,
+  title: p.data.title,
+  description: p.data.description,
+}));
+---
+
+{articles.length > 0 && <RelatedReading articles={articles} heading={heading} />}

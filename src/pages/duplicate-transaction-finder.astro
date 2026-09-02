@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Faq from '../components/ui/Faq.astro';
+import RelatedGuides from '../components/ui/RelatedGuides.astro';
 import DuplicateTransactionFinder from '../components/tools/DuplicateTransactionFinder.svelte';
 import PrivacyNote from '../components/ui/PrivacyNote.astro';
 import { SITE } from '../lib/constants';
@@ -69,6 +70,8 @@ const schema = combineSchemas(
         Some matches are real double charges; some are just two identical, legitimate purchases. The data alone cannot tell them apart, so nothing is ever removed — the tool shows you the candidates and you decide. Confirm against your statement before disputing anything with your bank.
       </p>
     </article>
+
+    <RelatedGuides />
 
     <Faq faqs={faqs} />
   </div>

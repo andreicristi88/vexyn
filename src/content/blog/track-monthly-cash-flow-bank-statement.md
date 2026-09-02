@@ -1,5 +1,5 @@
 ---
-title: How to track your monthly cash flow from a bank statement
+title: "How to track monthly cash flow from a statement"
 description: Cash flow is the gap between what comes in and what goes out each month. Here is how to see it clearly from a bank CSV export — month by month, with a chart — in your browser, without uploading your statement.
 pubDate: 2026-09-01
 category: 'Understanding your money'

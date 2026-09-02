@@ -1,8 +1,8 @@
 name: IndexNow ping
 
 # Notifies IndexNow (Bing, Yandex, Seznam, Naver, Yep) about URLs from
-# the live sitemap whenever main is updated. Waits for Cloudflare Pages
-# to publish first.
+# the live sitemap whenever main is updated. Waits for the Cloudflare
+# Workers deploy to publish first.
 
 on:
   push:
@@ -29,9 +29,9 @@ jobs:
       KEY: 228c5c4dd3c664d193b912fe81a7204f
       SITEMAP_URL: https://vexyn.app/sitemap-0.xml
     steps:
-      - name: Wait for Cloudflare Pages deploy to settle
+      - name: Wait for Cloudflare Workers deploy to settle
         run: |
-          echo "Waiting 120s for Cloudflare Pages build + propagation..."
+          echo "Waiting 120s for Cloudflare Workers build + propagation..."
           sleep 120
 
       - name: Verify key file is publicly reachable

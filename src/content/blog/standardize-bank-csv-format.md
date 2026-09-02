@@ -1,5 +1,5 @@
 ---
-title: How to standardize any bank CSV into one consistent layout
+title: "How to standardize any bank CSV into one layout"
 description: Every bank exports transactions in its own column layout, which makes templates and imports fragile. Here is how to map any bank CSV to one standard shape — a clean date, a single signed amount, tidy headers — in your browser, without uploading it.
 pubDate: 2026-09-02
 category: 'Cleaning & organizing'

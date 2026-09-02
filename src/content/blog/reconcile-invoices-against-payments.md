@@ -1,5 +1,5 @@
 ---
-title: How to reconcile invoices against payments received
+title: "How to reconcile invoices against payments"
 description: Which invoices are still unpaid, and which incoming payments don't match an invoice? Here is how to reconcile a list of invoices issued against payments received — in your browser, without uploading either file.
 pubDate: 2026-09-02
 category: 'Business & Stripe'

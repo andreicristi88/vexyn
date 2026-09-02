@@ -93,9 +93,10 @@ Bad: `🚀 The BEST PDF merger ever! Try it now and merge PDFs like a pro.`
 
 ## 3. Title formula
 
-- **Tool pages**: `<Tool Name>` plain, e.g. `PDF Merger`, `Audio Transcriber`.
-  `BaseLayout` appends ` — Vexyn`.
-- **Blog posts**: `How to <verb> — 2026 step-by-step guide` (see `blog-template.md`)
+- **Tool pages**: `<Tool Name>` plain, e.g. `CSV Cleaner`, `Stripe Reconciliation`.
+  `BaseLayout` appends ` — Vexyn` (plus `· Free, no upload` for short titles).
+- **Blog posts**: `How to <verb>` — front-loaded keyword, no year suffix. Keep the
+  base title ≤ ~52 chars so the rendered `<title>` stays ≤ ~60 (see `blog-template.md`).
 - **Alternatives**: `A <Competitor> alternative that <differentiator>`
 - **Static pages**: Plain descriptor — `About`, `Privacy`, `Blog`
 
@@ -149,7 +150,7 @@ If no blog guide exists yet for this tool, add it to the
 Use `related` in frontmatter to list the tool routes the article supports:
 
 ```yaml
-related: ['/audio-transcriber', '/blog/another-guide']
+related: ['/csv-cleaner', '/bank-csv-formatter']
 ```
 
 The blog post layout (`blog/[...slug].astro`) auto-renders these as a
@@ -164,9 +165,9 @@ Every page needs its own Open Graph image. Three patterns:
 ### Tool pages (static, designed manually)
 - Place a 1200×630 PNG in `/public/og/<slug>.png`
 - Reference via `image="/og/<slug>.png"` on the `BaseLayout`
-- Visual style: dark navy bg, tool icon top-left, tool name large,
-  privacy promise as subtitle — match the existing tool OGs (see
-  `/public/og/audio-transcriber.png` as reference)
+- Visual style: dark bg, tool icon top-left, tool name large, privacy
+  promise as subtitle — match `/public/og-default.png`, which
+  `scripts/generate-og.mjs` renders, as the reference
 
 ### Blog posts (auto-generated at build time)
 - Nothing to do — `src/pages/og/blog/[slug].png.ts` generates one per
@@ -304,23 +305,26 @@ Audit — both must return only this checklist plus the constants.ts note:
 
 ## 12. Don't name competitors in general prose
 
-Competitor names (ILovePDF, SmallPDF, PDF24, TinyPNG, Remove.bg,
-Otter.ai, Descript, Convertio, CloudConvert, Sejda, ClipDrop, Adobe
-Acrobat online, etc.) belong **only** on `/alternatives/<slug>` pages
-and on the `/pdf-to-word` / `/edit-pdf` / `/pdf-to-excel` / `/pdf-to-
-powerpoint` / `/sign-pdf` honest-content pages where we explicitly
-recommend a specific desktop tool (LibreOffice, Adobe Acrobat Pro).
+Commercial competitor names (QuickBooks, Xero, FreshBooks, Baremetrics,
+ChartMogul, ProfitWell, Bank2QBO, MoneyThumb, etc.) belong **only** on a
+dedicated `/alternatives/<slug>` page, where the comparison is the point
+and a "verify before relying" disclaimer sits under the table.
+
+There are **no `/alternatives/*` pages today.** Until one exists, treat
+this as: do not name commercial competitors anywhere. Naming the
+*software you import into* is different and fine — "a QBO file imports
+into QuickBooks" is a format fact, not a commercial comparison.
 
 Anywhere else — tool pages, hub pages, blog posts, homepage — use
 **generic phrasing**:
 
 | Don't write | Write instead |
 |---|---|
-| "ILovePDF, SmallPDF, PDF24 work by uploading…" | "Most popular online PDF tools work by uploading…" |
-| "Otter.ai, Rev, Descript, Trint upload your audio…" | "Most paid commercial transcription services upload your audio…" |
-| "Remove.bg, ClipDrop, Photoroom upload images…" | "Most online background removers upload images…" |
-| "TinyPNG limits free users to 20 images/month" | "Most online compressors have monthly caps on the free tier" |
-| "compared to Otter.ai or Rev" (FAQ heading) | "compared to paid commercial services" |
+| "QuickBooks, Xero and FreshBooks charge…" | "Most accounting suites charge a monthly subscription…" |
+| "Bank2QBO converts CSVs for $40" | "Most desktop CSV-to-QBO converters are paid, one-off licences" |
+| "Baremetrics and ChartMogul upload your Stripe data…" | "Most SaaS analytics services connect to and store your Stripe data…" |
+| "Stripe charges 2.9% + 30¢" (as a fixed fact) | "Stripe deducts a per-transaction processing fee" |
+| "compared to Baremetrics or ChartMogul" (FAQ heading) | "compared to paid analytics services" |
 
 **Why:** competitor pricing, retention policies, feature sets, and free-
 tier limits change. A blog post claiming "Service X retains files for 24
@@ -333,14 +337,14 @@ the competitor materially changes."
 
 **What is OK to name anywhere:**
 
-- Open-source projects and libraries we use or recommend (pdf-lib,
-  PDF.js, Tesseract, Whisper, RMBG-1.4, mozjpeg, guetzli, LibreOffice,
-  qpdf, ExifTool) — factual references, not commercial claims
+- Open-source projects and libraries we use or recommend (papaparse,
+  write-excel-file, SheetJS, LibreOffice, GnuCash) — factual
+  references, not commercial claims
 - Browser names when discussing feature support (Chrome, Firefox,
   Safari, Edge) — these are technical facts that change slowly and
   are independently verifiable
-- AI model providers when discussing the underlying technology
-  (OpenAI Whisper, BRIA RMBG-1.4) — model names, not service comparisons
+- File formats and the specs behind them (OFX, QIF, QBO/Web Connect,
+  INTU.BID, xlsx) — technical facts, not service comparisons
 - Operating systems (Windows, macOS, Linux, iOS, Android) — same
   reason as browsers
 - Tools the user pairs with our output (Photoshop, GIMP, Figma, Canva,
@@ -400,16 +404,12 @@ This grep should return empty (or only flag rows you've intentionally
 left). If anything matches and the claim is stale, update it before
 committing the new tool.
 
-**Categories and their alternatives pages today:**
+**Alternatives pages today: none.**
 
-| Tool category | Alternatives pages to audit |
-|---|---|
-| PDF | `ilovepdf.astro`, `smallpdf.astro`, `pdf24.astro`, `sejda.astro` |
-| Image | `tinypng.astro`, `removebg.astro`, `convertio.astro`, `cloudconvert.astro` |
-| AI (transcription) | `otter.astro`, `descript.astro` |
-
-When a new category gets enough tools to be worth a comparison page,
-add a new `/alternatives/<competitor>.astro` to the appropriate list.
+No `/alternatives/*` pages exist. If a zone (Financial Data, Business
+Finance, Personal Finance) ever gets enough tools to justify a
+comparison page, add `/alternatives/<competitor>.astro`, list it here,
+and re-audit it whenever a tool in that zone ships.
 
 ---
 
@@ -447,10 +447,11 @@ Before pushing a new page, verify:
   scoped to *the file*. Audit:
   `grep -irE 'no ads|ad-free|no tracking|do not track|no cookies|nothing is sent|no requests fire' src/`
   should return only the constants.ts note.
-- [ ] **No competitor names in body prose** (section 12) — only on
-  `/alternatives/*` and the honest-content `/pdf-to-word` style pages.
-  Quick audit: `grep -rE 'ILovePDF|SmallPDF|PDF24|TinyPNG|Remove\\.bg|Otter|Descript|Convertio|CloudConvert|Sejda|ClipDrop' src/pages/ src/content/blog/`
-  should only flag the allowed files.
+- [ ] **No commercial competitor names in body prose** (section 12) — only
+  on `/alternatives/*`, of which there are none today.
+  Quick audit: `grep -rE 'Baremetrics|ChartMogul|ProfitWell|FreshBooks|Bank2QBO|MoneyThumb' src/pages/ src/content/blog/`
+  should return empty. (Naming software you import *into* — QuickBooks,
+  Xero, GnuCash — is a format fact and is fine.)
 - [ ] **New tool shipped? Update `/alternatives/*`** (section 12 sub).
   If you added an entry to `TOOLS`, walk every alternatives page in
   the same category and refresh the FAQ Q, table rows, Pick boxes,

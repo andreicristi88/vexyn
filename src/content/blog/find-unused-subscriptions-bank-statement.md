@@ -1,5 +1,5 @@
 ---
-title: How to find unused subscriptions in your bank statement
+title: "How to find unused subscriptions in a statement"
 description: Forgotten subscriptions quietly drain hundreds a year. Here is how to find every recurring charge in your bank statement from a CSV export — spot the ones you no longer use, and cancel with confidence — without uploading your data.
 pubDate: 2026-09-01
 category: 'Understanding your money'

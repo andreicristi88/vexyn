@@ -1,5 +1,5 @@
 ---
-title: How to convert a CSV to QBO for QuickBooks (and when it won't import)
+title: "How to convert a CSV to QBO for QuickBooks"
 description: A QBO file lets you import bank transactions into QuickBooks when your bank only gives you a CSV. Here is how to build one for free without uploading, plus an honest look at why QuickBooks Online sometimes rejects it and what to do then.
 pubDate: 2026-09-01
 category: 'Accounting imports'

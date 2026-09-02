@@ -1,5 +1,5 @@
 ---
-title: How to calculate MRR, ARR and SaaS metrics from a subscriptions export
+title: "How to calculate MRR, ARR and SaaS metrics"
 description: MRR normalizes every subscription — monthly, yearly, quantity and all — to one monthly figure, and everything else builds on it. Here is how to compute MRR, ARR, ARPU and lost MRR from any subscriptions export, in your browser, without uploading it.
 pubDate: 2026-09-02
 category: 'Business & Stripe'

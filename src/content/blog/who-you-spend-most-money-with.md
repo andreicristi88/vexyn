@@ -1,5 +1,5 @@
 ---
-title: How to see which merchants you spend the most money with
+title: "How to see which merchants you spend most with"
 description: Your biggest spending drains are often a handful of merchants you never add up. Here is how to rank every payee in your bank statement by total spent, from a CSV export, in your browser — without uploading your data.
 pubDate: 2026-09-01
 category: 'Understanding your money'

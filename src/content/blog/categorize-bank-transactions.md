@@ -1,5 +1,5 @@
 ---
-title: How to categorize your bank transactions automatically
+title: "How to categorize bank transactions automatically"
 description: A bank export lists transactions but never sorts them. Here is how to add a Category column to your CSV automatically — keeping every original column untouched — so you can pivot and sum your spending in a spreadsheet, all in your browser.
 pubDate: 2026-09-02
 category: 'Understanding your money'

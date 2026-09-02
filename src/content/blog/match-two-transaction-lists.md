@@ -1,5 +1,5 @@
 ---
-title: How to match two lists of transactions and find the gaps
+title: "How to match two lists of transactions"
 description: When two records of the same transactions should agree but don't, you need to know which entries appear in one list and not the other. Here is how to match two transaction CSVs and surface exactly what's missing on each side — in your browser, without uploading them.
 pubDate: 2026-09-02
 category: 'Business & Stripe'

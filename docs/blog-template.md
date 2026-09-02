@@ -66,23 +66,30 @@ related: ['/tool-slug-1', '/tool-slug-2']
 
 ## Title formula
 
-`{Verb-led intent} — {year} step-by-step guide`
+`How to {verb-led intent}` — front-load the keyword, no year, no "step-by-step guide" suffix.
 
 Examples:
-- `How to remove EXIF metadata from your photos — 2026 step-by-step guide`
-- `How to merge PDFs without uploading them — 2026 step-by-step guide`
-- `How to remove background from images without uploading — 2026 step-by-step guide`
-- `How to transcribe audio for free — 2026 step-by-step guide`
+- `How to clean a messy bank CSV export`
+- `How to reconcile Stripe payouts to your bank`
+- `How to find every recurring payment in your bank statement`
+- `How to calculate MRR, ARR and SaaS metrics`
+
+**Length cap (hard rule):** keep the title short enough that with the `— Vexyn`
+suffix BaseLayout appends, the rendered `<title>` stays ≤ ~60 characters — so
+the base title is **≤ ~52 characters**. Google truncates past that in the SERP.
+If it runs long, drop `How to`, cut filler words (`your`, parentheticals), or
+tighten the phrasing — never sacrifice the head keyword. Same cap applies to
+tool-page titles.
 
 Why:
 - **"How to" + verb** matches the dominant query pattern for the SEO category we want
-- **Year** is a freshness signal Google now weighs heavily on how-to content
-- **"step-by-step guide"** matches what users search for *and* tells Google the page is a how-to (it'll try the HowTo rich result)
+- **Head keyword first** survives truncation and reads clearly in the SERP
 
 Avoid:
 - Clickbait ("The ONE trick…", "You won't believe…")
-- Brand-first titles ("Vexyn EXIF Remover — how to use it")
-- Vague titles ("EXIF metadata: a complete look")
+- Brand-first titles ("Vexyn CSV Cleaner — how to use it")
+- Vague titles ("Bank CSVs: a complete look")
+- Titles that render over ~60 chars total (see the length cap above)
 
 ---
 
@@ -94,7 +101,7 @@ Avoid:
 
 ### 2. `## Before you start — <context>`
 
-Background a reader needs before the steps make sense. Short. Bullet list if you're enumerating components (e.g. what's in EXIF). Paragraph if explaining context.
+Background a reader needs before the steps make sense. Short. Bullet list if you're enumerating components (e.g. which columns a tool needs). Paragraph if explaining context.
 
 ### 3. `## Step 1 — <action>`, `## Step 2 — <action>`, etc.
 
@@ -177,7 +184,7 @@ standalone article — make it an FAQ entry on a tool page instead.
 ## Internal linking
 
 Inside the article body:
-- **First mention of a Vexyn tool**: link to the tool page. `[Vexyn's EXIF Remover](/exif-remover)`.
+- **First mention of a Vexyn tool**: link to the tool page. `[Vexyn's CSV Cleaner](/csv-cleaner)`.
 - **Subsequent mentions**: plain text. Don't over-link.
 - **Cross-link to other blog articles** when relevant. Use the `related` frontmatter for tool/page references at the bottom.
 
@@ -208,27 +215,22 @@ Before merging an article PR (or pushing direct to main):
 
 ## Reference article
 
-See `src/content/blog/what-is-exif-metadata-and-how-to-remove-it.md` for
-the canonical example that follows this template exactly. Match its
-structure; adapt the content.
+See `src/content/blog/clean-messy-bank-csv.md` for a canonical example that
+follows this template. Match its structure; adapt the content.
 
 ---
 
-## Article ideas backlog (prioritised by search volume × low difficulty)
+## Article ideas backlog
 
-1. **How to merge PDFs without uploading them — 2026 step-by-step guide**
-   (~3k/mo, low difficulty, links to /pdf-merger)
-2. **How to remove background from images without uploading — 2026 step-by-step guide**
-   (~5k/mo, links to /background-remover)
-3. **How to transcribe audio for free without uploading — 2026 step-by-step guide**
-   (~2k/mo, links to /audio-transcriber)
-4. **How to split a PDF without uploading — 2026 step-by-step guide**
-   (~1k/mo, links to /pdf-splitter)
-5. **How to extract color palette from an image — 2026 step-by-step guide**
-   (~1k/mo, links to /color-palette)
-6. **WebP vs AVIF vs JPEG: which image format to use in 2026**
-   (~12k/mo, harder, links to /image-converter)
-7. **WebGPU explained: running AI in your browser without an API**
-   (~1k/mo, more technical/devy, links to all AI tools)
-8. **Best privacy-first PDF tools in 2026 (no upload required)**
-   (~1.5k/mo, listicle format — slight deviation from template)
+Every tool in the registry now has a matching guide (see each tool's `related`
+frontmatter for the mapping). New guide ideas should either:
+
+- **Deepen an existing tool's cluster** — an adjacent search intent that still
+  funnels to a shipped tool (e.g. an accounting-software-specific import angle
+  that points at CSV to QBO / OFX).
+- **Answer an informational query** the tools imply but don't directly serve
+  (e.g. `What is a good net worth by age?` → Net Worth Analyzer), where the
+  guide earns the traffic and the tool is the call to action.
+
+Do not write a guide for a tool that doesn't exist yet — build the tool first,
+then the guide, so every guide has a working destination.

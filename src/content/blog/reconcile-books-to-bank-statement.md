@@ -1,5 +1,5 @@
 ---
-title: How to reconcile your books against a bank statement
+title: "How to reconcile your books to a bank statement"
 description: Bank reconciliation means proving your ledger and your bank statement agree, and explaining every difference. Here is how to reconcile the two CSVs automatically — with uncleared and unrecorded items surfaced — in your browser, without uploading them.
 pubDate: 2026-09-02
 category: 'Business & Stripe'

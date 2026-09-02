@@ -1,5 +1,5 @@
 ---
-title: How to find every recurring payment in your bank statement
+title: "How to find every recurring payment in a statement"
 description: Subscriptions are only part of the picture — rent, loan repayments, utilities and insurance recur too. Here is how to detect every repeating payment and its cadence from a bank CSV, in your browser, without uploading it.
 pubDate: 2026-09-02
 category: 'Understanding your money'

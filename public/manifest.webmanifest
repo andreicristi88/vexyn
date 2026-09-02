@@ -1,7 +1,7 @@
 {
   "name": "Vexyn",
   "short_name": "Vexyn",
-  "description": "Privacy-first browser tools. Everything runs on your device.",
+  "description": "Free financial data tools that run in your browser — clean, convert, reconcile and analyze CSVs, bank exports and Stripe reports. Your file is never uploaded.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0f",

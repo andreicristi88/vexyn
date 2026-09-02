@@ -1,5 +1,5 @@
 ---
-title: How to find and remove duplicate transactions in a CSV
+title: "How to remove duplicate transactions in a CSV"
 description: Duplicate transactions creep in from overlapping exports and double charges. Here is how to remove them from a CSV — by whole row or by a key like Transaction ID — without altering the rows you keep or uploading your data.
 pubDate: 2026-09-01
 category: 'Cleaning & organizing'

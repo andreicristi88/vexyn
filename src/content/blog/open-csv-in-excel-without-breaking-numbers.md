@@ -1,5 +1,5 @@
 ---
-title: How to open a CSV in Excel without breaking your numbers
+title: "Open a CSV in Excel without breaking numbers"
 description: Excel silently mangles CSV data — leading zeros vanish, long numbers turn into 1.23E+15, and codes become dates. Here is why it happens and three reliable ways to open a CSV with every value intact.
 pubDate: 2026-09-01
 category: 'Spreadsheets & Excel'

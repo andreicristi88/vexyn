@@ -1,5 +1,5 @@
 ---
-title: How to convert a bank CSV to OFX (free, without uploading)
+title: "How to convert a bank CSV to OFX"
 description: When your bank only gives you a CSV but your finance app wants OFX, you need a converter that gets the dates and amounts right. Here is how OFX works, the two things that break conversions, and how to do it locally without uploading your statement.
 pubDate: 2026-09-01
 category: 'Accounting imports'

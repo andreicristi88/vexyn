@@ -1,5 +1,5 @@
 ---
-title: CSV vs OFX vs QBO — which bank file format do you actually need?
+title: "CSV vs OFX vs QBO: which format do you need?"
 description: Your bank offers CSV, your accounting software wants something else, and the names all blur together. Here is what CSV, OFX, and QBO each are, which software reads which, and how to get from the one you have to the one you need.
 pubDate: 2026-09-01
 category: 'Accounting imports'

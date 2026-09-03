@@ -216,6 +216,24 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
     if (r.cls === 'bot') byDay[d].bot += v;
     else { byDay[d].hum += v; byDay[d].pv += Number(r.pv || 0); }
   }
+
+  /**
+   * Every day in the window, newest first — including days with no traffic.
+   *
+   * The query only returns days that had at least one hit, so a quiet day used
+   * to vanish from the table entirely. That reads as "the dashboard is broken"
+   * rather than "nobody came", and it is most misleading for today: with own
+   * visits filtered out via ?vx-ignore, today can legitimately be zero and
+   * simply had no row. Zero is an answer; a missing row is not.
+   *
+   * Days are UTC, matching the SQL's toStartOfDay(now()) — so a late-evening
+   * visit in a UTC+3 timezone lands on the next day's row.
+   */
+  const midnightUtc = new Date();
+  midnightUtc.setUTCHours(0, 0, 0, 0);
+  const dayKeys = Array.from({ length: days }, (_, i) =>
+    new Date(midnightUtc.getTime() - i * 86_400_000).toISOString().slice(0, 10),
+  );
   // Referrers → readable sources. Visitor counts are summed per source, so a
   // person who arrived from two different referrers counts once in each — fine
   // for comparing channels, not a distinct-people total.
@@ -283,9 +301,14 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
     }<p class="note">${esc(note)}</p></div>`;
 
   const dayLink = (d: string) => `?key=${encodeURIComponent(key)}&days=${days}${d === zi ? '' : `&zi=${d}`}`;
-  const dayRows = Object.entries(byDay)
-    .sort((a, b) => b[0].localeCompare(a[0]))
-    .map(([d, v]) => `<tr class="${d === zi ? 'sel' : ''}"><td><a href="${dayLink(d)}">${d}</a></td><td class="n hum">${v.hum.toLocaleString()}</td><td class="n bot">${v.bot.toLocaleString()}</td><td class="n">${v.pv.toLocaleString()}</td></tr>`)
+  const today = dayKeys[0];
+  const dayRows = dayKeys
+    .map((d) => {
+      const v = byDay[d] || { hum: 0, bot: 0, pv: 0 };
+      const quiet = v.hum === 0 && v.bot === 0 && v.pv === 0;
+      const label = d === today ? `${d} <span class="tag">today</span>` : d;
+      return `<tr class="${d === zi ? 'sel' : ''}${quiet ? ' quiet' : ''}"><td><a href="${dayLink(d)}">${label}</a></td><td class="n hum">${v.hum.toLocaleString()}</td><td class="n bot">${v.bot.toLocaleString()}</td><td class="n">${v.pv.toLocaleString()}</td></tr>`;
+    })
     .join('');
 
   const daysNav = [7, 14, 30, 90]
@@ -315,6 +338,8 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
   .daily td{border-bottom:1px solid var(--border)}
   .daily a{color:var(--text);text-decoration:none}.daily a:hover{color:var(--brand)}
   .daily tr.sel td{background:color-mix(in srgb,var(--brand) 12%,transparent)}
+  .daily tr.quiet td{opacity:.45}
+  .tag{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--brand);border:1px solid var(--brand);border-radius:6px;padding:1px 5px;margin-left:6px;vertical-align:middle}
   .note{font-size:12px;color:var(--mute);margin:8px 0 0;white-space:normal;line-height:1.45}
   .tot td{border-top:1px solid var(--border);font-weight:600}
   @media(max-width:640px){.grid{grid-template-columns:1fr}}
@@ -327,7 +352,7 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
     <div class="kpi"><div class="v">${totVisitors ? (totPv / totVisitors).toFixed(2) : '0'}</div><div class="k">Pages / visitor</div></div>
   </div>
   <div class="grid">
-    <div class="card wide daily"><h2>By day — humans / bots / pageviews</h2><table><tr><td>Day</td><td class="n">Humans</td><td class="n">Bots</td><td class="n">Views</td></tr>${dayRows || '<tr><td colspan=4>No data yet.</td></tr>'}</table></div>
+    <div class="card wide daily"><h2>By day — humans / bots / pageviews</h2><table><tr><td>Day (UTC)</td><td class="n">Humans</td><td class="n">Bots</td><td class="n">Views</td></tr>${dayRows}</table><p class="note">Every day in the window is listed, including quiet ones — a zero is a real answer, a missing row would just look broken. Click a day to filter the panels below to it. Days are UTC, so a late-evening visit further east lands on the next row. Your own visits are excluded wherever you opened the site with <code>?vx-ignore=1</code>, so a zero can simply mean the only traffic was yours.</p></div>
     ${list('Top pages', pages.map((r) => [r.path || '/', Number(r.pv || 0)] as [string, number]))}
     ${list('Sources', sources)}
     ${table2(

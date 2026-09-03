@@ -1,0 +1,84 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import RelatedGuides from '../components/ui/RelatedGuides.astro';
+import BankStatementPdf from '../components/tools/BankStatementPdf.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'Bank Statement PDF to CSV';
+const description =
+  'Convert a bank statement PDF into a clean CSV, in your browser. Rebuilds the transaction table from the PDF, keeps debit and credit columns apart, and never uploads your statement.';
+
+const faqs = [
+  { q: 'Is my statement uploaded?', a: 'No. The PDF is read and the table rebuilt entirely in your browser — there is no upload endpoint. This matters more here than anywhere else on the site: a bank statement is a complete record of your finances, and every other online PDF converter asks you to send it to their server. Open DevTools → Network and you will see nothing leaves.' },
+  { q: 'Does it work with scanned statements?', a: 'No. It reads text-based PDFs — the kind your bank generates and you download. A scan or a phone photo contains an image, not text, and would need OCR. If you drop one in, the tool says so rather than returning an empty table.' },
+  { q: 'How does it know where the columns are?', a: 'Amounts on a statement are right-aligned, so the tool clusters the right-hand edge of every number it finds and treats each cluster as a column. That is what keeps a blank Debit or Credit blank instead of shifting the row across. Rows are anchored on lines that begin with a date; lines that do not are either a wrapped description or page furniture.' },
+  { q: 'Why do I have to label the columns myself?', a: 'Because guessing is how a converter quietly corrupts a statement. The tool can see that there are three money columns; it cannot know which one is the running balance without reading the header the way you do. It proposes a sensible default and lets you correct it.' },
+  { q: 'My statement came out wrong. What now?', a: 'Open “Every line the PDF gave up” under the table — it shows exactly what was extracted, so you can see whether the problem is the text extraction or the table rebuilding. Unusual layouts, especially ones where the date is not the first thing on the line, are the common cause.' },
+  { q: 'What do I do with the CSV?', a: 'Anything the rest of the site does: analyze the spending, find subscriptions and duplicate charges, or convert it to QBO or OFX for your accounting software. The CSV is a plain file you own — nothing is tied to this tool.' },
+  { q: 'Is it free?', a: 'Yes, with no account and no per-file limit. The conversion runs on your device, so there is no server cost to pass on.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/bank-statement-pdf-to-csv`,
+    description,
+    category: 'FinanceApplication',
+    features: [
+      'Rebuilds the transaction table from a statement PDF',
+      'Keeps separate debit and credit columns apart',
+      'Joins descriptions that wrap onto a second line',
+      'Shows every extracted line so a bad parse is visible',
+      'Runs entirely in your browser, no upload',
+    ],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Bank Statement PDF to CSV', url: '/bank-statement-pdf-to-csv' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">Bank Statement PDF to CSV</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">Bank Statement PDF to CSV</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Your bank gives you a PDF; every tool wants a CSV. Drop the statement in and get the transaction table back as a file you can actually use — without sending your finances to anyone.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your statement is read in your browser and never uploaded. Verify in DevTools → Network." />
+    <BankStatementPdf client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">The one file you should not upload</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        A bank statement is the most complete picture of your finances that exists in one document: every merchant, every salary, every balance. The online converters that handle these all work the same way — you upload the PDF, their server parses it, and you trust their retention policy. This one cannot ask you to do that, because there is nowhere to send it: the parsing runs on your device, and the site has no endpoint that accepts a file.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Rebuilding a table that was never a table</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        A PDF does not contain rows and columns. It contains text at coordinates that happen to look like rows and columns when printed. So the work is reconstruction: group the text into lines, treat a line that starts with a date as a transaction, and recover the money columns by clustering the right-hand edge of every amount — they are right-aligned, which is the property that makes it reliable. Descriptions that wrap onto a second line are joined back on; page headers, totals and “Page 2 of 5” are left out.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Honest about what it cannot do</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Every bank lays a statement out differently, so this will not be right for every PDF on the first try. Two things follow from that. It tells you when it fails instead of returning something plausible — a scanned statement is named as a scan, and a layout it cannot read says so. And it shows you every line it extracted, so when a row looks wrong you can see whether the text came out badly or the table was rebuilt badly. Check a few rows against the PDF before you rely on the file; that habit costs nothing and catches everything.
+      </p>
+    </article>
+
+    <RelatedGuides />
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

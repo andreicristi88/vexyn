@@ -11,6 +11,7 @@
     "logos": "node scripts/generate-logos.mjs",
     "build": "node scripts/generate-logos.mjs && node scripts/generate-og.mjs && astro build && node scripts/generate-csp.mjs",
     "csp": "node scripts/generate-csp.mjs",
+    "test:pdf": "tsx tests/pdf.test.ts",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -20,6 +21,7 @@
     "@tailwindcss/vite": "^4.3.1",
     "astro": "^6.4.7",
     "papaparse": "^5.7.0",
+    "pdfjs-dist": "^6.3.289",
     "satori-html": "^0.3.2",
     "svelte": "^5.56.3",
     "tailwindcss": "^4.3.1",

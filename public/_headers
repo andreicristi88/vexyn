@@ -16,6 +16,13 @@
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
 
+# Worker-ul pdf.js e emis ca .mjs si e incarcat prin dynamic import. Un modul
+# servit cu alt content-type decat javascript e REFUZAT de browser, iar efectul
+# e ca tool-ul PDF nu merge deloc. Cloudflare mapeaza .mjs corect, dar aici e
+# explicit: caderea ar fi totala si greu de banuit.
+/_astro/*.mjs
+  Content-Type: text/javascript; charset=utf-8
+
 # Imagini și fonturi din public — cache lung
 /*.svg
   Cache-Control: public, max-age=86400

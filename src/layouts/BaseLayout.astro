@@ -3,6 +3,7 @@ import '../styles/global.css';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import { SITE } from '../lib/constants';
+import { cleanPath } from '../lib/seo';
 
 interface Props {
   title?: string;
@@ -23,7 +24,10 @@ const {
   schema,
 } = Astro.props;
 
-const canonical = new URL(Astro.url.pathname, SITE.url).toString();
+// cleanPath strips the .html that build.format:'file' puts in the pathname —
+// without it every page declares a canonical the sitemap and internal links
+// never use, and the homepage claims to live at /index.html.
+const canonical = new URL(cleanPath(Astro.url.pathname), SITE.url).toString();
 const ogImage = new URL(image, SITE.url).toString();
 // Tool/static page names are short ("CSV Cleaner"). Add a value suffix so the
 // title carries a keyword and length search engines prefer, while long content

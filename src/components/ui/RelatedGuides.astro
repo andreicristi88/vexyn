@@ -8,6 +8,7 @@
  */
 import { getCollection } from 'astro:content';
 import RelatedReading from './RelatedReading.astro';
+import { cleanPath } from '../../lib/seo';
 
 interface Props {
   /** Tool path to match against each guide's `related`. Defaults to this page. */
@@ -16,14 +17,9 @@ interface Props {
 }
 
 const { path, heading = 'Related guides' } = Astro.props;
-// With build.format: 'file', Astro.url.pathname is "/csv-to-json.html". Strip
-// the extension (and any trailing slash / index) so it matches the clean tool
-// paths guides store in `related` (e.g. "/csv-to-json").
-const toolPath =
-  (path ?? Astro.url.pathname)
-    .replace(/\.html$/, '')
-    .replace(/\/index$/, '')
-    .replace(/\/$/, '') || '/';
+// Astro.url.pathname is "/csv-to-json.html" under build.format:'file'; the
+// guides store clean paths like "/csv-to-json" in `related`.
+const toolPath = cleanPath(path ?? Astro.url.pathname);
 
 const guides = (await getCollection('blog'))
   .filter((p) => (p.data.related ?? []).some((r) => r.replace(/\/$/, '') === toolPath))

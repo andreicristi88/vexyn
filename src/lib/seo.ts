@@ -2,6 +2,30 @@ import { SITE } from './constants';
 
 export type Faq = { q: string; a: string };
 
+/**
+ * The public URL path for a page, from Astro.url.pathname.
+ *
+ * With `build.format: 'file'` every page is written as `<name>.html`, and
+ * Astro.url.pathname carries that extension — so the raw value is
+ * "/csv-cleaner.html" and, for the homepage, "/index.html". Cloudflare serves
+ * those files at the extensionless path, which is what the sitemap and every
+ * internal link use, so the raw pathname must never be published as-is: a
+ * canonical of "/index.html" tells search engines the homepage lives at a URL
+ * nothing else on the site points to.
+ *
+ * Anything deriving a URL or matching a route from the pathname goes through
+ * here. It exists as one function because the same normalization was written
+ * twice and only corrected in one of them.
+ */
+export function cleanPath(pathname: string): string {
+  return (
+    pathname
+      .replace(/\.html$/, '')
+      .replace(/\/index$/, '')
+      .replace(/\/$/, '') || '/'
+  );
+}
+
 export function breadcrumbSchema(items: Array<{ name: string; url?: string }>) {
   return {
     '@context': 'https://schema.org',

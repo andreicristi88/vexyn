@@ -1,5 +1,5 @@
 ---
-title: How to read a bank statement
+title: "How to read a bank statement, column by column"
 description: A bank statement is dense and easy to skim past. Here is how to actually read one — every column, what the balances mean, and how to turn the raw list into spending, subscriptions and cash-flow insight — in your browser, without uploading it.
 pubDate: 2026-09-01
 category: 'Understanding your money'

@@ -1,5 +1,5 @@
 ---
-title: "How to convert a CSV to JSON"
+title: "How to convert a CSV to JSON in your browser"
 description: A CSV is rows and columns; JSON is what code, APIs and config files expect. Here is how to turn a CSV into clean JSON — an array of objects or an array of arrays, pretty-printed or minified — entirely in your browser, without uploading the file.
 pubDate: 2026-09-02
 category: 'Cleaning & organizing'

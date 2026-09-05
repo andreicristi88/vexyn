@@ -93,10 +93,21 @@ Bad: `🚀 The BEST PDF merger ever! Try it now and merge PDFs like a pro.`
 
 ## 3. Title formula
 
-- **Tool pages**: `<Tool Name>` plain, e.g. `CSV Cleaner`, `Stripe Reconciliation`.
-  `BaseLayout` appends ` — Vexyn` (plus `· Free, no upload` for short titles).
-- **Blog posts**: `How to <verb>` — front-loaded keyword, no year suffix. Keep the
-  base title ≤ ~52 chars so the rendered `<title>` stays ≤ ~60 (see `blog-template.md`).
+**Length is a BAND, not a ceiling: aim for a rendered `<title>` of 50-60
+characters.** Too long gets truncated in the SERP; too short is flagged by Bing
+Webmaster Tools and wastes the strongest relevance signal a page has. A bare
+tool name like `CSV Merger` renders at 39 and is too thin — describe the job
+instead (`CSV Merger: combine multiple files into one`).
+
+- **Tool pages**: name the job, not just the tool, when the name alone is short.
+  `BaseLayout` appends ` — Vexyn` (plus `· Free, no upload` when the title is
+  under 34 chars, which pads short names). Never put "Vexyn" in the page title —
+  the suffix already does, and repeating it burns characters.
+- **Blog posts**: `How to <verb>` — front-loaded keyword, no year suffix. Base
+  title ~42-52 chars, so the rendered `<title>` lands in the 50-60 band
+  (guides get only ` — Vexyn`, 8 chars). See `blog-template.md`.
+- **Static pages**: one-word titles (`About`, `Privacy`) are too thin. Say what
+  the page is about — `Privacy: your files never leave your browser`.
 - **Alternatives**: `A <Competitor> alternative that <differentiator>`
 - **Static pages**: Plain descriptor — `About`, `Privacy`, `Blog`
 

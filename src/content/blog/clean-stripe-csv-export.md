@@ -1,5 +1,5 @@
 ---
-title: "How to clean a Stripe CSV export"
+title: "How to turn a Stripe CSV export into a clean sheet"
 description: A raw Stripe payments export is dozens of columns wide and reports gross amounts, not what you kept. Here is how to turn it into a clean sheet with the net you actually received — gross minus fees minus refunds — in your browser, without uploading it.
 pubDate: 2026-09-02
 category: 'Business & Stripe'

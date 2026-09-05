@@ -74,12 +74,16 @@ Examples:
 - `How to find every recurring payment in your bank statement`
 - `How to calculate MRR, ARR and SaaS metrics`
 
-**Length cap (hard rule):** keep the title short enough that with the `— Vexyn`
-suffix BaseLayout appends, the rendered `<title>` stays ≤ ~60 characters — so
-the base title is **≤ ~52 characters**. Google truncates past that in the SERP.
-If it runs long, drop `How to`, cut filler words (`your`, parentheticals), or
-tighten the phrasing — never sacrifice the head keyword. Same cap applies to
-tool-page titles.
+**Length is a band, not a cap: base title ~42-52 characters.** With the
+` — Vexyn` suffix BaseLayout appends, that renders as a 50-60 character
+`<title>` — the range that neither gets truncated by Google nor flagged as
+too short by Bing.
+
+Both edges are real. Over ~60 the tail is cut off in the SERP; under ~45 the
+title stops carrying enough of the query and Bing Webmaster Tools reports it.
+`How to read a bank statement` (28) was too thin; `How to read a bank
+statement, column by column` (46) is right. If a title runs long, drop
+`How to` or cut filler (`your`, parentheticals) — never the head keyword.
 
 Why:
 - **"How to" + verb** matches the dominant query pattern for the SEO category we want

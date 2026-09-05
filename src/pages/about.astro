@@ -3,7 +3,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { SITE } from '../lib/constants';
 import { breadcrumbSchema } from '../lib/seo';
 
-const title = 'About';
+// Titles carry no brand: BaseLayout appends "— Vexyn" already, and repeating
+// it wastes the characters that could describe the page.
+const title = 'About these free, browser-based finance tools';
 const description = 'Vexyn is a growing set of free financial data tools that run entirely in your browser — no upload, no signup, no accounts.';
 const schema = breadcrumbSchema([
   { name: 'Home', url: '/' },

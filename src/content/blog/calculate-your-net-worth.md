@@ -1,5 +1,5 @@
 ---
-title: How to calculate your net worth
+title: "How to calculate your net worth from your accounts"
 description: Net worth is the single number that sums up your financial position. Here is how to work it out from your own accounts — what to count as an asset, what counts as a liability, and how to track it — with a free calculator that keeps your data on your device.
 pubDate: 2026-09-01
 category: 'Understanding your money'

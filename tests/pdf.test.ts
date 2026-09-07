@@ -196,6 +196,45 @@ eq('G declared holds only stated figures', G.declared.length, 2);
 eq('G declared labels', G.declared.map((d) => d.label), ['Account (Current Account)', 'Total']);
 eq('G bare amount is not offered as a total', G.declared.some((d) => d.amounts.includes('€627.63')), false);
 
+console.log('\n--- layout H: the summary block printed BELOW the table (UK wording) ---');
+// Revolut labels its summary "Money out / Money in". On Revolut itself that
+// block sits above the first dated row, so the header rule already caught it
+// and the wording never had to be understood. A bank that prints its totals
+// under the table — Banca Transilvania does — would instead hand the reader a
+// transaction for the whole month's outgoings.
+//
+// The negatives matter more than the positives here: "PAID IN AT BRANCH" is a
+// real UK description and "TOTAL ENERGIES" a real payee, and dropping either
+// moves money out of the CSV without saying so.
+eq('H Revolut summary label, out', isSummaryRow('Money out'), true);
+eq('H Revolut summary label, in', isSummaryRow('Money in'), true);
+eq('H qualified total, in', isSummaryRow('Total in'), true);
+eq('H qualified total, out', isSummaryRow('Total out'), true);
+eq('H qualified paid in', isSummaryRow('Total paid in'), true);
+eq('H bare "paid in" is a description, not a summary', isSummaryRow('PAID IN AT BRANCH'), false);
+eq('H bare "paid out" stays a description', isSummaryRow('Paid out to J Smith'), false);
+eq('H payee starting with Money', isSummaryRow('Money Transfer Ltd'), false);
+eq('H MoneyGram is one word', isSummaryRow('MoneyGram to Ana'), false);
+eq('H petrol payee survives', isSummaryRow('Total Energies Marseille'), false);
+eq('H "Total Interest" is not "Total in"', isSummaryRow('Total Interest Earned'), false);
+const pageH: PdfTextItem[] = [
+  L('Date', 43, 780), L('Description', 125, 780), R('Paid out', 400, 780), R('Paid in', 470, 780), R('Balance', 545, 780),
+  L('02/06/2026', 43, 760), L('PAID IN AT BRANCH', 125, 760), R('150.00', 470, 760), R('1,150.00', 545, 760),
+  L('03/06/2026', 43, 744), L('Coffee Shop', 125, 744), R('3.50', 400, 744), R('1,146.50', 545, 744),
+  L('04/06/2026', 43, 728), L('Total Energies Marseille', 125, 728), R('62.00', 400, 728), R('1,084.50', 545, 728),
+  // the summary block, printed under the table rather than above it
+  L('Money out', 125, 700), R('65.50', 400, 700),
+  L('Money in', 125, 688), R('150.00', 470, 688),
+  L('Total paid out', 125, 676), R('65.50', 400, 676),
+];
+const H = parseStatement(buildLines([pageH]));
+eq('H transactions', H.stats.transactions, 3);
+eq('H trailing totals not counted as transactions', H.grid.rows.some((r) => /^Money (in|out)$/i.test(r[1])), false);
+eq('H branch credit kept', H.grid.rows.some((r) => /PAID IN AT BRANCH/.test(r[1])), true);
+eq('H credit stayed in the money-in column', H.grid.rows[0].slice(2), ['', '150.00', '1,150.00']);
+eq('H petrol payee kept', H.grid.rows.some((r) => /Total Energies/.test(r[1])), true);
+eq('H totals offered for checking', H.declared.map((d) => d.label), ['Money out', 'Money in', 'Total paid out']);
+
 console.log('\n--- failure modes are explicit, not silent ---');
 const empty = parseStatement(buildLines([[]]));
 eq('scanned pdf warns', /scan|OCR/i.test(empty.warnings.join(' ')), true);

@@ -176,7 +176,17 @@ const SUMMARY_RE = new RegExp(
     // English / US / UK
     '(opening|closing|previous|final|starting|beginning|ending|available|new|old)\\s+balance\\b|' +
     'balance\\s+(brought|carried|forward|b\\/f|c\\/f)\\b|' +
-    'total\\s+(credit|debit|deposits?|withdrawals?|payments?|transactions?)\\b|' +
+    'total\\s+(credit|debit|deposits?|withdrawals?|payments?|transactions?' +
+    '|in|out|money\\s+(in|out)|paid\\s+(in|out))\\b|' +
+    // "Money out  -€19,418.00" is how Revolut labels its summary block, on both
+    // the personal and the business template. It costs nothing on those files —
+    // the block sits above the first dated row, where the header rule already
+    // catches it — but banks that print their totals BELOW the table (Banca
+    // Transilvania does, with RULAJ) would otherwise hand back a €19,418
+    // transaction. `paid in` and `paid out` are deliberately NOT here on their
+    // own: "PAID IN AT BRANCH" is a real UK description, and silently dropping a
+    // genuine credit is worse than showing a summary row. They need `total`.
+    'money\\s+(in|out)\\b|' +
     'available\\s+funds\\b|unused\\s+credit\\b|credit\\s+limit\\b|' +
     // German / French / Spanish / Italian — the same three ideas
     '(alter|neuer)\\s+kontostand\\b|kontostand\\b|zwischensumme\\b|' +

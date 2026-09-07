@@ -125,13 +125,19 @@ const DATE_RE = new RegExp(
 /**
  * Money, with the shapes statements actually print: grouped thousands with dot,
  * comma, space or non-breaking space; a decimal part of one or two digits; a
- * leading or trailing minus; parentheses for negatives; a currency symbol; and
- * the CR/DR suffix some banks use instead of a sign.
+ * leading or trailing minus; parentheses for negatives; and the CR/DR suffix
+ * some banks use instead of a sign.
+ *
+ * A currency marker may sit on EITHER side, as a symbol or a three-letter ISO
+ * code: Revolut prints "12.50 RON", other banks print "EUR 1.234,56". Without
+ * the trailing form, every amount on a Revolut statement failed to match and
+ * the whole file came back empty. The code is matched case-sensitively, so an
+ * ordinary lowercase word after a number — "45.00 per" — is not read as money.
  */
 const AMOUNT_DEC_RE =
-  /^[-(]?\s*[$£€]?\s*-?\d{1,3}(?:[.,  ]\d{3})*[.,]\d{1,2}\s*\)?\s*-?\s*(?:cr|dr)?$/i;
+  /^[-(]?\s*(?:(?:[$£€¥₹]|[A-Z]{3})\s*)?-?\d{1,3}(?:[.,  ]\d{3})*[.,]\d{1,2}\s*\)?\s*-?\s*(?:[$£€¥₹]|[A-Z]{3})?\s*(?:[CcDd][Rr])?\s*$/;
 const AMOUNT_ANY_RE =
-  /^[-(]?\s*[$£€]?\s*-?\d{1,3}(?:[.,  ]\d{3})*(?:[.,]\d{1,2})?\s*\)?\s*-?\s*(?:cr|dr)?$/i;
+  /^[-(]?\s*(?:(?:[$£€¥₹]|[A-Z]{3})\s*)?-?\d{1,3}(?:[.,  ]\d{3})*(?:[.,]\d{1,2})?\s*\)?\s*-?\s*(?:[$£€¥₹]|[A-Z]{3})?\s*(?:[CcDd][Rr])?\s*$/;
 
 function amountRe(requireDecimals: boolean): RegExp {
   return requireDecimals ? AMOUNT_DEC_RE : AMOUNT_ANY_RE;
@@ -306,7 +312,21 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
   const classified = lines.map((line) => {
     const dateTokens = leadingDateTokens(line.tokens);
     const date = dateTokens ? line.tokens.slice(0, dateTokens).map((t) => t.str).join(' ') : '';
-    const amounts = line.tokens.filter((t) => isAmount(t.str, requireDecimals));
+    /**
+     * Only TRAILING amounts count as money columns.
+     *
+     * In a statement row the figures come last; a number with description text
+     * still to its right is being quoted inside the prose, not tabulated.
+     * Banca Transilvania prints detail bullets like
+     * "- 200.00 RON aferenta tranzactiei EPOS 31/08/2026 ...", and once
+     * currency codes were recognised those started forming a column of their
+     * own and turning every such bullet into a transaction.
+     */
+    const money = line.tokens.filter((t) => isAmount(t.str, requireDecimals));
+    const lastTextRight = line.tokens
+      .filter((t) => !isAmount(t.str, requireDecimals))
+      .reduce((m, t) => Math.max(m, t.right), 0);
+    const amounts = money.filter((t) => t.x >= lastTextRight - 1);
     const firstAmountX = amounts.length ? Math.min(...amounts.map((t) => t.x)) : Infinity;
     const nonAmount = line.tokens.slice(dateTokens).filter((t) => !isAmount(t.str, requireDecimals));
     // Description normally sits left of the money. Falling back to whatever
@@ -332,6 +352,23 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
           : 'cont';
     return { line, dateTokens, date, amounts, descTokens, kind };
   });
+  /**
+   * Anything carrying money before the first dated row is a header, not a
+   * transaction. Revolut opens with a "Balance summary" block — opening
+   * balance, money out, money in, closing — laid out as a table with four
+   * amounts and no dates, which otherwise arrived as two transactions and
+   * invented two extra amount columns that every real row left blank.
+   *
+   * Guarded on a dated row existing at all, so a statement that never prints a
+   * date is not emptied by this.
+   */
+  const firstDated = classified.findIndex((c) => c.kind === 'txn' && c.dateTokens > 0);
+  if (firstDated > 0) {
+    for (let i = 0; i < firstDated; i++) {
+      if (classified[i].kind === 'txn') classified[i].kind = 'skip';
+    }
+  }
+
   const txnLines = classified.filter((c) => c.kind === 'txn');
 
   if (!lines.length) {
@@ -344,9 +381,9 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
     );
   }
 
-  // Amount columns, from the right edges of every money token on transaction
-  // lines. Doing this across all rows is what lets a blank Debit or Credit stay
-  // blank instead of shifting the row left.
+  // Amount columns, from the right edges of every trailing money token on
+  // transaction rows. Doing this across all rows is what lets a blank Debit or
+  // Credit stay blank instead of shifting the row left.
   const edges: number[] = [];
   for (const c of txnLines) for (const t of c.amounts) edges.push(t.right);
   const columns = clusterRightEdges(edges, colTol);
@@ -370,6 +407,7 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
    */
   let currentDate = '';
   let dateless = 0;
+  let collisions = 0;
   const declared: { label: string; amounts: string[] }[] = [];
 
   for (const c of classified) {
@@ -392,6 +430,9 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
       if (c.descTokens.length) descLeft = Math.min(descLeft, c.descTokens[0].x);
 
       const cells = new Array(columns.length).fill('');
+      // Only amounts that actually sit in a column. Snapping every amount to
+      // the nearest one would drag a figure quoted inside the description into
+      // the money columns.
       for (const t of c.amounts) {
         let best = 0;
         let bestD = Infinity;
@@ -404,6 +445,7 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
         });
         // Two amounts landing in one column means the clustering was too
         // coarse for this layout; keep both rather than dropping one silently.
+        if (cells[best]) collisions++;
         cells[best] = cells[best] ? `${cells[best]} ${t.str}` : t.str;
       }
       rows.push([currentDate, c.descTokens.map((t) => t.str).join(' '), ...cells]);
@@ -437,8 +479,10 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
     );
   }
 
-  const doubled = rows.some((r) => r.slice(2).some((c) => c.includes(' ')));
-  if (doubled) {
+  // Counted during assignment, not inferred from the text: an amount may
+  // legitimately contain a space now that "12.50 RON" is one value, so looking
+  // for a space in the cell reported a collision on every Revolut row.
+  if (collisions > 0) {
     warnings.push(
       'Two amounts landed in the same column on at least one row, which usually means the columns sit closer together than the tolerance allows. Check those rows before using the file.',
     );

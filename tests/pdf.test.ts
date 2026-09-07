@@ -130,6 +130,35 @@ eq('E funds/limit block skipped', E.grid.rows.some((r) => /Fonduri|neutilizat/i.
 eq('E bare amount with no label skipped', E.grid.rows.some((r) => !r[1].trim()), false);
 eq('E summary matched on description, not raw line', isSummaryRow('RULAJ ZI'), true);
 
+console.log('\n--- layout F: currency codes and prose-embedded amounts (Revolut / BT) ---');
+// Revolut writes the currency after the number ("12.50 RON"), which no leading
+// symbol pattern matched — every amount on the statement failed and the file
+// came back empty. Supporting it then broke Banca Transilvania, whose detail
+// bullets quote money mid-sentence: "- 200.00 RON aferenta tranzactiei EPOS".
+// Only TRAILING amounts are columns; a figure with description text still to
+// its right is prose, not a table cell.
+eq('F trailing currency code', isAmount('12.50 RON'), true);
+eq('F leading currency code', isAmount('EUR 1.234,56'), true);
+eq('F lowercase word is not a currency', isAmount('45.00 per'), false);
+eq('F code must be exactly three letters', isAmount('12.50 RONALD'), false);
+const pageF: PdfTextItem[] = [
+  L('Date', 43, 780), L('Description', 125, 780), R('Money out', 376, 780), R('Money in', 464, 780), R('Balance', 560, 780),
+  L('Sep', 43, 760), L('1,', 60, 760), L('2026', 72, 760),
+  L('Burger Stuff', 125, 760), R('12.50 RON', 376, 760), R('142.28 RON', 560, 760),
+  L('Transaction Id: 6a95691b', 125, 748),
+  L('Sep', 43, 730), L('2,', 60, 730), L('2026', 72, 730),
+  L('Apple Pay top-up', 125, 730), R('285.00 RON', 464, 730), R('287.33 RON', 560, 730),
+  // BT-style detail bullet: money first, prose after — must NOT be a row
+  L('-', 58, 712), L('200.00 RON', 62, 712), L('aferenta tranzactiei EPOS 31/08/2026', 109, 712),
+];
+const F = parseStatement(buildLines([pageF]));
+eq('F transactions', F.stats.transactions, 2);
+eq('F three columns, none invented by the bullet', F.amountColumns, 3);
+eq('F money-out row', F.grid.rows[0].slice(2), ['12.50 RON', '', '142.28 RON']);
+eq('F money-in row', F.grid.rows[1].slice(2), ['', '285.00 RON', '287.33 RON']);
+eq('F prose bullet not a transaction', F.grid.rows.some((r) => /aferenta/.test(r[1])), false);
+eq('F month-first date kept whole', F.grid.rows[0][0], 'Sep 1, 2026');
+
 console.log('\n--- failure modes are explicit, not silent ---');
 const empty = parseStatement(buildLines([[]]));
 eq('scanned pdf warns', /scan|OCR/i.test(empty.warnings.join(' ')), true);

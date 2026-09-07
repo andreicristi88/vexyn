@@ -119,6 +119,12 @@ const fullTitle =
 
       The flag lives in localStorage, so it is per-browser and per-device: set
       it again on your phone, and in any other browser or private window.
+
+      Setting it used to be silent — the page looked identical either way, so
+      there was no way to know whether it had taken, or which of your browsers
+      are already excluded. Any URL containing `vx-ignore` now says so on
+      screen. `?vx-ignore` on its own just reports the current state without
+      changing it.
     -->
     <script is:inline>
       (function () {
@@ -126,7 +132,26 @@ const fullTitle =
           var q = location.search;
           if (q.indexOf('vx-ignore=1') > -1) localStorage.setItem('vx-ignore', '1');
           if (q.indexOf('vx-ignore=0') > -1) localStorage.removeItem('vx-ignore');
-          if (localStorage.getItem('vx-ignore') === '1') return;
+          var excluded = localStorage.getItem('vx-ignore') === '1';
+
+          if (q.indexOf('vx-ignore') > -1) {
+            var d = document.createElement('div');
+            d.textContent = excluded
+              ? 'Analytics: visits from this browser are NOT counted.'
+              : 'Analytics: visits from this browser ARE counted.';
+            d.setAttribute(
+              'style',
+              'position:fixed;left:12px;bottom:12px;z-index:9999;max-width:22rem;padding:10px 14px;' +
+                'border-radius:10px;font:13px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;' +
+                'cursor:pointer;color:#04110b;box-shadow:0 4px 16px rgba(0,0,0,.35);background:' +
+                (excluded ? '#34d399' : '#fbbf24')
+            );
+            d.title = 'Click to dismiss';
+            d.addEventListener('click', function () { d.remove(); });
+            (document.body || document.documentElement).appendChild(d);
+          }
+
+          if (excluded) return;
           var b = JSON.stringify({ p: location.pathname, r: document.referrer, w: navigator.webdriver ? 1 : 0 });
           if (navigator.sendBeacon) navigator.sendBeacon('/api/hit', new Blob([b], { type: 'application/json' }));
           else fetch('/api/hit', { method: 'POST', body: b, keepalive: true });

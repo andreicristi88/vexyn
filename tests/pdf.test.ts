@@ -159,6 +159,43 @@ eq('F money-in row', F.grid.rows[1].slice(2), ['', '285.00 RON', '287.33 RON']);
 eq('F prose bullet not a transaction', F.grid.rows.some((r) => /aferenta/.test(r[1])), false);
 eq('F month-first date kept whole', F.grid.rows[0][0], 'Sep 1, 2026');
 
+console.log('\n--- layout G: header block, bare amounts, and two tables (Revolut EUR) ---');
+// A Revolut EUR statement carries two transaction tables — account and pockets
+// — whose columns sit at different x. They cannot be merged safely, so the
+// parser says so. It also used to offer every bare amount as a "figure the
+// statement states", burying the three real ones under 42 lines of noise and
+// disabling the only check a reader has.
+const pageG: PdfTextItem[] = [
+  L('Product', 43, 790), L('Opening balance', 125, 790), R('Money out', 360, 790), R('Money in', 456, 790), R('Balance', 560, 790),
+  L('Account (Current Account)', 43, 778), R('€3.01', 240, 778), R('€1,213.00', 360, 778), R('€3,000.00', 456, 778), R('€1,790.01', 560, 778),
+  L('Total', 43, 766), R('€3.01', 240, 766), R('€1,213.00', 360, 766), R('€3,000.00', 456, 766), R('€1,790.01', 560, 766),
+  R('€627.63', 560, 754), // a figure with nothing naming it — not a checkable total
+  L('Date', 43, 742), L('Description', 125, 742), R('Money out', 360, 742), R('Money in', 456, 742), R('Balance', 560, 742),
+  // account table: money out at 360
+  ...Array.from({ length: 12 }, (_, i) => [
+    L(`0${(i % 9) + 1}/06/2026`, 43, 730 - i * 12),
+    L('Coffee', 125, 730 - i * 12),
+    R('€3.50', 360, 730 - i * 12),
+    R('€100.00', 560, 730 - i * 12),
+  ]).flat(),
+  // one incoming row — the sparsely used column that betrays the overlay
+  L('09/06/2026', 43, 580), L('Transfer in', 125, 580), R('€3,000.00', 456, 580), R('€3,100.00', 560, 580),
+  // pockets table: its money column sits at 440, not 360
+  ...Array.from({ length: 12 }, (_, i) => [
+    L(`1${i % 9}/06/2026`, 43, 566 - i * 12),
+    L('Pocket move', 125, 566 - i * 12),
+    R('€1.00', 440, 566 - i * 12),
+    R('€50.00', 560, 566 - i * 12),
+  ]).flat(),
+];
+const G = parseStatement(buildLines([pageG]));
+eq('G transactions', G.stats.transactions, 25);
+eq('G four columns from the two geometries', G.amountColumns, 4);
+eq('G warns that tables do not line up', /more than one transaction table/i.test(G.warnings.join(' ')), true);
+eq('G declared holds only stated figures', G.declared.length, 2);
+eq('G declared labels', G.declared.map((d) => d.label), ['Account (Current Account)', 'Total']);
+eq('G bare amount is not offered as a total', G.declared.some((d) => d.amounts.includes('€627.63')), false);
+
 console.log('\n--- failure modes are explicit, not silent ---');
 const empty = parseStatement(buildLines([[]]));
 eq('scanned pdf warns', /scan|OCR/i.test(empty.warnings.join(' ')), true);

@@ -344,13 +344,17 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
     // A bare amount with nothing naming it is not a transaction — statements
     // label every one. It is the second half of a summary block: the figure
     // that belongs to a label sitting on another line.
+    // `summary` means the row STATES a figure about the statement — a balance
+    // or a total. `skip` also covers a bare amount with no label, which states
+    // nothing and must not be offered as a figure to check against.
+    const summary = isSummaryRow(descText) || isSummaryRow(line.text);
     const kind: 'txn' | 'cont' | 'skip' =
-      isSummaryRow(descText) || isSummaryRow(line.text) || (amounts.length > 0 && !descText.trim())
+      summary || (amounts.length > 0 && !descText.trim())
         ? 'skip'
         : amounts.length
           ? 'txn'
           : 'cont';
-    return { line, dateTokens, date, amounts, descTokens, kind };
+    return { line, dateTokens, date, amounts, descTokens, kind, summary };
   });
   /**
    * Anything carrying money before the first dated row is a header, not a
@@ -365,7 +369,12 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
   const firstDated = classified.findIndex((c) => c.kind === 'txn' && c.dateTokens > 0);
   if (firstDated > 0) {
     for (let i = 0; i < firstDated; i++) {
-      if (classified[i].kind === 'txn') classified[i].kind = 'skip';
+      if (classified[i].kind === 'txn') {
+        classified[i].kind = 'skip';
+        // A header block states the statement's own figures, so it belongs in
+        // the checkable totals even though it names no summary keyword.
+        classified[i].summary = true;
+      }
     }
   }
 
@@ -417,7 +426,7 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
       ignored++;
       // Keep the ones that state a figure — those are what the reader checks
       // the extraction against.
-      if (c.amounts.length) {
+      if (c.summary && c.amounts.length) {
         const label = (c.descTokens.map((t) => t.str).join(' ') || line.text).trim();
         declared.push({ label: label.slice(0, 80), amounts: c.amounts.map((t) => t.str) });
       }
@@ -470,6 +479,30 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
       lastLine = line;
     } else {
       ignored++;
+    }
+  }
+
+  /**
+   * A statement can hold more than one transaction table — a Revolut EUR
+   * statement carries "Account transactions" and "Pockets transactions", each
+   * with its own column positions. Clustering assumes a single geometry, so
+   * the tables interleave and a column ends up meaning different things in
+   * different sections.
+   *
+   * Detecting the sections is easy; merging them is not, because they need not
+   * have the same number of columns, so neither position nor ordinal alignment
+   * is safe. Rather than guess, say so: the totals panel is right underneath,
+   * and a column that does not reconcile is then obvious rather than mysterious.
+   *
+   * The signal is a column almost nobody uses while others are busy — the
+   * hallmark of two geometries overlaid, not of a genuinely rare column.
+   */
+  if (columns.length >= 4 && rows.length >= 20) {
+    const usage = columns.map((_, i) => rows.filter((r) => r[2 + i].trim()).length);
+    if (Math.min(...usage) / rows.length < 0.1) {
+      warnings.push(
+        'This statement looks like it contains more than one transaction table — Revolut, for example, lists account and pocket transactions separately. Their columns do not line up, so a money column here may mix two different things. Check the column totals against the statement’s own figures below before using the file.',
+      );
     }
   }
 

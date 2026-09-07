@@ -1,5 +1,6 @@
 <script lang="ts">
   import { serializeCsv, type Grid } from '../../lib/csv';
+  import { parseAmount } from '../../lib/ofx';
   import {
     buildLines,
     parseStatement,
@@ -28,6 +29,26 @@
   let fileInput: HTMLInputElement;
   const PREVIEW = 12;
   const ROLE_OPTIONS = ['Amount', 'Debit', 'Credit', 'Balance', 'Fee', 'Ignore'];
+
+  /**
+   * Extracted column sums, to sit next to the totals the statement states about
+   * itself. No verdict is offered: which declared figure a column should equal
+   * depends on the bank, and a confident wrong verdict is worse than none. The
+   * reader compares two numbers and knows immediately.
+   */
+  const columnSums = $derived.by(() => {
+    if (!result) return [] as { label: string; sum: string }[];
+    return roles.map((role, i) => {
+      const total = result!.grid.rows.reduce((s, r) => s + (parseAmount(r[2 + i] ?? '', decimal) ?? 0), 0);
+      return {
+        label: role,
+        sum: (Math.round(total * 100) / 100).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }),
+      };
+    });
+  });
 
   const outGrid = $derived.by<Grid | null>(() => {
     if (!result) return null;
@@ -212,6 +233,37 @@
               </select>
             </label>
           {/each}
+        </div>
+      </div>
+    {/if}
+
+    {#if result.declared.length}
+      <div class="p-5 rounded-xl bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
+        <p class="text-sm font-semibold mb-1">Check this against the statement</p>
+        <p class="text-xs text-[color:var(--color-text-mute)] mb-4">
+          Every bank lays a statement out differently, so the only reliable proof that nothing was missed is the statement's own arithmetic. Your extracted columns are on the left; the figures the document states about itself are on the right. If a column should equal one of them and does not, something was dropped or double-counted — check the extracted lines below.
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <p class="text-xs uppercase tracking-wider text-[color:var(--color-text-dim)] mb-2">Extracted, summed</p>
+            <table class="w-full text-xs"><tbody>
+              {#each columnSums as c}
+                <tr><td class="py-1">{c.label}</td><td class="py-1 text-right font-mono">{c.sum}</td></tr>
+              {/each}
+              <tr class="border-t border-[color:var(--color-border)]"><td class="py-1 text-[color:var(--color-text-mute)]">Rows</td><td class="py-1 text-right font-mono">{result.stats.transactions}</td></tr>
+            </tbody></table>
+          </div>
+          <div>
+            <p class="text-xs uppercase tracking-wider text-[color:var(--color-text-dim)] mb-2">The statement says</p>
+            <table class="w-full text-xs"><tbody>
+              {#each result.declared.slice(0, 12) as d}
+                <tr>
+                  <td class="py-1 pr-2 max-w-[16rem] overflow-hidden text-ellipsis whitespace-nowrap">{d.label}</td>
+                  <td class="py-1 text-right font-mono whitespace-nowrap">{d.amounts.join('  ')}</td>
+                </tr>
+              {/each}
+            </tbody></table>
+          </div>
         </div>
       </div>
     {/if}

@@ -73,7 +73,12 @@ const schema = combineSchemas(
 
       <h2 class="text-2xl font-bold mb-4 mt-10">Honest about what it cannot do</h2>
       <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
-        Every bank lays a statement out differently, so this will not be right for every PDF on the first try. Two things follow from that. It tells you when it fails instead of returning something plausible — a scanned statement is named as a scan, and a layout it cannot read says so. And it shows you every line it extracted, so when a row looks wrong you can see whether the text came out badly or the table was rebuilt badly. Check a few rows against the PDF before you rely on the file; that habit costs nothing and catches everything.
+        Every bank lays a statement out differently, so this will not be right for every PDF on the first try. Three things follow from that. It tells you when it fails instead of returning something plausible — a scanned statement is named as a scan, and a layout it cannot read says so. It shows you every line it extracted, so when a row looks wrong you can see whether the text came out badly or the table was rebuilt badly. And it puts your extracted totals next to the ones the statement states about itself, so you can prove nothing was dropped or double-counted without taking anyone's word for it — including ours.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Why it shows you the statement's own totals</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        No converter can be tested against every bank in the world, and one that quietly moves a figure into the wrong column is worse than one that fails outright. So rather than asking for trust, this hands you the check: almost every statement prints its opening and closing balance and its totals, and those are compared against what was extracted. On a real statement that check caught transactions being counted three times, on rows that individually looked perfect. It works the same whichever bank you use, because the statement is doing the verifying, not us.
       </p>
     </article>
 

@@ -40,7 +40,11 @@ Where it struggles: layouts where the date is not the first thing on the line, a
 
 ## Always check before you trust it
 
-Every bank formats statements differently, so treat the first conversion of a new statement as something to verify, not something to accept:
+Every bank formats statements differently, so treat the first conversion of a new statement as something to verify, not something to accept.
+
+**Start with the arithmetic.** Under the table, "Check this against the statement" puts your extracted column totals next to the figures the document states about itself — opening and closing balance, total debits and credits. Almost every statement prints these, in every country, which makes them the one check that works no matter which bank you use. If a column should equal one of them and does not, something was dropped or counted twice. This is not a formality: it is what caught a converter counting every transaction three times, on a statement where the rows looked perfectly correct.
+
+Then spot-check the rows:
 
 - Compare the **first and last transaction** against the PDF.
 - Check any row where the **description wrapped** onto two lines.

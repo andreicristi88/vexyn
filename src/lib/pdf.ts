@@ -85,6 +85,18 @@ export type ParseResult = {
   };
   /** Every reconstructed line, so a failed parse can be inspected rather than guessed at. */
   lines: PdfLine[];
+  /**
+   * The totals the statement states about itself — opening and closing balance,
+   * total debits and credits — lifted from the summary rows that are excluded
+   * from the transactions.
+   *
+   * This is the answer to a parser that cannot be tested against every bank in
+   * the world: the reader compares these against the extracted column sums and
+   * knows, for their own statement, whether the extraction is complete. It is
+   * the check that caught a 3x overcount here; a tool that shows it lets every
+   * user run it without anyone having seen their layout.
+   */
+  declared: { label: string; amounts: string[] }[];
   warnings: string[];
 };
 
@@ -151,8 +163,23 @@ export function isDate(s: string): boolean {
  * preview. So the patterns are anchored, and the generic words need a
  * qualifier.
  */
-const SUMMARY_RE =
-  /^\s*(sold\b|rulaj\b|subtotal\b|saldo\b|fonduri\s+proprii\b|credit\s+neutilizat\b|(opening|closing|previous|final|available|starting)\s+balance\b|available\s+funds\b|unused\s+credit\b|credit\s+limit\b|balance\s+(brought|carried|b\/f|c\/f)\b|total\s+(cont|general|debit|credit|transactions?)\b)/i;
+const SUMMARY_RE = new RegExp(
+  '^\\s*(' +
+    // Romanian
+    'sold\\b|rulaj\\b|fonduri\\s+proprii\\b|credit\\s+neutilizat\\b|total\\s+(cont|general)\\b|' +
+    // English / US / UK
+    '(opening|closing|previous|final|starting|beginning|ending|available|new|old)\\s+balance\\b|' +
+    'balance\\s+(brought|carried|forward|b\\/f|c\\/f)\\b|' +
+    'total\\s+(credit|debit|deposits?|withdrawals?|payments?|transactions?)\\b|' +
+    'available\\s+funds\\b|unused\\s+credit\\b|credit\\s+limit\\b|' +
+    // German / French / Spanish / Italian — the same three ideas
+    '(alter|neuer)\\s+kontostand\\b|kontostand\\b|zwischensumme\\b|' +
+    '(ancien|nouveau)\\s+solde\\b|solde\\s+(initial|final|précédent|precedent)\\b|totaux?\\b|' +
+    'saldo\\b|(saldo|balance)\\s+(anterior|inicial|final)\\b|totale\\b|' +
+    'subtotal\\b' +
+    ')',
+  'i',
+);
 
 export function isSummaryRow(text: string): boolean {
   return SUMMARY_RE.test(text);
@@ -343,12 +370,19 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
    */
   let currentDate = '';
   let dateless = 0;
+  const declared: { label: string; amounts: string[] }[] = [];
 
   for (const c of classified) {
     const { line } = c;
 
     if (c.kind === 'skip') {
       ignored++;
+      // Keep the ones that state a figure — those are what the reader checks
+      // the extraction against.
+      if (c.amounts.length) {
+        const label = (c.descTokens.map((t) => t.str).join(' ') || line.text).trim();
+        declared.push({ label: label.slice(0, 80), amounts: c.amounts.map((t) => t.str) });
+      }
       continue;
     }
 
@@ -421,6 +455,7 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
       ignored,
     },
     lines,
+    declared,
     warnings,
   };
 }

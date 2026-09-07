@@ -1,4 +1,4 @@
-import { buildLines, parseStatement, detectDecimal, isAmount, isDate, type PdfTextItem } from '../src/lib/pdf';
+import { buildLines, parseStatement, detectDecimal, isAmount, isDate, isSummaryRow, type PdfTextItem } from '../src/lib/pdf';
 
 let pass = 0, fail = 0;
 const eq = (name: string, got: unknown, want: unknown) => {
@@ -74,12 +74,68 @@ eq('C transactions across pages', C.stats.transactions, 3);
 eq('C page 2 row', C.grid.rows[2][1], 'RENT');
 eq('C reports 2 pages', C.stats.pages, 2);
 
+console.log('\n--- layout D: month-name dates in another language (ING Romania) ---');
+// From a real ING statement. The date arrives as three separate runs
+// ("02" "septembrie" "2026") and "septembrie" is ten letters. Both broke
+// detection: the month pattern capped words at nine, and only the FIRST token
+// was tested for a date — so every row on the statement was silently skipped.
+const pageD: PdfTextItem[] = [
+  L('Data', 21, 770), L('Detalii tranzactie', 130, 770), R('Debit', 400, 770), R('Credit', 470, 770),
+  L('02', 20, 750), L('septembrie', 32, 750), L('2026', 78, 750),
+  L("Transfer Home'Bank", 130, 750), R('300,00', 400, 750),
+  L('Beneficiar:Cineva', 130, 738),
+  L('Referinta:178829379369201535653', 130, 726),
+  L('05', 20, 700), L('octombrie', 32, 700), L('2026', 74, 700),
+  L('Incasare', 130, 700), R('1.250,00', 470, 700),
+  L('Sold final: 0,00', 20, 600),
+];
+const D = parseStatement(buildLines([pageD]));
+eq('D month-name date detected', D.stats.transactions, 2);
+eq('D two amount columns', D.amountColumns, 2);
+eq('D debit row, credit blank', D.grid.rows[0].slice(2), ['300,00', '']);
+eq('D credit row, debit blank', D.grid.rows[1].slice(2), ['', '1.250,00']);
+eq('D full date kept together', D.grid.rows[0][0], '02 septembrie 2026');
+eq('D detail lines joined in', D.grid.rows[0][1].includes('Referinta'), true);
+eq('D closing balance not a transaction', D.grid.rows.some((r) => r[1].includes('Sold')), false);
+eq('D long month word matches', isDate('02 septembrie 2026'), true);
+eq('D english month still matches', isDate('5 Jan 2026'), true);
+
+console.log('\n--- layout E: date printed once per day, dated summary rows (Banca Transilvania) ---');
+// From a real BT statement, which broke three assumptions at once: the date is
+// printed only on the first row of each day, the daily and running totals are
+// themselves dated (so an anchored summary match against the whole line never
+// fired and they were counted as transactions), and a summary block leaves a
+// bare amount on a line of its own. Together these inflated every day by 3x.
+const pageE: PdfTextItem[] = [
+  L('Data', 22, 780), L('Descriere', 90, 780), R('Debit', 400, 780), R('Credit', 470, 780),
+  L('SOLD ANTERIOR', 89, 764), R('2,822.64', 470, 764),
+  L('01/09/2026', 28, 748), L('Incasare Instant', 90, 748), R('500.00', 470, 748),
+  L('REF: 000ZEXA', 90, 736),
+  L('Incasare Instant', 90, 724), R('200.00', 470, 724),
+  L('Comision', 90, 712), R('7.50', 400, 712),
+  L('01/09/2026', 28, 700), L('RULAJ ZI', 90, 700), R('7.50', 400, 700), R('700.00', 470, 700),
+  L('Fonduri proprii Credit neutilizat', 90, 688), R('627.63', 470, 688),
+  R('627.63', 470, 676),
+];
+const E = parseStatement(buildLines([pageE]));
+const sumCol = (i: number) =>
+  Math.round(E.grid.rows.reduce((s, r) => s + Number((r[2 + i] || '0').replace(/,/g, '')), 0) * 100) / 100;
+eq('E only real transactions kept', E.stats.transactions, 3);
+eq('E date carried to undated rows', E.grid.rows.every((r) => r[0] === '01/09/2026'), true);
+eq('E credits sum to the daily total', sumCol(1), 700);
+eq('E debits sum to the daily total', sumCol(0), 7.5);
+eq('E dated RULAJ row skipped', E.grid.rows.some((r) => /RULAJ/i.test(r[1])), false);
+eq('E opening balance skipped', E.grid.rows.some((r) => /SOLD/i.test(r[1])), false);
+eq('E funds/limit block skipped', E.grid.rows.some((r) => /Fonduri|neutilizat/i.test(r[1])), false);
+eq('E bare amount with no label skipped', E.grid.rows.some((r) => !r[1].trim()), false);
+eq('E summary matched on description, not raw line', isSummaryRow('RULAJ ZI'), true);
+
 console.log('\n--- failure modes are explicit, not silent ---');
 const empty = parseStatement(buildLines([[]]));
 eq('scanned pdf warns', /scan|OCR/i.test(empty.warnings.join(' ')), true);
 eq('scanned pdf has no rows', empty.grid.rows.length, 0);
 const noDates = parseStatement(buildLines([[L('SOME BANK', 50, 800), L('Statement of account', 50, 780)]]));
-eq('no-date warns', /no line began with a date/i.test(noDates.warnings.join(' ')), true);
+eq('no-amount warns', /no line carried an amount/i.test(noDates.warnings.join(' ')), true);
 eq('no-date keeps lines for inspection', noDates.lines.length, 2);
 
 console.log(`\n${pass} passed, ${fail} failed\n`);

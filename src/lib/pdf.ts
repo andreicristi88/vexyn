@@ -89,11 +89,26 @@ export type ParseResult = {
 };
 
 /**
+ * A month written as a word. Length runs to 12 and the class includes accented
+ * letters because statements are not all in English: ING Romania prints
+ * "02 septembrie 2026", and "septembrie" is ten letters. A nine-letter cap
+ * silently made every row on such a statement invisible.
+ */
+const MONTH_WORD = '[a-zà-ÿăâîșşțţ]{3,12}';
+
+/**
  * A date at the start of a line. Covers day-first, month-first, year-first and
  * month-name forms, with 2- or 4-digit years.
  */
-const DATE_RE =
-  /^(?:\d{1,2}[.\-/]\d{1,2}[.\-/]\d{2,4}|\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2}|\d{1,2}\s+[a-z]{3,9}\.?\s+\d{2,4}|[a-z]{3,9}\.?\s+\d{1,2},?\s+\d{2,4})$/i;
+const DATE_RE = new RegExp(
+  '^(?:' +
+    '\\d{1,2}[.\\-/]\\d{1,2}[.\\-/]\\d{2,4}' +
+    '|\\d{4}[.\\-/]\\d{1,2}[.\\-/]\\d{1,2}' +
+    `|\\d{1,2}\\s+${MONTH_WORD}\\.?\\s+\\d{2,4}` +
+    `|${MONTH_WORD}\\.?\\s+\\d{1,2},?\\s+\\d{2,4}` +
+    ')$',
+  'i',
+);
 
 /**
  * Money, with the shapes statements actually print: grouped thousands with dot,
@@ -122,6 +137,41 @@ export function isAmount(s: string, requireDecimals = true): boolean {
 
 export function isDate(s: string): boolean {
   return DATE_RE.test(s.trim());
+}
+
+/**
+ * Rows that summarise rather than record: opening and closing balances, daily
+ * and running totals. They carry an amount — often a large one — and the
+ * date-carry-forward rule would otherwise promote every one of them to a
+ * transaction, quietly inflating the totals.
+ *
+ * Deliberately narrow. A bare `total` would also match "TOTAL ENERGIES", a real
+ * petrol-station payee, and dropping a genuine transaction without saying so is
+ * far worse than letting a summary row through where it is visible in the
+ * preview. So the patterns are anchored, and the generic words need a
+ * qualifier.
+ */
+const SUMMARY_RE =
+  /^\s*(sold\b|rulaj\b|subtotal\b|saldo\b|fonduri\s+proprii\b|credit\s+neutilizat\b|(opening|closing|previous|final|available|starting)\s+balance\b|available\s+funds\b|unused\s+credit\b|credit\s+limit\b|balance\s+(brought|carried|b\/f|c\/f)\b|total\s+(cont|general|debit|credit|transactions?)\b)/i;
+
+export function isSummaryRow(text: string): boolean {
+  return SUMMARY_RE.test(text);
+}
+
+/**
+ * How many leading tokens form the date, or 0 if the line does not start with
+ * one.
+ *
+ * A date is not always one token. "31.01.2026" is, but "02 septembrie 2026"
+ * arrives as three, and testing only the first token sees "02" — not a date —
+ * so every row on that statement was skipped. Longest match wins, so the year
+ * is taken as part of the date rather than left to the description.
+ */
+export function leadingDateTokens(tokens: PdfToken[]): number {
+  for (let k = Math.min(3, tokens.length); k >= 1; k--) {
+    if (isDate(tokens.slice(0, k).map((t) => t.str).join(' '))) return k;
+  }
+  return 0;
 }
 
 /**
@@ -224,8 +274,38 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
   const maxGap = opts.continuationMaxGap ?? 30;
   const warnings: string[] = [];
 
-  const isTxnLine = (l: PdfLine) => l.tokens.length > 0 && isDate(l.tokens[0].str);
-  const txnLines = lines.filter(isTxnLine);
+  // Classify every line once: a transaction carries money, a continuation is
+  // the wrapped rest of the row above it, and a summary is neither.
+  const classified = lines.map((line) => {
+    const dateTokens = leadingDateTokens(line.tokens);
+    const date = dateTokens ? line.tokens.slice(0, dateTokens).map((t) => t.str).join(' ') : '';
+    const amounts = line.tokens.filter((t) => isAmount(t.str, requireDecimals));
+    const firstAmountX = amounts.length ? Math.min(...amounts.map((t) => t.x)) : Infinity;
+    const nonAmount = line.tokens.slice(dateTokens).filter((t) => !isAmount(t.str, requireDecimals));
+    // Description normally sits left of the money. Falling back to whatever
+    // text is on the line keeps layouts that put a label after the amount from
+    // looking description-less, which the empty-description rule below would
+    // otherwise treat as a summary row and drop.
+    const beforeAmounts = nonAmount.filter((t) => t.x < firstAmountX);
+    const descTokens = beforeAmounts.length ? beforeAmounts : nonAmount;
+    // Test the DESCRIPTION, not the raw line. Summary rows are often dated —
+    // "01/09/2026 RULAJ ZI 2,630.74 3,312.00" — so an anchored match against
+    // the whole line never fires, and the daily and running totals get counted
+    // as transactions on top of the transactions they summarise. That inflated
+    // a real statement by exactly 3x: the rows, plus RULAJ ZI, plus RULAJ TOTAL.
+    const descText = descTokens.map((t) => t.str).join(' ');
+    // A bare amount with nothing naming it is not a transaction — statements
+    // label every one. It is the second half of a summary block: the figure
+    // that belongs to a label sitting on another line.
+    const kind: 'txn' | 'cont' | 'skip' =
+      isSummaryRow(descText) || isSummaryRow(line.text) || (amounts.length > 0 && !descText.trim())
+        ? 'skip'
+        : amounts.length
+          ? 'txn'
+          : 'cont';
+    return { line, dateTokens, date, amounts, descTokens, kind };
+  });
+  const txnLines = classified.filter((c) => c.kind === 'txn');
 
   if (!lines.length) {
     warnings.push(
@@ -233,7 +313,7 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
     );
   } else if (!txnLines.length) {
     warnings.push(
-      'Text was found, but no line began with a date, so no transactions could be identified. Check the extracted lines below — the date may be in a format this does not recognise yet.',
+      'Text was found, but no line carried an amount, so no transactions could be identified. Check the extracted lines below — the amounts may be in a format this does not recognise yet.',
     );
   }
 
@@ -241,9 +321,7 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
   // lines. Doing this across all rows is what lets a blank Debit or Credit stay
   // blank instead of shifting the row left.
   const edges: number[] = [];
-  for (const l of txnLines) {
-    for (const t of l.tokens) if (isAmount(t.str, requireDecimals)) edges.push(t.right);
-  }
+  for (const c of txnLines) for (const t of c.amounts) edges.push(t.right);
   const columns = clusterRightEdges(edges, colTol);
 
   const headers = ['Date', 'Description', ...columns.map((_, i) => `Amount ${i + 1}`)];
@@ -255,22 +333,36 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
   /** The line the last row came from, so a wrapped line can be required to follow it. */
   let lastLine: PdfLine | null = null;
 
-  for (const line of lines) {
-    if (isTxnLine(line)) {
-      const date = line.tokens[0].str;
-      const amountTokens = line.tokens.filter((t) => isAmount(t.str, requireDecimals));
-      const firstAmountX = amountTokens.length ? Math.min(...amountTokens.map((t) => t.x)) : Infinity;
-      const descTokens = line.tokens
-        .slice(1)
-        .filter((t) => t.x < firstAmountX && !isAmount(t.str, requireDecimals));
-      if (descTokens.length) descLeft = Math.min(descLeft, descTokens[0].x);
+  /**
+   * The date carried forward.
+   *
+   * Banks do not all repeat the date on every row. Banca Transilvania prints it
+   * once per day and leaves the following rows of that day blank, so requiring
+   * a date per row found 30 transactions in a 15-page statement and dropped the
+   * rest as page noise. The last date seen applies until another one appears.
+   */
+  let currentDate = '';
+  let dateless = 0;
+
+  for (const c of classified) {
+    const { line } = c;
+
+    if (c.kind === 'skip') {
+      ignored++;
+      continue;
+    }
+
+    if (c.kind === 'txn') {
+      if (c.dateTokens > 0) currentDate = c.date;
+      else if (!currentDate) dateless++;
+      if (c.descTokens.length) descLeft = Math.min(descLeft, c.descTokens[0].x);
 
       const cells = new Array(columns.length).fill('');
-      for (const t of amountTokens) {
+      for (const t of c.amounts) {
         let best = 0;
         let bestD = Infinity;
-        columns.forEach((c, i) => {
-          const d = Math.abs(c - t.right);
+        columns.forEach((col, i) => {
+          const d = Math.abs(col - t.right);
           if (d < bestD) {
             bestD = d;
             best = i;
@@ -280,30 +372,35 @@ export function parseStatement(lines: PdfLine[], opts: ParseOptions = {}): Parse
         // coarse for this layout; keep both rather than dropping one silently.
         cells[best] = cells[best] ? `${cells[best]} ${t.str}` : t.str;
       }
-      rows.push([date, descTokens.map((t) => t.str).join(' '), ...cells]);
+      rows.push([currentDate, c.descTokens.map((t) => t.str).join(' '), ...cells]);
       lastLine = line;
       continue;
     }
 
-    // A wrapped description: no date, no money, starting in the description
-    // column, and sitting immediately under the row it belongs to.
+    // A wrapped description: no money, starting in the description column, and
+    // sitting immediately under the row it belongs to.
     //
     // The position checks are what keep page furniture out. A centred "Page 1
-    // of 3" also has no date and no amount, so without an indent band it would
-    // be glued onto the last transaction's description; without the vertical
-    // check, a footer at the bottom of the page would be too.
+    // of 3" also has no amount, so without an indent band it would be glued
+    // onto the last transaction's description; without the vertical check, a
+    // footer at the bottom of the page would be too.
     const last = rows[rows.length - 1];
-    const hasAmount = line.tokens.some((t) => isAmount(t.str, requireDecimals));
     const left = line.tokens[0].x;
     const inDescBand = left >= descLeft - 2 && left <= descLeft + maxIndent;
     const follows = !!lastLine && lastLine.page === line.page && lastLine.y - line.y <= maxGap;
-    if (last && !hasAmount && inDescBand && follows && Number.isFinite(descLeft)) {
+    if (last && inDescBand && follows && Number.isFinite(descLeft)) {
       last[1] = last[1] ? `${last[1]} ${line.text}` : line.text;
       continuations++;
       lastLine = line;
     } else {
       ignored++;
     }
+  }
+
+  if (dateless) {
+    warnings.push(
+      `${dateless} row${dateless !== 1 ? 's' : ''} appeared before any date and have an empty Date column. Check them against the PDF — they may be balances rather than transactions.`,
+    );
   }
 
   const doubled = rows.some((r) => r.slice(2).some((c) => c.includes(' ')));

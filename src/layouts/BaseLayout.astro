@@ -12,6 +12,12 @@ interface Props {
   noindex?: boolean;
   /** Skip the value suffix on the title (for content pages like guides). */
   plainTitle?: boolean;
+  /**
+   * This page is the not-found page. Only 404.astro sets it, and the only thing
+   * it does is mark the analytics beacon, so a landing on a dead URL is not
+   * counted as a visit to a page that exists.
+   */
+  notFound?: boolean;
   schema?: Record<string, any>;
 }
 
@@ -21,6 +27,7 @@ const {
   image = '/og-default.png',
   noindex = false,
   plainTitle = false,
+  notFound = false,
   schema,
 } = Astro.props;
 
@@ -97,7 +104,7 @@ const fullTitle =
       <script type="application/ld+json" set:html={JSON.stringify(schema)} />
     )}
   </head>
-  <body>
+  <body data-nf={notFound ? '1' : undefined}>
     <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-[color:var(--color-brand-500)] focus:text-white focus:font-medium">
       Skip to main content
     </a>
@@ -152,7 +159,11 @@ const fullTitle =
           }
 
           if (excluded) return;
-          var b = JSON.stringify({ p: location.pathname, r: document.referrer, w: navigator.webdriver ? 1 : 0 });
+          // The not-found page carries data-nf. Read it from the DOM rather
+          // than templating it in, so this script stays byte-identical on all
+          // 61 pages and the CSP keeps one hash for it instead of two.
+          var nf = document.body && document.body.getAttribute('data-nf') === '1' ? 1 : 0;
+          var b = JSON.stringify({ p: location.pathname, r: document.referrer, w: navigator.webdriver ? 1 : 0, nf: nf });
           if (navigator.sendBeacon) navigator.sendBeacon('/api/hit', new Blob([b], { type: 'application/json' }));
           else fetch('/api/hit', { method: 'POST', body: b, keepalive: true });
         } catch (e) {}

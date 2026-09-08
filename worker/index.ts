@@ -143,7 +143,7 @@ async function trackHit(request: Request, env: Env): Promise<Response> {
     if (!env.ANALYTICS) return noContent;
     const ua = request.headers.get('user-agent') || '';
     if (!ua) return noContent;
-    let body: { p?: string; r?: string; w?: number } = {};
+    let body: { p?: string; r?: string; w?: number; nf?: number } = {};
     try { body = JSON.parse((await request.text()) || '{}'); } catch { /* ignore */ }
     const cf = ((request as unknown as { cf?: CfInfo }).cf || {}) as CfInfo;
     const path = (body.p || '/').slice(0, 200);
@@ -157,9 +157,25 @@ async function trackHit(request: Request, env: Env): Promise<Response> {
     const c = body.w ? { cls: 'bot' as const, reason: 'webdriver|-' } : classify(ua, cf);
     const org = String(cf.asOrganization || '').slice(0, 60);
     const lang = limbaOf(request.headers.get('accept-language') || '');
+    /**
+     * blob11 marks a landing on the not-found page. The worker cannot tell on
+     * its own — only /api/* reaches it, everything else is served straight from
+     * static assets — so the 404 page declares itself via `nf`.
+     *
+     * It exists because dead URLs are not a rounding error here. The site has
+     * been three different things, and 31 URLs from the earlier ones are still
+     * in Google's index: 23 image generators and 8 privacy-tool guides. They
+     * were arriving as ordinary pageviews on pages that do not exist, which on
+     * a site this young is most of the traffic — exactly when the dashboard is
+     * the instrument for judging whether the new pages are being indexed.
+     *
+     * Appended, never inserted: blob1..blob10 keep their meaning, so rows
+     * written before this change still read correctly.
+     */
+    const notFound = body.nf ? '404' : '';
     env.ANALYTICS.writeDataPoint({
       indexes: [path.slice(0, 96)],
-      blobs: [path, ref, country, city, visitor, device, c.cls, org, c.reason, lang],
+      blobs: [path, ref, country, city, visitor, device, c.cls, org, c.reason, lang, notFound],
       doubles: [1],
     });
   } catch { /* never block */ }
@@ -178,13 +194,30 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
   const days = Math.min(90, Math.max(1, parseInt(url.searchParams.get('days') || '14', 10)));
   const key = env.STATS_KEY;
 
+  /**
+   * A rejected query used to come back as an empty array, which renders as an
+   * empty panel — indistinguishable from a real "nobody came". That is the
+   * worst failure this dashboard can have, because its whole job is to tell you
+   * whether zero is the truth. Failures are collected and shown at the top.
+   */
+  const failures: string[] = [];
   async function q(sql: string): Promise<Record<string, string>[]> {
-    const r = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/analytics_engine/sql`,
-      { method: 'POST', headers: { Authorization: `Bearer ${env.STATS_API_TOKEN}` }, body: sql },
-    );
-    const j = (await r.json()) as { data?: Record<string, string>[] };
-    return j.data || [];
+    try {
+      const r = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/analytics_engine/sql`,
+        { method: 'POST', headers: { Authorization: `Bearer ${env.STATS_API_TOKEN}` }, body: sql },
+      );
+      const text = await r.text();
+      if (!r.ok) {
+        failures.push(`HTTP ${r.status}: ${text.slice(0, 200)}`);
+        return [];
+      }
+      const j = JSON.parse(text) as { data?: Record<string, string>[] };
+      return j.data || [];
+    } catch (e) {
+      failures.push(String(e).slice(0, 200));
+      return [];
+    }
   }
 
   // Optional single-day drill-down: ?zi=YYYY-MM-DD restricts the page/source/
@@ -195,15 +228,28 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
   const windowClause = zi
     ? `timestamp >= toDateTime('${zi} 00:00:00') AND timestamp < toDateTime('${zi} 00:00:00') + INTERVAL '1' DAY`
     : since;
-  const human = `${windowClause} AND blob7 != 'bot'`;
+  /**
+   * Landings on the not-found page are excluded from every headline panel:
+   * they are visits to URLs the site no longer has, and counting them as
+   * pageviews makes an index still full of the old site look like traffic to
+   * the new one. They get their own panel instead.
+   *
+   * Written to tolerate rows from before blob11 existed. An unset blob reads
+   * back as NULL under one interpretation and as '' under another, and a bare
+   * `blob11 != '404'` would silently drop the entire history under the first.
+   */
+  const found = `(blob11 IS NULL OR blob11 != '404')`;
+  const human = `${windowClause} AND blob7 != 'bot' AND ${found}`;
+  const gone = `${windowClause} AND blob7 != 'bot' AND blob11 = '404'`;
 
-  const [daily, pages, refs, countries, devices, totals] = await Promise.all([
-    q(`SELECT toStartOfDay(timestamp) AS day, blob7 AS cls, count(DISTINCT blob5) AS visitors, sum(_sample_interval) AS pv FROM ${DATASET} WHERE ${since} GROUP BY day, cls ORDER BY day DESC`),
+  const [daily, pages, refs, countries, devices, totals, notFound] = await Promise.all([
+    q(`SELECT toStartOfDay(timestamp) AS day, blob7 AS cls, count(DISTINCT blob5) AS visitors, sum(_sample_interval) AS pv FROM ${DATASET} WHERE ${since} AND ${found} GROUP BY day, cls ORDER BY day DESC`),
     q(`SELECT blob1 AS path, sum(_sample_interval) AS pv, count(DISTINCT blob5) AS visitors FROM ${DATASET} WHERE ${human} GROUP BY path ORDER BY pv DESC LIMIT 40`),
     q(`SELECT blob2 AS ref, sum(_sample_interval) AS pv, count(DISTINCT blob5) AS visitors FROM ${DATASET} WHERE ${human} GROUP BY ref`),
     q(`SELECT blob3 AS country, sum(_sample_interval) AS pv FROM ${DATASET} WHERE ${human} GROUP BY country ORDER BY pv DESC LIMIT 25`),
     q(`SELECT blob6 AS device, sum(_sample_interval) AS pv FROM ${DATASET} WHERE ${human} GROUP BY device ORDER BY pv DESC LIMIT 15`),
     q(`SELECT count(DISTINCT blob5) AS visitors, sum(_sample_interval) AS pv FROM ${DATASET} WHERE ${human}`),
+    q(`SELECT blob1 AS path, sum(_sample_interval) AS pv, count(DISTINCT blob5) AS visitors FROM ${DATASET} WHERE ${gone} GROUP BY path ORDER BY pv DESC LIMIT 25`),
   ]);
 
   const byDay: Record<string, { hum: number; bot: number; pv: number }> = {};
@@ -269,6 +315,11 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
   const totVisitors = Number(totals[0]?.visitors || 0);
   const totPv = Number(totals[0]?.pv || 0);
 
+  const goneRows = notFound.map(
+    (r) => [r.path || '/', { pv: Number(r.pv || 0), viz: Number(r.visitors || 0) }] as [string, { pv: number; viz: number }],
+  );
+  const goneTotal = goneRows.reduce((t, [, m]) => ({ pv: t.pv + m.pv, viz: t.viz + m.viz }), { pv: 0, viz: 0 });
+
   const list = (title: string, rows: [string, number][], max?: number) => {
     const top = rows[0]?.[1] || 1;
     return `<div class="card"><h2>${esc(title)}</h2><table>${rows
@@ -284,11 +335,12 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
     note: string,
     rows: [string, { pv: number; viz: number }][],
     total?: { pv: number; viz: number },
+    head = 'Source',
   ) =>
     `<div class="card"><h2>${esc(title)}</h2>${
       rows.length === 0
         ? '<p class="note">Nothing in this window.</p>'
-        : `<table><tr><td class="l"><span class="lbl" style="color:var(--mute)">Source</span></td><td class="n">Visitors</td><td class="n">Views</td></tr>${rows
+        : `<table><tr><td class="l"><span class="lbl" style="color:var(--mute)">${esc(head)}</span></td><td class="n">Visitors</td><td class="n">Views</td></tr>${rows
             .map(
               ([l, m]) =>
                 `<tr><td class="l"><span class="lbl">${esc(l)}</span></td><td class="n">${m.viz.toLocaleString()}</td><td class="n">${m.pv.toLocaleString()}</td></tr>`,
@@ -346,6 +398,13 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
   </style></head><body>
   <div class="top"><h1>Vexyn analytics <span style="color:var(--mute);font-weight:400">· ${zi ? esc(zi) : days + ' days'}</span></h1><div class="nav">${zi ? `<a href="?key=${encodeURIComponent(key)}&days=${days}">← all days</a>` : ''}${daysNav}</div></div>
   ${zi ? `<p style="color:var(--mute);margin:-6px 0 14px">Pages, sources, countries and devices below show <b style="color:var(--text)">${esc(zi)}</b> only. Click another day in the table to switch, or “← all days”.</p>` : ''}
+  ${
+    failures.length
+      ? `<div class="card" style="border-color:var(--danger);margin-bottom:16px"><h2 style="color:var(--danger)">${failures.length} quer${failures.length === 1 ? 'y' : 'ies'} failed</h2><p class="note">Panels below are incomplete — an empty one here does not mean zero traffic.</p>${failures
+          .map((f) => `<p class="note" style="color:var(--danger)">${esc(f)}</p>`)
+          .join('')}</div>`
+      : ''
+  }
   <div class="kpis">
     <div class="kpi"><div class="v">${totVisitors.toLocaleString()}</div><div class="k">Visitors (humans)</div></div>
     <div class="kpi"><div class="v">${totPv.toLocaleString()}</div><div class="k">Pageviews</div></div>
@@ -365,6 +424,13 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
       'Visits from a link inside a conversation with an AI assistant. Worth watching as one channel: robots.txt deliberately allows the AI search crawlers that produce these citations, while blocking the training-only ones.',
       aiRows,
       aiTotal,
+    )}
+    ${table2(
+      'Not found — landings on dead URLs',
+      'Visits that hit the 404 page, kept out of every other panel on this dashboard. Almost all of it is the site’s earlier lives still sitting in Google’s index: 23 image generators and 8 privacy-tool guides, 31 URLs in all, none of them in the sitemap and none redirected. They are meant to fade as search engines drop them, so treat a falling number here as progress. A path you did not expect is worth a look — it means something still links to it.',
+      goneRows,
+      goneTotal,
+      'Path',
     )}
     ${list('Countries', countries.map((r) => [r.country || 'XX', Number(r.pv || 0)] as [string, number]))}
     ${list('Devices', devices.map((r) => [r.device || 'Other', Number(r.pv || 0)] as [string, number]))}

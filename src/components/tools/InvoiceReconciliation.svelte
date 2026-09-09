@@ -2,7 +2,7 @@
   import { parseCsv, type Grid } from '../../lib/csv';
   import { buildTransactions, round2, DEFAULT_MAP, type StatementMap, type DateFormat, type Txn } from '../../lib/statement';
   import { matchTransactions, sumAmount } from '../../lib/matcher';
-  import { EXPORT_FORMATS, type ExportTxn } from '../../lib/exporters';
+  import { EXPORT_FORMATS, QIF_DATE_NOTE, type ExportTxn } from '../../lib/exporters';
 
   type Slot = {
     label: string; hint: string; fileName: string; grid: Grid | null;
@@ -217,6 +217,7 @@
       <div class="p-4 rounded-xl bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
         <p class="text-sm font-semibold mb-1">Export these {viewRows.length} item{viewRows.length !== 1 ? 's' : ''}</p>
         <p class="text-xs text-[color:var(--color-text-mute)] mb-3">Pick the format your accounting software imports.</p>
+        <p class="text-xs text-[color:var(--color-text-dim)] mb-3">{QIF_DATE_NOTE}</p>
         <div class="flex flex-wrap gap-2">
           {#each EXPORT_FORMATS as f}
             <button class="px-3 py-2 rounded-lg border border-[color:var(--color-border)] hover:border-[color:var(--color-brand-500)] hover:text-[color:var(--color-brand-400)] text-sm inline-flex items-center gap-1.5 transition-colors" on:click={() => download(f.id)}>

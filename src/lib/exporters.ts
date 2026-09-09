@@ -87,6 +87,15 @@ export function toJson(txns: ExportTxn[]): string {
   );
 }
 
+/**
+ * QIF declares no date order of its own, so every importer has to assume one —
+ * and 09/01/2026 is a valid date under both, two months apart. GnuCash asks;
+ * Quicken assumes month first. The file cannot say which order it used, so the
+ * page does. Kept here rather than in each tool so the five copies of it cannot
+ * drift into saying different things.
+ */
+export const QIF_DATE_NOTE = 'QIF has no way to state its date order, so ours are written month/day/year — pick that if your software asks.';
+
 export type ExportFormat = {
   id: string;
   label: string;

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { parseCsv, serializeCsv, type Grid } from '../../lib/csv';
   import { isStripePayouts, parseStripePayouts, type StripePayout } from '../../lib/stripe';
-  import { EXPORT_FORMATS, type ExportTxn } from '../../lib/exporters';
+  import { EXPORT_FORMATS, QIF_DATE_NOTE, type ExportTxn } from '../../lib/exporters';
 
   let fileName = $state('');
   let grid = $state<Grid | null>(null);
@@ -129,6 +129,7 @@
             <button class="px-3 py-2 rounded-lg border border-[color:var(--color-border)] hover:border-[color:var(--color-brand-500)] hover:text-[color:var(--color-brand-400)] text-sm transition-colors" on:click={() => downloadFormat(f.id)}>{f.label}</button>
           {/each}
         </div>
+        <p class="text-xs text-[color:var(--color-text-dim)] mt-2">{QIF_DATE_NOTE}</p>
       </div>
     {/if}
   {/if}

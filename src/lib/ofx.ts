@@ -116,6 +116,14 @@ export type OfxAccount = {
   acctId: string;
   acctType: 'CHECKING' | 'SAVINGS' | 'CREDITLINE' | 'MONEYMRKT';
   currency: string; // e.g. USD, EUR, RON
+  /**
+   * Closing balance for LEDGERBAL, which the OFX schema requires inside STMTRS.
+   * Left out, the document is structurally incomplete — libofx recovers and
+   * still reads the transactions, but it reports the statement as unfinished,
+   * and a stricter importer is entitled to refuse the file. Undefined writes
+   * 0.00, which importers use for display and GnuCash ignores on a bank import.
+   */
+  balance?: number;
 };
 
 export type OfxOptions = {
@@ -125,9 +133,38 @@ export type OfxOptions = {
   fid?: string; // FI id
 };
 
+// Letters that carry no accent to strip, so NFD leaves them alone.
+const LETTERS: Record<string, string> = {
+  ß: 'ss', æ: 'ae', Æ: 'AE', ø: 'o', Ø: 'O', œ: 'oe', Œ: 'OE',
+  đ: 'd', Đ: 'D', ł: 'l', Ł: 'L', þ: 'th', Þ: 'Th', ð: 'd', Ð: 'D',
+};
+
+/**
+ * Fold a value to ASCII.
+ *
+ * OFX 1.x is SGML, and the parser every desktop finance app reads it with —
+ * libofx, via OpenSP — rejects bytes above 127 outright. It does this whatever
+ * the header claims: USASCII, UTF-8 and UNICODE were all tried against the
+ * libofx that ships with GnuCash and all three produced the same parse errors.
+ * "Cafenea Măgura" arrived as "Cafenea M", the name cut at the first accent,
+ * and the damage did not stop at that field: the errors derailed the parse far
+ * enough that the closing STMTRS tag was reported unfinished.
+ *
+ * So accents are folded rather than sent. A Romanian, German or French payee
+ * reads correctly without them; a name in a non-Latin script cannot survive at
+ * all, and one '?' per run says so instead of silently shortening the name.
+ */
+export function toAscii(v: string): string {
+  const folded = v
+    .replace(/[ßæÆøØœŒđĐłŁþÞðÐ]/g, (c) => LETTERS[c] ?? c)
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '');
+  return folded.replace(/[^\x20-\x7e]+/g, '?');
+}
+
 /** Escape the five XML/SGML entities in a leaf value. */
 function esc(v: string): string {
-  return v
+  return toAscii(v)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -138,6 +175,18 @@ function esc(v: string): string {
 function amt(n: number): string {
   // OFX wants a plain decimal, dot separator, sign preserved.
   return n.toFixed(2);
+}
+
+/**
+ * A date OFX will not have to guess at: noon GMT, stated as such.
+ *
+ * A bare YYYYMMDD is legal but libofx cannot read a time out of it, and falls
+ * back to the clock at the moment of import — so the same file imported late in
+ * the evening can land a transaction on the next day. Noon with an explicit
+ * offset is stable everywhere except UTC+13 and beyond.
+ */
+function ofxDate(ymd: string): string {
+  return `${ymd}120000.000[0:GMT]`;
 }
 
 /** Build a full OFX (or QBO) document from transactions + account info. */
@@ -160,14 +209,19 @@ export function buildOfx(txns: OfxTxn[], account: OfxAccount, opts: OfxOptions):
   const txnBlocks = txns
     .map((t) => {
       const type = t.amount < 0 ? 'DEBIT' : 'CREDIT';
+      // NAME is capped at 32 by the format. "Abonament Netflix International BV
+      // Amsterdam" imported as "Abonament Netflix International" and the rest
+      // was simply gone. When nothing else would carry it, the full name goes
+      // to MEMO, which has room.
+      const memo = t.memo || (t.name.length > 32 ? t.name : '');
       return (
         `<STMTTRN>\n` +
         `<TRNTYPE>${type}\n` +
-        `<DTPOSTED>${t.datePosted}\n` +
+        `<DTPOSTED>${ofxDate(t.datePosted)}\n` +
         `<TRNAMT>${amt(t.amount)}\n` +
         `<FITID>${esc(t.fitid)}\n` +
-        `<NAME>${esc(t.name.slice(0, 32))}\n` +
-        (t.memo ? `<MEMO>${esc(t.memo)}\n` : '') +
+        `<NAME>${esc(t.name.slice(0, 32).trim())}\n` +
+        (memo ? `<MEMO>${esc(memo)}\n` : '') +
         `</STMTTRN>`
       );
     })
@@ -191,9 +245,10 @@ export function buildOfx(txns: OfxTxn[], account: OfxAccount, opts: OfxOptions):
     `<BANKMSGSRSV1>\n<STMTTRNRS>\n<TRNUID>1\n<STATUS>\n<CODE>0\n<SEVERITY>INFO\n</STATUS>\n` +
     `<STMTRS>\n<CURDEF>${esc(account.currency)}\n` +
     `<BANKACCTFROM>\n<BANKID>${esc(account.bankId)}\n<ACCTID>${esc(account.acctId)}\n<ACCTTYPE>${account.acctType}\n</BANKACCTFROM>\n` +
-    `<BANKTRANLIST>\n<DTSTART>${dtStart}\n<DTEND>${dtEnd}\n` +
+    `<BANKTRANLIST>\n<DTSTART>${ofxDate(dtStart)}\n<DTEND>${ofxDate(dtEnd)}\n` +
     `${txnBlocks}\n` +
     `</BANKTRANLIST>\n` +
+    `<LEDGERBAL>\n<BALAMT>${amt(account.balance ?? 0)}\n<DTASOF>${ofxDate(dtEnd)}\n</LEDGERBAL>\n` +
     `</STMTRS>\n</STMTTRNRS>\n</BANKMSGSRSV1>\n</OFX>\n`;
 
   return header + body;

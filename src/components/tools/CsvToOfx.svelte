@@ -21,6 +21,7 @@
   let acctType = $state<OfxAccount['acctType']>('CHECKING');
   let currency = $state('USD');
   let intuBid = $state('');
+  let balance = $state('');
 
   let fileInput: HTMLInputElement;
   const PREVIEW = 8;
@@ -102,7 +103,14 @@
       acctId: acctId.trim(),
       acctType,
       currency: currency.trim().toUpperCase() || 'USD',
+      // Blank means "not stated", which writes 0.00 — the field is required by
+      // the format, and importers treat it as display only.
+      balance: balance.trim() === '' ? undefined : Number(balance.replace(',', '.')),
     };
+    if (account.balance !== undefined && !Number.isFinite(account.balance)) {
+      error = `“${balance}” is not a number — leave the closing balance empty if you do not have it.`;
+      return;
+    }
     const doc = buildOfx(parsed.txns, account, {
       qbo: format === 'qbo',
       intuBid: intuBid.trim() || undefined,
@@ -197,10 +205,17 @@
           </select>
         </label>
         <label class="text-sm"><span class="font-medium block mb-1">Currency</span><input bind:value={currency} maxlength="3" class="w-full px-3 py-2 rounded-lg bg-[color:var(--color-surface-2)] border border-[color:var(--color-border)] text-sm uppercase" /></label>
+        <label class="text-sm"><span class="font-medium block mb-1">Closing balance</span><input bind:value={balance} placeholder="optional — e.g. 1185.44" inputmode="decimal" class="w-full px-3 py-2 rounded-lg bg-[color:var(--color-surface-2)] border border-[color:var(--color-border)] text-sm" /></label>
         {#if format === 'qbo'}
           <label class="text-sm sm:col-span-2"><span class="font-medium block mb-1">Intuit Bank ID (INTU.BID)</span><input bind:value={intuBid} placeholder="optional — some QuickBooks versions require your bank's" class="w-full px-3 py-2 rounded-lg bg-[color:var(--color-surface-2)] border border-[color:var(--color-border)] text-sm" /></label>
         {/if}
       </div>
+      <p class="text-xs text-[color:var(--color-text-mute)]">
+        The format requires a closing balance, so leaving it empty writes <code>0.00</code>. Your
+        statement shows the real one, and finance apps use it for display — GnuCash ignores it on a
+        bank import. Accented letters in payee names are folded to plain ASCII: the parser desktop
+        finance apps read OFX with rejects anything else, and would cut the name at the first accent.
+      </p>
     </div>
 
     <!-- Preview + validation -->

@@ -58,9 +58,11 @@ has('accents are folded, not truncated', doc, 'Cafenea Magura');
 // stricter importer may refuse the file outright.
 has('ledger balance is present', doc, '<LEDGERBAL>\n<BALAMT>1185.44');
 eq('balance defaults to 0.00 when not stated', buildOfx(txns, account, { qbo: false }).includes('<BALAMT>0.00'), true);
-// A bare YYYYMMDD leaves libofx no time to read, so it falls back to the clock
-// at import — the same file imported late in the evening can move a
-// transaction to the next day. Noon GMT is stable.
+// A bare YYYYMMDD leaves libofx no time to read: it warns once per date, then
+// takes the time from the clock at import, so the same file read twice gets two
+// different timestamps. It does not change the day — that was assumed and then
+// measured, and the date came back from the file either way. Noon GMT makes the
+// timestamp deterministic and the parse warning-free.
 has('dates carry an explicit time and offset', doc, '<DTPOSTED>20260901120000.000[0:GMT]');
 has('the statement window carries one too', doc, '<DTSTART>20260901120000.000[0:GMT]');
 has('so does the balance date', doc, '<DTASOF>20260904120000.000[0:GMT]');

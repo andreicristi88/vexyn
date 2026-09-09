@@ -180,10 +180,17 @@ function amt(n: number): string {
 /**
  * A date OFX will not have to guess at: noon GMT, stated as such.
  *
- * A bare YYYYMMDD is legal but libofx cannot read a time out of it, and falls
- * back to the clock at the moment of import — so the same file imported late in
- * the evening can land a transaction on the next day. Noon with an explicit
- * offset is stable everywhere except UTC+13 and beyond.
+ * A bare YYYYMMDD is legal, but libofx cannot read a time out of it: it warns
+ * once per date, then fills the time from the clock at the moment of import, so
+ * the same file read twice produces two different timestamps.
+ *
+ * It does NOT move the transaction to another day — that was assumed here at
+ * first and then tested: under UTC a date-only DTPOSTED came back on its own
+ * date with the import clock's time, because the day is taken from the file and
+ * only the time comes from the clock. So this is about a deterministic
+ * timestamp and a warning-free parse, nothing more. TZ could only be forced to
+ * UTC on this machine — the Windows build ignored IANA zone names — so
+ * far-eastern offsets are untested for either form.
  */
 function ofxDate(ymd: string): string {
   return `${ymd}120000.000[0:GMT]`;

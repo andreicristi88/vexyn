@@ -323,3 +323,172 @@ export function makeFitid(datePosted: string, amount: number, name: string, inde
   for (let i = 0; i < base.length; i++) h = ((h << 5) + h + base.charCodeAt(i)) >>> 0;
   return `${datePosted}${h.toString(16)}`;
 }
+
+/* ------------------------------------------------------------------ *
+ * Reading OFX / QFX / QBO — the other direction.
+ * ------------------------------------------------------------------ */
+
+export type OfxReadTxn = {
+  date: string; // YYYY-MM-DD
+  type: string;
+  amount: string; // exactly as the file wrote it
+  name: string;
+  memo: string;
+  checkNum: string;
+  fitid: string;
+  account: string;
+  currency: string;
+};
+
+export type OfxReadResult = {
+  txns: OfxReadTxn[];
+  accounts: { acctId: string; acctType: string; currency: string; kind: 'bank' | 'card' }[];
+  warnings: string[];
+};
+
+/** Aggregates that open a statement, and what kind of account they describe. */
+const STMT_OPEN: Record<string, 'bank' | 'card'> = { STMTRS: 'bank', CCSTMTRS: 'card' };
+
+function decodeEntities(v: string): string {
+  return v
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&apos;/gi, "'")
+    // Ampersand last: decoding it first would turn "&amp;lt;" into "<".
+    .replace(/&amp;/gi, '&');
+}
+
+/**
+ * An OFX timestamp to YYYY-MM-DD.
+ *
+ * The shapes in the wild are YYYYMMDD, YYYYMMDDHHMMSS, and either of those with
+ * .XXX milliseconds and a [-5:EST] style offset. Only the day is taken, and it
+ * is taken literally: the offset is deliberately NOT applied, because the day a
+ * bank posts a transaction is the day it means, and shifting it by a timezone
+ * would move transactions across month boundaries on statements that sit right
+ * at one.
+ */
+function readOfxDate(v: string): string | null {
+  const m = v.trim().match(/^(\d{4})(\d{2})(\d{2})/);
+  if (!m) return null;
+  return `${m[1]}-${m[2]}-${m[3]}`;
+}
+
+/**
+ * Read an OFX 1.x (SGML) or OFX 2.x (XML) statement.
+ *
+ * One scanner serves both, because the only structural difference that matters
+ * is whether leaf tags are closed, and a leaf is recognisable without knowing:
+ * it is a tag followed by text. In SGML that text runs to the next '<'; in XML
+ * the closing tag follows it and is simply skipped as an empty aggregate.
+ *
+ * Values are returned as the file wrote them. Amounts especially: the spec says
+ * a dot decimal, some European banks write a comma anyway, and rewriting them
+ * here would be a silent edit to the one number that must not be edited. A
+ * warning names it instead.
+ */
+export function readOfx(text: string): OfxReadResult {
+  const warnings: string[] = [];
+  const txns: OfxReadTxn[] = [];
+  const accounts: OfxReadResult['accounts'] = [];
+
+  const start = text.search(/<OFX>/i);
+  if (start < 0) {
+    return { txns, accounts, warnings: ['No <OFX> element — this does not look like an OFX, QFX or QBO file.'] };
+  }
+  const body = text.slice(start);
+
+  let acctId = '';
+  let acctType = '';
+  let currency = '';
+  let kind: 'bank' | 'card' = 'bank';
+  let txn: Partial<OfxReadTxn> | null = null;
+  let sawInvestment = false;
+  let commaDecimals = false;
+
+  const TAG = /<(\/?)([A-Za-z0-9._]+)>([^<]*)/g;
+  let m: RegExpExecArray | null;
+  while ((m = TAG.exec(body)) !== null) {
+    const closing = m[1] === '/';
+    const tag = m[2].toUpperCase();
+    const value = decodeEntities(m[3]).trim();
+
+    if (closing) {
+      if (tag === 'STMTTRN' && txn) {
+        txns.push({
+          date: txn.date ?? '',
+          type: txn.type ?? '',
+          amount: txn.amount ?? '',
+          name: txn.name ?? '',
+          memo: txn.memo ?? '',
+          checkNum: txn.checkNum ?? '',
+          fitid: txn.fitid ?? '',
+          account: acctId,
+          currency,
+        });
+        txn = null;
+      }
+      continue;
+    }
+
+    if (tag === 'INVSTMTRS') sawInvestment = true;
+    if (STMT_OPEN[tag]) {
+      kind = STMT_OPEN[tag];
+      acctId = '';
+      acctType = '';
+      currency = '';
+      continue;
+    }
+    if (tag === 'STMTTRN') {
+      txn = {};
+      continue;
+    }
+
+    if (!value) continue; // an aggregate, or an XML closing tag's empty tail
+
+    // Account-level fields. These always precede the transaction list in a
+    // valid statement, so the last one seen is the right one to attach.
+    if (tag === 'ACCTID' && !txn) { acctId = value; continue; }
+    if (tag === 'ACCTTYPE' && !txn) { acctType = value; continue; }
+    if (tag === 'CURDEF' && !txn) { currency = value; continue; }
+
+    if (!txn) continue;
+    switch (tag) {
+      case 'DTPOSTED': {
+        const d = readOfxDate(value);
+        if (d) txn.date = d;
+        else warnings.push(`Could not read the date "${value}" — that transaction has no date.`);
+        break;
+      }
+      case 'TRNAMT':
+        if (/^-?\d+,\d{1,2}$/.test(value)) commaDecimals = true;
+        txn.amount = value;
+        break;
+      case 'TRNTYPE': txn.type = value; break;
+      case 'NAME': txn.name = value; break;
+      case 'MEMO': txn.memo = value; break;
+      case 'CHECKNUM': txn.checkNum = value; break;
+      case 'FITID': txn.fitid = value; break;
+    }
+    // Record each account once, when its id first appears.
+    if (acctId && !accounts.some((a) => a.acctId === acctId)) {
+      accounts.push({ acctId, acctType, currency, kind });
+    }
+  }
+
+  if (txns.length === 0) warnings.push('No transactions found. The file parsed, but it carries no <STMTTRN> entries.');
+  if (sawInvestment) warnings.push('This file contains an investment statement (INVSTMTRS). Only bank and credit-card transactions are read.');
+  if (commaDecimals) warnings.push('Some amounts use a comma decimal separator, which OFX does not specify. They are passed through exactly as written — check them before importing.');
+
+  return { txns, accounts, warnings };
+}
+
+export const OFX_READ_HEADERS = ['Date', 'Type', 'Amount', 'Payee', 'Memo', 'Check number', 'FITID', 'Account', 'Currency'];
+
+/** The parsed transactions as rows aligned to OFX_READ_HEADERS. */
+export function ofxRowsOf(r: OfxReadResult): string[][] {
+  return r.txns.map((t) => [t.date, t.type, t.amount, t.name, t.memo, t.checkNum, t.fitid, t.account, t.currency]);
+}

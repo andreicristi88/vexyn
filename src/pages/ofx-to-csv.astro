@@ -1,0 +1,76 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import RelatedGuides from '../components/ui/RelatedGuides.astro';
+import OfxToCsv from '../components/tools/OfxToCsv.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'OFX to CSV converter for QFX and QBO files';
+const description =
+  'Free OFX to CSV converter that runs in your browser. Reads OFX, QFX and QBO bank and credit-card statements into a clean spreadsheet. Amounts are never rewritten. Nothing is uploaded.';
+
+const faqs = [
+  { q: 'Which files does it read?', a: 'OFX 1.x, the SGML form most banks still send, and OFX 2.x, the XML form. QFX (Quicken) and QBO (QuickBooks Web Connect) are the same format with an extra tag or two, so both open here as well. Bank and credit-card statements are both supported, including files that carry several accounts.' },
+  { q: 'Are the amounts changed in any way?', a: 'No. Every amount is written to the CSV exactly as the file had it. The OFX spec asks for a dot decimal and some European banks send a comma anyway — that is passed through untouched and flagged on screen, because silently rewriting the one number that must not be edited is worse than telling you about it.' },
+  { q: 'Can a transaction end up on the wrong date?', a: 'No. OFX timestamps can carry a time and a timezone offset, but only the day is read and it is read literally. Applying an offset would shift transactions across month boundaries on a statement that sits right at one, which is exactly where it would do the most damage.' },
+  { q: 'What about investment statements?', a: 'Investment activity (INVSTMTRS) is not read. If a file contains one, the tool says so rather than returning a partial table you might mistake for the whole thing.' },
+  { q: 'Is my statement uploaded?', a: 'No. The file is read in your browser. Open DevTools → Network — your statement is never sent out.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/ofx-to-csv`,
+    description,
+    category: 'FinanceApplication',
+    features: ['Reads OFX 1.x SGML and OFX 2.x XML', 'QFX and QBO files too', 'Bank and credit-card statements', 'Amounts passed through unchanged', 'Runs entirely in your browser, no upload'],
+  }),
+  breadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'OFX to CSV', url: '/ofx-to-csv' },
+  ]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a>
+        <span>/</span>
+        <span class="text-[color:var(--color-text)]">OFX to CSV</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">OFX to CSV</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Turn an OFX, QFX or QBO statement into a spreadsheet you can actually read. Bank and credit-card files, both format generations, entirely in your browser.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your statement is read in your browser. Open DevTools → Network to verify — the file is never uploaded." />
+    <OfxToCsv client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">The format your bank gives you, in the format you can work with</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        OFX exists so finance software can import a statement without anyone typing it in, and it does that job well. It is a poor format for a human: a wall of tags, with the amounts and payees scattered through it. The moment you want to sort by merchant, total a category, or hand a few months to an accountant, you need rows and columns. This reads the statement and gives you exactly that — date, type, amount, payee, memo, check number, transaction id, account and currency, one row per transaction.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Two format generations, and files with more than one account</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        OFX 1.x is SGML and leaves its leaf tags unclosed; OFX 2.x is ordinary XML. Banks send both, and a QFX or QBO file is one of those two with an extra Intuit tag, so all of them open here. If a file carries several statements — a current account and a credit card, say — each row keeps its own account and currency, so a merged spreadsheet never quietly attributes one account's money to another.
+      </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">What it will not do</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        It will not tidy your numbers. Amounts land in the CSV exactly as the bank wrote them, and dates are the day the bank posted, taken literally with no timezone applied. It will not read investment activity, and says so instead of handing back a partial table. Going the other way — a CSV that needs to become OFX or QBO — is the <a href="/csv-to-ofx" class="text-[color:var(--color-brand-400)] hover:underline">CSV to OFX</a> and <a href="/csv-to-qbo" class="text-[color:var(--color-brand-400)] hover:underline">CSV to QBO</a> tools. Once you have the CSV, the <a href="/csv-to-excel" class="text-[color:var(--color-brand-400)] hover:underline">CSV to Excel</a> converter turns it into a real .xlsx with the values kept as text.
+      </p>
+    </article>
+
+    <RelatedGuides />
+
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

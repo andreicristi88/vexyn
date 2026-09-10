@@ -64,6 +64,7 @@ export const TOOLS: Tool[] = [
   { slug: 'csv-to-ofx', zone: 'data', name: 'CSV to OFX', description: 'Convert a bank CSV to OFX for import into finance software.', icon: '📤', available: true },
   { slug: 'bank-csv-formatter', zone: 'data', name: 'Bank CSV Formatter', description: 'Reshape any bank export into a clean, standard layout.', icon: '🏛', available: true },
   { slug: 'bank-statement-pdf-to-csv', zone: 'data', name: 'Bank Statement PDF to CSV', description: 'Turn a statement PDF into a clean CSV, without uploading it.', icon: '📄', available: true },
+  { slug: 'ofx-to-csv', zone: 'data', name: 'OFX to CSV', description: 'Read an OFX, QFX or QBO statement into a spreadsheet.', icon: '📊', available: true },
 
   // --- Business Finance ---
   { slug: 'stripe-csv-cleaner', zone: 'business', name: 'Stripe CSV Cleaner', description: 'Turn a raw Stripe export into a clean, readable sheet.', icon: '💳', available: true },

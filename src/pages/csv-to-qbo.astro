@@ -57,6 +57,11 @@ const schema = combineSchemas(
       <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
         QuickBooks Desktop imports .qbo files created this way reliably. QuickBooks Online is stricter — it sometimes validates the Intuit Bank ID against known institutions and rejects manually-built files. If Online refuses the file, the honest options are: enter your bank's INTU.BID in the field, use the <a class="text-[color:var(--color-brand-400)] hover:underline" href="/csv-to-ofx">OFX version</a> with a different importer, or import into QuickBooks Desktop. We would rather tell you this up front than have you fight a silent failure.
       </p>
+
+      <h2 class="text-2xl font-bold mb-4 mt-10">Already have a QBO and need it readable?</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        A .qbo your bank sent — or one QuickBooks will not take — opens in the <a href="/ofx-to-csv" class="text-[color:var(--color-brand-400)] hover:underline">OFX to CSV</a> converter as an ordinary spreadsheet: one row per transaction, amounts exactly as the file had them. Useful for checking what a rejected file actually contains before you fight the import again.
+      </p>
     </article>
 
     <RelatedGuides />

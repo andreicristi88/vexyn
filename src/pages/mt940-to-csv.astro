@@ -1,0 +1,68 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/ui/Faq.astro';
+import RelatedGuides from '../components/ui/RelatedGuides.astro';
+import BankFormatToCsv from '../components/tools/BankFormatToCsv.svelte';
+import PrivacyNote from '../components/ui/PrivacyNote.astro';
+import { SITE } from '../lib/constants';
+import { breadcrumbSchema, faqSchema, webAppSchema, combineSchemas } from '../lib/seo';
+
+const title = 'MT940 to CSV converter for SWIFT bank statements';
+const description =
+  'Free MT940 to CSV converter that runs in your browser. Reads SWIFT MT940 statements — German structured details, the Dutch tagged form, plain text — into a clean spreadsheet. Nothing is uploaded.';
+
+const faqs = [
+  { q: 'What is an MT940 file?', a: 'The SWIFT customer statement message: the format a bank produces when a business asks for its statement "for the accounting software". It is plain text with numbered fields — :61: for each transaction, :86: for its details — and every bank fills :86: a little differently. This reads the common shapes: the German ?NN subfields, the Dutch /TAG/ form used by ABN AMRO, ING and Rabobank, and plain free text.' },
+  { q: 'Are the amounts changed?', a: 'Only in one deliberate way. MT940 writes amounts with a comma decimal by definition of the format, so "42,00" becomes "42.00" — that is reading the specification, not guessing at a locale. Debits are signed negative, credits positive, and a reversal (RC/RD) flips the sign. Nothing else about the figure is touched.' },
+  { q: 'Which details are read out of :86:?', a: 'Payee, purpose, the bank\'s transaction text, and the SEPA references — end-to-end reference and mandate id — where the bank includes them. The original :86: text is kept whole in a Details column too, so nothing the bank wrote is lost even when it did not fit the split.' },
+  { q: 'What about multi-page statements?', a: 'A long statement arrives as several messages linked by intermediate balances (:62M:/:60M:). They read as one statement with one opening and one closing balance.' },
+  { q: 'Is my statement uploaded?', a: 'No. The file is read in your browser. Open DevTools → Network — your statement is never sent out.' },
+];
+
+const schema = combineSchemas(
+  webAppSchema({
+    name: `${title} — ${SITE.name}`,
+    url: `${SITE.url}/mt940-to-csv`,
+    description,
+    category: 'FinanceApplication',
+    features: ['Reads SWIFT MT940 statements', 'German structured and Dutch tagged details', 'SEPA references extracted', 'Multi-page statements joined', 'Runs entirely in your browser, no upload'],
+  }),
+  breadcrumbSchema([{ name: 'Home', url: '/' }, { name: 'MT940 to CSV', url: '/mt940-to-csv' }]),
+  faqSchema(faqs),
+);
+---
+
+<BaseLayout title={title} description={description} schema={schema}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm text-[color:var(--color-text-mute)] mb-3">
+        <a href="/" class="hover:text-[color:var(--color-text)]">Home</a><span>/</span><span class="text-[color:var(--color-text)]">MT940 to CSV</span>
+      </div>
+      <h1 class="text-4xl font-bold tracking-tight mb-3">MT940 to CSV</h1>
+      <p class="text-lg text-[color:var(--color-text-mute)] max-w-2xl">
+        Turn a SWIFT MT940 statement into a spreadsheet — one row per transaction, with payee, purpose and references split out. Entirely in your browser.
+      </p>
+    </header>
+
+    <PrivacyNote text="Your statement is read in your browser. Open DevTools → Network to verify — the file is never uploaded." />
+    <BankFormatToCsv format="mt940" client:load />
+
+    <article class="prose mt-16 max-w-3xl">
+      <h2 class="text-2xl font-bold mb-4">The statement your bank gives your accountant, readable</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        MT940 was designed for machines. Each transaction is a :61: line — value date, entry date, debit or credit, amount, a type code, references — followed by a :86: line whose contents each bank decides for itself. German banks pack it into numbered subfields; Dutch banks write /TAG/value/ pairs; others send a sentence. This reads all three, splits out what it can name, and keeps the original text in its own column for everything else.
+      </p>
+      <h2 class="text-2xl font-bold mb-4 mt-10">Checked against the parser GnuCash uses</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        The same statements were fed to this converter and to the aqbanking SWIFT importer that ships with GnuCash, and the dates, amounts, payees, purposes and references agreed line for line. One place this reads further than the reference: the Dutch /NAME/ tag is taken as the payee, where aqbanking leaves it inside the text.
+      </p>
+      <h2 class="text-2xl font-bold mb-4 mt-10">Other bank formats</h2>
+      <p class="text-[color:var(--color-text-mute)] leading-relaxed mb-6">
+        Newer bank exports are ISO 20022 XML — the <a href="/camt053-to-csv" class="text-[color:var(--color-brand-400)] hover:underline">CAMT.053 to CSV</a> converter reads those. Statements from personal-finance software come as OFX or QBO, which the <a href="/ofx-to-csv" class="text-[color:var(--color-brand-400)] hover:underline">OFX to CSV</a> converter opens. And a statement that only exists as a PDF goes through <a href="/bank-statement-pdf-to-csv" class="text-[color:var(--color-brand-400)] hover:underline">Bank Statement PDF to CSV</a>.
+      </p>
+    </article>
+
+    <RelatedGuides />
+    <Faq faqs={faqs} />
+  </div>
+</BaseLayout>

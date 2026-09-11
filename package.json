@@ -14,6 +14,7 @@
     "lastmod": "node scripts/generate-lastmod.mjs",
     "test:pdf": "tsx tests/pdf.test.ts",
     "test:ofx": "tsx tests/ofx.test.ts",
+    "test:bank": "tsx tests/bankformats.test.ts",
     "preview": "astro preview",
     "astro": "astro"
   },

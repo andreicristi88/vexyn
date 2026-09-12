@@ -444,6 +444,22 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname;
+    /**
+     * /page.html → /page, permanently.
+     *
+     * The build writes page.html files and Static Assets serves them at the
+     * clean URL, answering a request for the .html twin with a 307. Until
+     * 5 September every page also declared the .html twin as its canonical.
+     * Googlebot crawling in that window followed the canonical to the twin,
+     * met a redirect it reads as temporary, and kept the twin as its chosen
+     * version — four pages created before the fix sat unindexed for a week
+     * while pages created after it indexed in a day. A 301 says what a 307
+     * cannot: the twin is not a URL, the clean address is the only one.
+     */
+    if (path.endsWith('.html')) {
+      const clean = path === '/index.html' ? '/' : path.slice(0, -5);
+      return Response.redirect(`${url.origin}${clean}${url.search}`, 301);
+    }
     if (path === '/api/hit' && request.method === 'POST') return trackHit(request, env);
     if (path === '/api/stats' && request.method === 'GET') return statsPage(url, env);
     // Any other /api/* → 404 (assets are served directly, not from here).

@@ -15,6 +15,7 @@
     "test:pdf": "tsx tests/pdf.test.ts",
     "test:ofx": "tsx tests/ofx.test.ts",
     "test:bank": "tsx tests/bankformats.test.ts",
+    "test:xlsx": "tsx tests/xlsx.test.ts",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -25,6 +26,7 @@
     "astro": "^6.4.7",
     "papaparse": "^5.7.0",
     "pdfjs-dist": "^6.3.289",
+    "read-excel-file": "^9.3.10",
     "satori-html": "^0.3.2",
     "svelte": "^5.56.3",
     "tailwindcss": "^4.3.1",

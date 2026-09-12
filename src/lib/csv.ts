@@ -377,3 +377,71 @@ export function delimiterLabel(d: string): string {
   if (d === '|') return 'Pipe';
   return d;
 }
+
+/**
+ * The text of a dropped file, whatever it is. A CSV, TSV or TXT is returned as
+ * is. A workbook (.xlsx) is read — first sheet — and serialised to CSV text, so
+ * every tool keeps one path: the same parseCsv, the same header handling, the
+ * same rule that values stay text.
+ *
+ * Why not read the workbook straight into a grid: 25 tools open files the same
+ * way, and one line changed in each is a change that can be checked. A second
+ * code path into the grid is not.
+ *
+ * Cells arrive typed from the workbook and are turned back into text with as
+ * little opinion as possible. A number prints the way JavaScript prints it,
+ * which is the shortest string that reads back to the same double — the value
+ * Excel holds, not the value Excel displays, so a cell showing "1,234.50" gives
+ * 1234.5. A date-formatted cell comes as a Date at UTC midnight and is written
+ * as YYYY-MM-DD; when it carries a time, the time is kept. Leading zeros survive
+ * only if the cell was text in the workbook — a numeric 123 was never 00123,
+ * and there is nothing here to restore.
+ *
+ * Only .xlsx is read. The legacy .xls binary format needs a different library
+ * and is refused by name rather than misread.
+ */
+export async function fileToText(f: File): Promise<string> {
+  const name = f.name.toLowerCase();
+  if (name.endsWith('.xls')) {
+    throw new Error('This is the old binary Excel format (.xls). Open it in Excel or LibreOffice and save as .xlsx or .csv, then try again.');
+  }
+  if (!name.endsWith('.xlsx') && !name.endsWith('.xlsm')) return f.text();
+  const { default: readXlsxFile } = await import('read-excel-file/browser');
+  let sheets: { sheet: string; data: unknown[][] }[];
+  try {
+    // v9 returns one { sheet, data } per sheet; the first sheet is the statement.
+    sheets = (await readXlsxFile(f)) as unknown as typeof sheets;
+  } catch (e) {
+    // The library's message names XML internals. The person needs a way out.
+    throw new Error(`Could not read this workbook (${(e as Error).message.slice(0, 80)}). Open it in Excel and save as CSV, then try again.`);
+  }
+  return sheetToCsv(sheets[0]?.data ?? []);
+}
+
+/** One workbook cell as text, with as little opinion as possible — see fileToText. */
+export function cellToText(v: unknown): string {
+  if (v === null || v === undefined) return '';
+  if (v instanceof Date) {
+    // A time in a workbook is a fraction of a day in a double, so 14:30 reads
+    // back as 14:29:59.999. Round to the second before printing.
+    const d = new Date(Math.round(v.getTime() / 1000) * 1000).toISOString();
+    return d.endsWith('T00:00:00.000Z') ? d.slice(0, 10) : d.slice(0, 19).replace('T', ' ');
+  }
+  if (typeof v === 'boolean') return v ? 'TRUE' : 'FALSE';
+  return String(v);
+}
+
+/** A sheet's typed cells as CSV text, first row and all — the caller decides what is a header. */
+export function sheetToCsv(sheet: unknown[][]): string {
+  const rows = sheet.map((r) => r.map(cellToText));
+  // Trailing all-empty rows are common in hand-edited workbooks and would
+  // otherwise arrive as blank records.
+  while (rows.length && rows[rows.length - 1].every((c) => c === '')) rows.pop();
+  if (rows.length === 0) return '';
+  const width = Math.max(...rows.map((r) => r.length));
+  const padded = rows.map((r) => [...r, ...Array(width - r.length).fill('')]);
+  return serializeCsv({ headers: padded[0], rows: padded.slice(1), delimiter: ',', hadBom: false }, ',');
+}
+
+/** The accept list for a CSV dropzone, now that workbooks open too. */
+export const TABULAR_ACCEPT = '.csv,.tsv,.txt,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';

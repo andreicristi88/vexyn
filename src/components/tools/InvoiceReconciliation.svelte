@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { parseCsv, type Grid } from '../../lib/csv';
+  import { fileToText, TABULAR_ACCEPT, parseCsv, type Grid } from '../../lib/csv';
   import { buildTransactions, round2, DEFAULT_MAP, type StatementMap, type DateFormat, type Txn } from '../../lib/statement';
   import { matchTransactions, sumAmount } from '../../lib/matcher';
   import { EXPORT_FORMATS, QIF_DATE_NOTE, type ExportTxn } from '../../lib/exporters';
@@ -58,7 +58,9 @@
   async function loadFile(s: Slot, f: File) {
     s.error = '';
     if (f.size > 50 * 1024 * 1024) { s.error = 'File is larger than 50 MB.'; return; }
-    const res = parseCsv(await f.text(), true);
+    let text: string;
+    try { text = await fileToText(f); } catch (e) { s.error = (e as Error).message; return; }
+    const res = parseCsv(text, true);
     if (!res.ok) { s.error = res.error; s.grid = null; return; }
     s.grid = res.grid; s.fileName = f.name; autoConfigure(s, res.grid);
   }
@@ -93,9 +95,9 @@
             <p class="text-xs text-[color:var(--color-text-dim)] mb-3">{slot.hint}</p>
             <button class="px-4 py-2 rounded-lg bg-[color:var(--color-brand-500)] hover:bg-[color:var(--color-brand-600)] text-white text-sm font-medium transition-colors" on:click={() => (si === 0 ? inputI : inputP).click()}>Choose file</button>
             {#if si === 0}
-              <input bind:this={inputI} type="file" accept=".csv,.tsv,.txt,text/csv" class="hidden" on:change={(e) => { const t = e.currentTarget; if (t.files?.[0]) loadFile(slot, t.files[0]); t.value = ''; }} />
+              <input bind:this={inputI} type="file" accept={TABULAR_ACCEPT} class="hidden" on:change={(e) => { const t = e.currentTarget; if (t.files?.[0]) loadFile(slot, t.files[0]); t.value = ''; }} />
             {:else}
-              <input bind:this={inputP} type="file" accept=".csv,.tsv,.txt,text/csv" class="hidden" on:change={(e) => { const t = e.currentTarget; if (t.files?.[0]) loadFile(slot, t.files[0]); t.value = ''; }} />
+              <input bind:this={inputP} type="file" accept={TABULAR_ACCEPT} class="hidden" on:change={(e) => { const t = e.currentTarget; if (t.files?.[0]) loadFile(slot, t.files[0]); t.value = ''; }} />
             {/if}
           </div>
         {:else}

@@ -7,6 +7,8 @@
     DEFAULT_CLEAN_OPTIONS,
     type Grid,
     type CleanOptions,
+    fileToText,
+    TABULAR_ACCEPT,
   } from '../../lib/csv';
 
   let fileName = $state('');
@@ -46,7 +48,8 @@
       error = 'File is larger than 50 MB. For files this big, split them first or use a desktop tool.';
       return;
     }
-    const text = await f.text();
+    let text: string;
+    try { text = await fileToText(f); } catch (e) { error = (e as Error).message; return; }
     loadText(text, f.name);
   }
 
@@ -138,9 +141,9 @@
       on:dragover={onDragOver} on:dragleave={() => (dragOver = false)} on:drop={onDrop} role="region" aria-label="CSV drop zone"
     >
       <svg class="mx-auto mb-4 h-11 w-11 text-[color:var(--color-text-dim)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 13v8"/><path d="m8 17 4-4 4 4"/><path d="M20 16.7A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 4 15.2"/></svg>
-      <p class="text-[color:var(--color-text-mute)] mb-3">Drop a CSV or TSV file here, or</p>
+      <p class="text-[color:var(--color-text-mute)] mb-3">Drop a CSV, TSV or Excel (.xlsx) file here, or</p>
       <button class="px-5 py-2.5 rounded-lg bg-[color:var(--color-brand-500)] hover:bg-[color:var(--color-brand-600)] text-white font-medium transition-colors" on:click={() => fileInput.click()}>Choose file</button>
-      <input bind:this={fileInput} type="file" accept=".csv,.tsv,.txt,text/csv" class="hidden" on:change={onPick} />
+      <input bind:this={fileInput} type="file" accept={TABULAR_ACCEPT} class="hidden" on:change={onPick} />
       <p class="text-xs text-[color:var(--color-text-mute)] mt-4">Comma, semicolon, tab and pipe delimiters are detected automatically.</p>
     </div>
 

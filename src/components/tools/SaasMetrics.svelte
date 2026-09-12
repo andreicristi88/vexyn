@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { parseCsv, serializeCsv, type Grid } from '../../lib/csv';
+  import { fileToText, TABULAR_ACCEPT, parseCsv, serializeCsv, type Grid } from '../../lib/csv';
   import { computeSaasMetrics, DEFAULT_SAAS_MAP, type SaasMap } from '../../lib/saas';
 
   let fileName = $state('');
@@ -39,7 +39,7 @@
     const amtCol = map.amount;
     if (amtCol >= 0) { const v = res.grid.rows.map((r) => r[amtCol]).find((x) => x && /\d/.test(x)); if (v) decimal = v.lastIndexOf(',') > v.lastIndexOf('.') ? ',' : '.'; }
   }
-  async function handleFile(f: File) { if (f.size > 50 * 1024 * 1024) { error = 'File is larger than 50 MB.'; return; } loadText(await f.text(), f.name); }
+  async function handleFile(f: File) { if (f.size > 50 * 1024 * 1024) { error = 'File is larger than 50 MB.'; return; } try { loadText(await fileToText(f), f.name); } catch (e) { error = (e as Error).message; } }
   function onPick(e: Event) { const t = e.target as HTMLInputElement; if (t.files?.[0]) handleFile(t.files[0]); t.value = ''; }
   function onDrop(e: DragEvent) { e.preventDefault(); dragOver = false; const f = e.dataTransfer?.files?.[0]; if (f) handleFile(f); }
   function onDragOver(e: DragEvent) { e.preventDefault(); dragOver = true; }
@@ -65,7 +65,7 @@
       <svg class="mx-auto mb-4 h-11 w-11 text-[color:var(--color-text-dim)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 13v8"/><path d="m8 17 4-4 4 4"/><path d="M20 16.7A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 4 15.2"/></svg>
       <p class="text-[color:var(--color-text-mute)] mb-3">Drop a subscriptions export here, or</p>
       <button class="px-5 py-2.5 rounded-lg bg-[color:var(--color-brand-500)] hover:bg-[color:var(--color-brand-600)] text-white font-medium transition-colors" on:click={() => fileInput.click()}>Choose file</button>
-      <input bind:this={fileInput} type="file" accept=".csv,.tsv,.txt,text/csv" class="hidden" on:change={onPick} />
+      <input bind:this={fileInput} type="file" accept={TABULAR_ACCEPT} class="hidden" on:change={onPick} />
       <p class="text-xs text-[color:var(--color-text-dim)] mt-3">Works with Stripe, Chargebee, Paddle or a plain spreadsheet.</p>
     </div>
   {/if}

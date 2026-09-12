@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { parseCsv, mergeGrids, serializeCsv, type Grid } from '../../lib/csv';
+  import { fileToText, TABULAR_ACCEPT, parseCsv, mergeGrids, serializeCsv, type Grid } from '../../lib/csv';
 
   type Item = { id: string; name: string; grid: Grid };
 
@@ -19,9 +19,11 @@
     error = '';
     copied = false;
     for (const f of Array.from(files)) {
-      if (!/\.(csv|tsv|txt)$/i.test(f.name) && f.type !== 'text/csv') continue;
+      if (!/\.(csv|tsv|txt|xlsx|xlsm)$/i.test(f.name) && f.type !== 'text/csv') continue;
       if (f.size > 50 * 1024 * 1024) { error = `${f.name} is larger than 50 MB — skipped.`; continue; }
-      const res = parseCsv(await f.text(), hasHeader);
+      let text: string;
+      try { text = await fileToText(f); } catch (e) { error = `${f.name}: ${(e as Error).message}`; continue; }
+      const res = parseCsv(text, hasHeader);
       if (!res.ok) { error = `${f.name}: ${res.error}`; continue; }
       items = [...items, { id: uid(), name: f.name, grid: res.grid }];
     }
@@ -53,7 +55,7 @@
       <svg class="mx-auto mb-4 h-11 w-11 text-[color:var(--color-text-dim)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 13v8"/><path d="m8 17 4-4 4 4"/><path d="M20 16.7A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 4 15.2"/></svg>
     <p class="text-[color:var(--color-text-mute)] mb-3">{items.length === 0 ? 'Drop two or more CSV files here, or' : 'Add more files, or'}</p>
     <button class="px-5 py-2.5 rounded-lg bg-[color:var(--color-brand-500)] hover:bg-[color:var(--color-brand-600)] text-white font-medium transition-colors" on:click={() => fileInput.click()}>Choose files</button>
-    <input bind:this={fileInput} type="file" accept=".csv,.tsv,.txt,text/csv" multiple class="hidden" on:change={onPick} />
+    <input bind:this={fileInput} type="file" accept={TABULAR_ACCEPT} multiple class="hidden" on:change={onPick} />
     <label class="flex items-center justify-center gap-1.5 text-xs text-[color:var(--color-text-mute)] mt-4"><input type="checkbox" bind:checked={hasHeader} class="rounded" />First row of each file is a header</label>
   </div>
 

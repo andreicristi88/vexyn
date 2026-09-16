@@ -242,7 +242,7 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
   const human = `${windowClause} AND blob7 != 'bot' AND ${found}`;
   const gone = `${windowClause} AND blob7 != 'bot' AND blob11 = '404'`;
 
-  const [daily, pages, refs, countries, devices, totals, notFound] = await Promise.all([
+  const [daily, pages, refs, countries, devices, totals, notFound, crawlers] = await Promise.all([
     q(`SELECT toStartOfDay(timestamp) AS day, blob7 AS cls, count(DISTINCT blob5) AS visitors, sum(_sample_interval) AS pv FROM ${DATASET} WHERE ${since} AND ${found} GROUP BY day, cls ORDER BY day DESC`),
     q(`SELECT blob1 AS path, sum(_sample_interval) AS pv, count(DISTINCT blob5) AS visitors FROM ${DATASET} WHERE ${human} GROUP BY path ORDER BY pv DESC LIMIT 40`),
     q(`SELECT blob2 AS ref, sum(_sample_interval) AS pv, count(DISTINCT blob5) AS visitors FROM ${DATASET} WHERE ${human} GROUP BY ref`),
@@ -250,6 +250,11 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
     q(`SELECT blob6 AS device, sum(_sample_interval) AS pv FROM ${DATASET} WHERE ${human} GROUP BY device ORDER BY pv DESC LIMIT 15`),
     q(`SELECT count(DISTINCT blob5) AS visitors, sum(_sample_interval) AS pv FROM ${DATASET} WHERE ${human}`),
     q(`SELECT blob1 AS path, sum(_sample_interval) AS pv, count(DISTINCT blob5) AS visitors FROM ${DATASET} WHERE ${gone} GROUP BY path ORDER BY pv DESC LIMIT 25`),
+    // Crawlers, by page and by the network they came from. Googlebot renders
+    // pages and so fires the beacon like a browser; the org (Google LLC,
+    // Microsoft Corporation, OpenAI) says who. Search Console reports a crawl
+    // days late; this says the same night whether a page was fetched at all.
+    q(`SELECT blob1 AS path, blob8 AS org, sum(_sample_interval) AS pv FROM ${DATASET} WHERE ${windowClause} AND blob7 = 'bot' GROUP BY path, org ORDER BY pv DESC LIMIT 60`),
   ]);
 
   const byDay: Record<string, { hum: number; bot: number; pv: number }> = {};
@@ -433,6 +438,13 @@ async function statsPage(url: URL, env: Env): Promise<Response> {
       'Path',
     )}
     ${list('Countries', countries.map((r) => [r.country || 'XX', Number(r.pv || 0)] as [string, number]))}
+    <div class="card wide"><h2>Crawlers by page — who fetched what</h2>${
+      crawlers.length === 0
+        ? '<p class="note">No crawler rendered a page in this window.</p>'
+        : `<table>${crawlers
+            .map((r) => `<tr><td class="l"><span class="lbl">${esc(r.path || '/')}</span></td><td class="n">${esc(r.org || 'unknown network')}</td><td class="n">${Number(r.pv || 0).toLocaleString()}</td></tr>`)
+            .join('')}</table>`
+    }<p class="note">Bot hits only, by page and by the network that sent them — Google LLC is Googlebot, Microsoft Corporation is Bingbot, OpenAI is ChatGPT's fetchers. A page missing here over 14 days was not rendered by any crawler, whatever Search Console says about it; a page present here was, and indexing is then a decision rather than a discovery problem.</p></div>
     ${list('Devices', devices.map((r) => [r.device || 'Other', Number(r.pv || 0)] as [string, number]))}
   </div>
   </body></html>`;

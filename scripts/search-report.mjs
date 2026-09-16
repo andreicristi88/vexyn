@@ -31,7 +31,9 @@ const newest = (re) =>
     .map((f) => ({ f, t: fs.statSync(path.join(DOWNLOADS, f)).mtimeMs }))
     .sort((a, b) => b.t - a.t)[0]?.f;
 
-const gscFile = newest(/^https___vexyn\.app_-Performance-on-Search-.*\.xlsx$/);
+// An explicit file name (in Downloads) as the first argument seeds the history
+// with an older export; otherwise the newest one is read.
+const gscFile = process.argv[2] ?? newest(/^https___vexyn\.app_-Performance-on-Search-.*\.xlsx$/);
 const bingFile = newest(/^vexyn\.app_SearchPerformanceOverview_.*\.csv$/);
 if (!gscFile) { console.error('No GSC export in Downloads.'); process.exit(1); }
 

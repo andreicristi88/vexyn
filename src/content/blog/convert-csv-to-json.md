@@ -68,7 +68,7 @@ A CSV is flat — rows and columns — so the direct output is flat too. Nesting
 ## Related guides
 
 - [How to clean a messy bank CSV export](/blog/clean-messy-bank-csv) — tidy the file before converting.
-- [How to open a CSV in Excel without breaking your numbers](/blog/open-csv-in-excel-without-breaking-numbers) — the same type traps, in a spreadsheet.
+- [How to open a CSV in Excel without breaking your numbers](/blog/csv-in-excel-without-breaking-numbers) — the same type traps, in a spreadsheet.
 
 ## Glossary
 

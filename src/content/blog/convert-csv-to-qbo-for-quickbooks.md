@@ -83,7 +83,7 @@ QuickBooks Online has a built-in CSV bank-import that maps columns in its own UI
 ## Related guides
 
 - [Convert a bank CSV to OFX](/blog/convert-bank-csv-to-ofx) — for Quicken, GnuCash, and non-QuickBooks apps.
-- [How to open a CSV in Excel without breaking your numbers](/blog/open-csv-in-excel-without-breaking-numbers) — the same date and number traps in a spreadsheet.
+- [How to open a CSV in Excel without breaking your numbers](/blog/csv-in-excel-without-breaking-numbers) — the same date and number traps in a spreadsheet.
 
 ## Sources cited in this guide
 

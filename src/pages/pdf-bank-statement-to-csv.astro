@@ -24,7 +24,7 @@ const faqs = [
 const schema = combineSchemas(
   webAppSchema({
     name: `${title} — ${SITE.name}`,
-    url: `${SITE.url}/bank-statement-pdf-to-csv`,
+    url: `${SITE.url}/pdf-bank-statement-to-csv`,
     description,
     category: 'FinanceApplication',
     features: [
@@ -37,7 +37,7 @@ const schema = combineSchemas(
   }),
   breadcrumbSchema([
     { name: 'Home', url: '/' },
-    { name: 'Bank Statement PDF to CSV', url: '/bank-statement-pdf-to-csv' },
+    { name: 'Bank Statement PDF to CSV', url: '/pdf-bank-statement-to-csv' },
   ]),
   faqSchema(faqs),
 );

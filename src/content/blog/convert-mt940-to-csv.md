@@ -109,7 +109,7 @@ No. Open the browser's Network panel while converting and you will see no reques
 
 - [How to convert a CAMT.053 statement to CSV](/blog/convert-camt053-to-csv) — the XML successor, if your bank offers it.
 - [How to convert an OFX, QFX or QBO file to CSV](/blog/convert-ofx-to-csv) — for statements from personal-finance software.
-- [How to open a CSV in Excel without breaking your numbers](/blog/open-csv-in-excel-without-breaking-numbers) — the next step.
+- [How to open a CSV in Excel without breaking your numbers](/blog/csv-in-excel-without-breaking-numbers) — the next step.
 
 ## Sources cited in this guide
 

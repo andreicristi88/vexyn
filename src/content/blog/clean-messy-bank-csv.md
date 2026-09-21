@@ -48,7 +48,7 @@ Some banks add a line or two of account metadata above the real header — an ac
 
 ## Common mistakes to avoid
 
-- **Opening the file in Excel to clean it.** Excel will reinterpret your numbers and dates on open — see the [Excel guide](/blog/open-csv-in-excel-without-breaking-numbers). Clean the CSV as a CSV first, then open it.
+- **Opening the file in Excel to clean it.** Excel will reinterpret your numbers and dates on open — see the [Excel guide](/blog/csv-in-excel-without-breaking-numbers). Clean the CSV as a CSV first, then open it.
 - **Removing empty rows that are meaningful.** Rare, but some exports use a blank row as a separator between accounts. Check before bulk-removing if your file has structure like that.
 - **Merging first, cleaning never.** If you combined several exports, clean and dedupe the merged result — the mess compounds across files.
 - **Uploading the statement to an online cleaner.** Keep it local.

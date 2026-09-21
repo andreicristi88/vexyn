@@ -1,0 +1,8 @@
+# Four pages Google never fetched in 18 days, at addresses it was offered by
+# sitemap, homepage and direct request — while every other URL on the site
+# was indexed within a day or two. Same pages, new addresses; the old ones
+# consolidate here permanently.
+/bank-statement-pdf-to-csv                          /pdf-bank-statement-to-csv                        301
+/blog/convert-bank-statement-pdf-to-csv             /blog/convert-pdf-bank-statement-to-csv           301
+/blog/analyze-revenue-by-month-product-customer     /blog/revenue-by-month-product-and-customer       301
+/blog/open-csv-in-excel-without-breaking-numbers    /blog/csv-in-excel-without-breaking-numbers       301

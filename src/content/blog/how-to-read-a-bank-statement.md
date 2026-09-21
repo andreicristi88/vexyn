@@ -53,7 +53,7 @@ Reading a statement is also a security habit. Go down the list once with a suspi
 - **Reading only the closing balance.** It hides the net movement and the mid-month low, which are the readings that actually describe the period.
 - **Misreading the date format.** `01/02` flips meaning between regions. Know which your bank uses before you conclude anything about timing.
 - **Adding up merchants by eye.** The same shop appears written several ways; manual totals miss some. Let a tool group them.
-- **Opening the CSV straight in Excel.** It can mangle dates and long numbers on open — [handle that first](/blog/open-csv-in-excel-without-breaking-numbers) or analyze it as a CSV.
+- **Opening the CSV straight in Excel.** It can mangle dates and long numbers on open — [handle that first](/blog/csv-in-excel-without-breaking-numbers) or analyze it as a CSV.
 - **Skipping the unfamiliar small charges.** A tiny unrecognised transaction can be the first sign of card fraud. Do not scroll past it.
 
 ## Frequently asked questions

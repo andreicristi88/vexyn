@@ -2,6 +2,7 @@
 title: "How to break down revenue by month and product"
 description: A flat sales export doesn't tell you which month, product or customer drives your revenue. Here is how to turn any sales CSV into a monthly trend and a ranked breakdown — in your browser, without uploading it.
 pubDate: 2026-09-02
+updatedDate: 2026-09-21
 category: 'Business & Stripe'
 tags: ['revenue', 'analytics', 'guide']
 related: ['/revenue-analyzer', '/saas-metrics', '/stripe-csv-cleaner']

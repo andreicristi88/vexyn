@@ -45,7 +45,7 @@ Once you have the CSV with a Category column, a spreadsheet does the rest: a piv
 - **Wrong description column.** If the category chips look random, the tool is probably reading the amount or date column. Set **Category from** to the payee/description field.
 - **Trusting every category to the penny.** Keyword matching is a first pass. Spot-check the big buckets and correct outliers in the spreadsheet before drawing conclusions.
 - **Ignoring "Uncategorized".** Those amounts still count toward your total; they simply matched no rule. A few manual edits usually clears the meaningful ones.
-- **Opening the CSV in Excel first and re-saving.** Excel can mangle dates and long numbers on open — categorize the CSV as a CSV, then open the result. See the [Excel guide](/blog/open-csv-in-excel-without-breaking-numbers).
+- **Opening the CSV in Excel first and re-saving.** Excel can mangle dates and long numbers on open — categorize the CSV as a CSV, then open the result. See the [Excel guide](/blog/csv-in-excel-without-breaking-numbers).
 - **Uploading the statement somewhere.** The categorization runs in your browser; keep the data local.
 
 ## Frequently asked questions

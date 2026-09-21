@@ -40,7 +40,7 @@ And if you want to work with the data yourself, the [Transaction Categorizer](/t
 - **Analyzing an unusual month.** A month with a holiday or a big one-off purchase gives averages that describe nothing. Pick a representative period, or exclude the outlier consciously.
 - **Trusting automatic categories to the penny.** Keyword categorization is a first pass, not accounting. Verify the big categories before you draw conclusions.
 - **Looking only at categories.** The merchant view catches frequent small spends that a broad category hides.
-- **Opening the CSV in Excel first.** Excel can mangle dates and long numbers on open — [analyze the CSV as a CSV](/blog/open-csv-in-excel-without-breaking-numbers), or export a fresh copy.
+- **Opening the CSV in Excel first.** Excel can mangle dates and long numbers on open — [analyze the CSV as a CSV](/blog/csv-in-excel-without-breaking-numbers), or export a fresh copy.
 - **Uploading the statement somewhere.** There is no reason to send your spending history to a server for a job your browser can do.
 
 ## Frequently asked questions

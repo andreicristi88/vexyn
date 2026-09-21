@@ -81,7 +81,7 @@ With a browser-based converter like Vexyn's, no — open your browser's Network 
 ## Related guides
 
 - [CSV to QBO for QuickBooks](/blog/convert-csv-to-qbo-for-quickbooks) — the QuickBooks-specific version.
-- [How to open a CSV in Excel without breaking your numbers](/blog/open-csv-in-excel-without-breaking-numbers) — the same date and number traps, in a spreadsheet.
+- [How to open a CSV in Excel without breaking your numbers](/blog/csv-in-excel-without-breaking-numbers) — the same date and number traps, in a spreadsheet.
 
 ## Sources cited in this guide
 

@@ -71,7 +71,7 @@ No. The file is read and all metrics computed in your browser. Confirm it in the
 
 ## Related guides
 
-- [How to break down your revenue by month, product and customer](/blog/analyze-revenue-by-month-product-customer) — one-off and total revenue, not just recurring.
+- [How to break down your revenue by month, product and customer](/blog/revenue-by-month-product-and-customer) — one-off and total revenue, not just recurring.
 - [How to clean a Stripe CSV export into a readable sheet](/blog/clean-stripe-csv-export) — clean the payments side of the same account.
 
 ## Glossary

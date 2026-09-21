@@ -93,7 +93,7 @@ No. Open your browser's Network panel while converting: no request carries the f
 ## Related guides
 
 - [How to convert a bank CSV to OFX](/blog/convert-bank-csv-to-ofx) — the reverse direction, where the column mapping and date format matter.
-- [How to open a CSV in Excel without breaking your numbers](/blog/open-csv-in-excel-without-breaking-numbers) — for the step after this one.
+- [How to open a CSV in Excel without breaking your numbers](/blog/csv-in-excel-without-breaking-numbers) — for the step after this one.
 - [CSV vs OFX vs QBO: which format](/blog/csv-vs-ofx-vs-qbo-which-format) — when you get to choose.
 
 ## Sources cited in this guide

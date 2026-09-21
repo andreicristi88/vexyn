@@ -2,9 +2,10 @@
 title: "How to convert a bank statement PDF to CSV"
 description: Your bank gives you a PDF and every tool wants a CSV. Here is how to rebuild the transaction table out of a statement PDF — keeping debit and credit columns apart — in your browser, without uploading the one document that describes your whole financial life.
 pubDate: 2026-09-04
+updatedDate: 2026-09-21
 category: 'Cleaning & organizing'
 tags: ['pdf', 'bank', 'guide']
-related: ['/bank-statement-pdf-to-csv', '/bank-statement-analyzer', '/csv-to-qbo']
+related: ['/pdf-bank-statement-to-csv', '/bank-statement-analyzer', '/csv-to-qbo']
 ---
 
 Banks hand out PDFs. Spreadsheets, accounting software and every analysis tool want a CSV. That gap is why "convert bank statement PDF to Excel" is one of the most searched jobs in personal finance — and why so many services offer to do it for you, in exchange for uploading the single document that lists every merchant you have paid, every salary you have received, and what you had left afterwards. This guide does the conversion without that trade, and explains what to check before you trust the result.
@@ -20,7 +21,7 @@ The quick test takes five seconds: open the PDF and try to select a line of text
 
 ## Convert the statement
 
-Open [Vexyn's Bank Statement PDF to CSV](/bank-statement-pdf-to-csv). It runs in your browser and never uploads the file.
+Open [Vexyn's Bank Statement PDF to CSV](/pdf-bank-statement-to-csv). It runs in your browser and never uploads the file.
 
 1. Drop the PDF in. It reads every page and rebuilds the transaction table.
 2. Read the summary line: pages, transactions found, wrapped lines joined, and lines skipped. Skipped lines are page furniture — the bank's header, the column titles, "Page 2 of 5" — and a handful of them is normal.
@@ -69,7 +70,7 @@ Once you have it, the rest of the site takes over: [analyze the spending](/blog/
 
 ### How do I convert a bank statement PDF to CSV or Excel for free?
 
-Use a converter that rebuilds the transaction table from the PDF's text. [Vexyn's Bank Statement PDF to CSV](/bank-statement-pdf-to-csv) does it in your browser with no account and no upload; from the CSV, [CSV to Excel](/csv-to-excel) gives you a real .xlsx if you need one.
+Use a converter that rebuilds the transaction table from the PDF's text. [Vexyn's Bank Statement PDF to CSV](/pdf-bank-statement-to-csv) does it in your browser with no account and no upload; from the CSV, [CSV to Excel](/csv-to-excel) gives you a real .xlsx if you need one.
 
 ### Is it safe to upload my bank statement to a PDF converter?
 

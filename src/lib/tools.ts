@@ -63,7 +63,7 @@ export const TOOLS: Tool[] = [
   { slug: 'csv-to-qbo', zone: 'data', name: 'CSV to QBO', description: 'Convert a bank CSV to a QuickBooks .qbo file for import.', icon: '📥', available: true },
   { slug: 'csv-to-ofx', zone: 'data', name: 'CSV to OFX', description: 'Convert a bank CSV to OFX for import into finance software.', icon: '📤', available: true },
   { slug: 'bank-csv-formatter', zone: 'data', name: 'Bank CSV Formatter', description: 'Reshape any bank export into a clean, standard layout.', icon: '🏛', available: true },
-  { slug: 'bank-statement-pdf-to-csv', zone: 'data', name: 'Bank Statement PDF to CSV', description: 'Turn a statement PDF into a clean CSV, without uploading it.', icon: '📄', available: true },
+  { slug: 'pdf-bank-statement-to-csv', zone: 'data', name: 'Bank Statement PDF to CSV', description: 'Turn a statement PDF into a clean CSV, without uploading it.', icon: '📄', available: true },
   { slug: 'ofx-to-csv', zone: 'data', name: 'OFX to CSV', description: 'Read an OFX, QFX or QBO statement into a spreadsheet.', icon: '📊', available: true },
   { slug: 'mt940-to-csv', zone: 'data', name: 'MT940 to CSV', description: 'Read a SWIFT MT940 bank statement into a spreadsheet.', icon: '🏦', available: true },
   { slug: 'camt053-to-csv', zone: 'data', name: 'CAMT.053 to CSV', description: 'Read an ISO 20022 XML bank statement into a spreadsheet.', icon: '🧾', available: true },

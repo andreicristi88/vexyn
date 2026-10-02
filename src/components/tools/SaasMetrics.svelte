@@ -8,11 +8,13 @@
   let dragOver = $state(false);
   let decimal = $state<'.' | ','>('.');
   let map = $state<SaasMap>({ ...DEFAULT_SAAS_MAP });
+  /** Which currency the figures cover, in a file that has more than one. */
+  let currency = $state('');
 
   let fileInput: HTMLInputElement;
 
   const ready = $derived(!!grid && map.amount >= 0);
-  const m = $derived(grid && ready ? computeSaasMetrics(grid, map, decimal) : null);
+  const m = $derived(grid && ready ? computeSaasMetrics(grid, map, decimal, currency || undefined) : null);
   const maxPlan = $derived(m ? m.byPlan.reduce((x, p) => Math.max(x, p.mrr), 0) || 1 : 1);
 
   function guess(headers: string[], patterns: RegExp[]): number {
@@ -23,7 +25,7 @@
     error = '';
     const res = parseCsv(text, true);
     if (!res.ok) { error = res.error; grid = null; return; }
-    grid = res.grid; fileName = name;
+    grid = res.grid; fileName = name; currency = '';
     map = {
       amount: guess(res.grid.headers, [/^amount$|price|mrr|value|^total$|recurring/]),
       interval: guess(res.grid.headers, [/interval|billing.?period|frequency|cycle|recurring.?period/]),
@@ -43,7 +45,7 @@
   function onPick(e: Event) { const t = e.target as HTMLInputElement; if (t.files?.[0]) handleFile(t.files[0]); t.value = ''; }
   function onDrop(e: DragEvent) { e.preventDefault(); dragOver = false; const f = e.dataTransfer?.files?.[0]; if (f) handleFile(f); }
   function onDragOver(e: DragEvent) { e.preventDefault(); dragOver = true; }
-  function reset() { grid = null; fileName = ''; error = ''; map = { ...DEFAULT_SAAS_MAP }; }
+  function reset() { grid = null; fileName = ''; error = ''; currency = ''; map = { ...DEFAULT_SAAS_MAP }; }
 
   function money(n: number): string { return (m?.currency ? m.currency + ' ' : '') + n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
@@ -106,6 +108,15 @@
     {#if !ready}
       <p class="text-sm text-[color:var(--color-text-mute)]">Choose the <strong>Amount</strong> column to calculate MRR.</p>
     {:else if m}
+      {#if m.currencies.length > 1}
+        <div class="flex flex-wrap items-center gap-3 p-3 rounded-lg bg-[color:var(--color-warning)]/10 border border-[color:var(--color-warning)]/30 text-sm">
+          <span class="text-[color:var(--color-text-mute)]">This file has subscriptions in {m.currencies.join(', ')}. They are not added together — that would need exchange rates. Showing</span>
+          <select bind:value={currency} class="px-2 py-1 rounded-md bg-[color:var(--color-surface-2)] border border-[color:var(--color-border)] text-sm">
+            {#each m.currencies as c}<option value={c}>{c}</option>{/each}
+          </select>
+          <span class="text-xs text-[color:var(--color-text-dim)]">{m.excluded} row{m.excluded === 1 ? '' : 's'} in other currencies or with none left out.</span>
+        </div>
+      {/if}
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div class="p-4 rounded-xl bg-gradient-to-br from-[color:var(--color-brand-500)]/10 to-[color:var(--color-accent-500)]/10 border border-[color:var(--color-brand-500)]/30"><p class="text-xs text-[color:var(--color-text-mute)] mb-1">MRR</p><p class="text-xl font-bold text-[color:var(--color-brand-400)]">{money(m.mrr)}</p></div>
         <div class="p-4 rounded-xl bg-[color:var(--color-surface)] border border-[color:var(--color-border)]"><p class="text-xs text-[color:var(--color-text-mute)] mb-1">ARR</p><p class="text-xl font-bold">{money(m.arr)}</p></div>

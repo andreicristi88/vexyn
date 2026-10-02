@@ -121,6 +121,34 @@ function dedupeWarnings(w: string[]): string[] {
   return out;
 }
 
+/**
+ * Column names made unique, case-insensitively, without renaming anything
+ * that was already unique.
+ *
+ * A repeated name keeps its first occurrence and gives the rest " (2)",
+ * " (3)" — skipping any suffix another column already carries. The old
+ * header cleaner numbered blindly, so "x, x, x (2)" came out as
+ * "x, x (2), x (2)": the cleaning step produced the very duplicate it was
+ * there to remove. Here the names that occur once are reserved first, and
+ * the same input gives "x, x (3), x (2)".
+ */
+export function uniqueNames(names: string[]): string[] {
+  const key = (n: string) => n.trim().toLowerCase();
+  const count = new Map<string, number>();
+  for (const n of names) count.set(key(n), (count.get(key(n)) ?? 0) + 1);
+  const taken = new Set(names.filter((n) => count.get(key(n)) === 1).map(key));
+  const seen = new Set<string>();
+  return names.map((n) => {
+    const k = key(n);
+    if (count.get(k) === 1) return n;
+    if (!seen.has(k)) { seen.add(k); taken.add(k); return n; }
+    let i = 2;
+    while (taken.has(`${k} (${i})`)) i++;
+    taken.add(`${k} (${i})`);
+    return `${n.trim()} (${i})`;
+  });
+}
+
 export type CleanOptions = {
   /** Trim leading/trailing whitespace from every cell. */
   trimCells: boolean;
@@ -186,22 +214,11 @@ export function cleanGrid(grid: Grid, opts: CleanOptions): CleanResult {
 
   // 2. Headers: trim, collapse, and de-duplicate names.
   if (opts.cleanHeaders) {
-    const seen = new Map<string, number>();
-    headers = headers.map((h, i) => {
-      let name = h.trim().replace(/\s{2,}/g, ' ');
-      if (!name) name = `Column ${i + 1}`;
-      const lower = name.toLowerCase();
-      if (seen.has(lower)) {
-        const n = seen.get(lower)! + 1;
-        seen.set(lower, n);
-        name = `${name} (${n})`;
-      } else {
-        seen.set(lower, 1);
-      }
-      // Count each changed header once, whether it was trimmed or de-duplicated.
-      if (name !== h) stats.headersRenamed++;
-      return name;
-    });
+    const tidy = headers.map((h, i) => h.trim().replace(/\s{2,}/g, ' ') || `Column ${i + 1}`);
+    const unique = uniqueNames(tidy);
+    // Count each changed header once, whether it was trimmed or de-duplicated.
+    unique.forEach((name, i) => { if (name !== headers[i]) stats.headersRenamed++; });
+    headers = unique;
   }
 
   // 3. Remove empty columns (all data cells blank).
@@ -330,9 +347,15 @@ export function dedupeRows(grid: Grid, mode: DedupeMode): DedupeResult {
 export function mergeGrids(grids: Grid[]): Grid {
   const headerOrder: string[] = [];
   const lowerToIndex = new Map<string, number>();
+  // Columns are matched by name, so two columns sharing a name in one file
+  // used to land in the same slot and the second overwrote the first — a
+  // whole column of values gone without a word. Each file's names are made
+  // unique first; the k-th "amount" in one file then meets the k-th
+  // "amount" in the next.
+  const named = grids.map((g) => uniqueNames(g.headers));
 
-  for (const g of grids) {
-    for (const h of g.headers) {
+  for (const names of named) {
+    for (const h of names) {
       const key = h.trim().toLowerCase();
       if (!lowerToIndex.has(key)) {
         lowerToIndex.set(key, headerOrder.length);
@@ -343,8 +366,8 @@ export function mergeGrids(grids: Grid[]): Grid {
 
   const width = headerOrder.length;
   const rows: string[][] = [];
-  for (const g of grids) {
-    const colMap = g.headers.map((h) => lowerToIndex.get(h.trim().toLowerCase()) ?? -1);
+  grids.forEach((g, gi) => {
+    const colMap = named[gi].map((h) => lowerToIndex.get(h.trim().toLowerCase()) ?? -1);
     for (const row of g.rows) {
       const out = new Array(width).fill('');
       for (let c = 0; c < row.length; c++) {
@@ -353,16 +376,19 @@ export function mergeGrids(grids: Grid[]): Grid {
       }
       rows.push(out);
     }
-  }
+  });
 
   return { headers: headerOrder, rows, delimiter: ',', hadBom: false };
 }
 
 /** Turn a grid into an array of header→value objects (for JSON export). */
 export function gridToRecords(grid: Grid): Record<string, string>[] {
+  // An object cannot hold two keys of the same name: the second "amount"
+  // overwrote the first and its values vanished from the JSON.
+  const keys = uniqueNames(grid.headers);
   return grid.rows.map((row) => {
     const obj: Record<string, string> = {};
-    grid.headers.forEach((h, i) => {
+    keys.forEach((h, i) => {
       obj[h] = row[i] ?? '';
     });
     return obj;

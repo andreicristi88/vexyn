@@ -16,6 +16,7 @@
     "test:ofx": "tsx tests/ofx.test.ts",
     "test:bank": "tsx tests/bankformats.test.ts",
     "test:xlsx": "tsx tests/xlsx.test.ts",
+    "test:csv": "tsx tests/csv.test.ts",
     "preview": "astro preview",
     "astro": "astro"
   },

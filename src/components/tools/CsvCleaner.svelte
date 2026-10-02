@@ -12,6 +12,8 @@
   } from '../../lib/csv';
 
   let fileName = $state('');
+  /** The text the grid was parsed from, file or paste, so a header toggle can re-read it. */
+  let rawText = '';
   let hasHeader = $state(true);
   let grid = $state<Grid | null>(null);
   let parseWarnings = $state<string[]>([]);
@@ -29,6 +31,7 @@
   const PREVIEW_ROWS = 12;
 
   function loadText(text: string, name: string) {
+    rawText = text;
     error = '';
     copied = false;
     const res = parseCsv(text, hasHeader);
@@ -73,11 +76,9 @@
   }
 
   // Re-parse when the header toggle flips (affects how row 1 is treated).
-  function reparse() {
-    if (fileName === 'pasted.csv' && pasteText.trim()) {
-      loadText(pasteText, 'pasted.csv');
-    }
-  }
+  // Re-read the same text when the header toggle flips. This used to work for
+  // pasted text only, so on a dropped file the checkbox changed and nothing else did.
+  function reparse() { if (rawText) loadText(rawText, fileName); }
 
   function downloadName(): string {
     const base = fileName.replace(/\.[^.]+$/, '') || 'cleaned';

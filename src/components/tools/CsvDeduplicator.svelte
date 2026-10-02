@@ -11,6 +11,8 @@
   } from '../../lib/csv';
 
   let fileName = $state('');
+  /** The text the grid was parsed from, file or paste, so a header toggle can re-read it. */
+  let rawText = '';
   let hasHeader = $state(true);
   let grid = $state<Grid | null>(null);
   let error = $state('');
@@ -30,6 +32,7 @@
   const PREVIEW_ROWS = 12;
 
   function loadText(text: string, name: string) {
+    rawText = text;
     error = '';
     copied = false;
     keyColumns = [];
@@ -47,7 +50,9 @@
   function onDrop(e: DragEvent) { e.preventDefault(); dragOver = false; const f = e.dataTransfer?.files?.[0]; if (f) handleFile(f); }
   function onDragOver(e: DragEvent) { e.preventDefault(); dragOver = true; }
   function loadPaste() { if (pasteText.trim()) loadText(pasteText, 'pasted.csv'); }
-  function reparse() { if (fileName === 'pasted.csv' && pasteText.trim()) loadText(pasteText, 'pasted.csv'); }
+  // Re-read the same text when the header toggle flips. This used to work for
+  // pasted text only, so on a dropped file the checkbox changed and nothing else did.
+  function reparse() { if (rawText) loadText(rawText, fileName); }
 
   function toggleKey(i: number) {
     keyColumns = keyColumns.includes(i) ? keyColumns.filter((c) => c !== i) : [...keyColumns, i];

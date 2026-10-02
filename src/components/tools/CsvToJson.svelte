@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { fileToText, TABULAR_ACCEPT, parseCsv, gridToRecords, delimiterLabel, type Grid } from '../../lib/csv';
+  import { fileToText, TABULAR_ACCEPT, parseCsv, gridToRecords, uniqueNames, delimiterLabel, type Grid } from '../../lib/csv';
 
   let fileName = $state('');
+  /** The text the grid was parsed from, file or paste, so a header toggle can re-read it. */
+  let rawText = '';
   let hasHeader = $state(true);
   let grid = $state<Grid | null>(null);
   let error = $state('');
@@ -14,6 +16,14 @@
   let fileInput: HTMLInputElement;
   let pasteText = $state('');
 
+  // Names repeated in the header become object keys that would collide; the
+  // engine renames them so no value is lost, and the page says which.
+  const renamed = $derived.by(() => {
+    if (!grid) return [] as string[];
+    const u = uniqueNames(grid.headers);
+    return u.filter((n, i) => n !== grid!.headers[i]);
+  });
+
   const json = $derived.by(() => {
     if (!grid) return '';
     const value =
@@ -24,6 +34,7 @@
   });
 
   function loadText(text: string, name: string) {
+    rawText = text;
     error = ''; copied = false;
     const res = parseCsv(text, hasHeader);
     if (!res.ok) { error = res.error; grid = null; return; }
@@ -37,7 +48,9 @@
   function onDrop(e: DragEvent) { e.preventDefault(); dragOver = false; const f = e.dataTransfer?.files?.[0]; if (f) handleFile(f); }
   function onDragOver(e: DragEvent) { e.preventDefault(); dragOver = true; }
   function loadPaste() { if (pasteText.trim()) loadText(pasteText, 'pasted.csv'); }
-  function reparse() { if (fileName === 'pasted.csv' && pasteText.trim()) loadText(pasteText, 'pasted.csv'); }
+  // Re-read the same text when the header toggle flips. This used to work for
+  // pasted text only, so on a dropped file the checkbox changed and nothing else did.
+  function reparse() { if (rawText) loadText(rawText, fileName); }
 
   function download() {
     const blob = new Blob([json], { type: 'application/json' });
@@ -85,6 +98,10 @@
         <button class="text-xs text-[color:var(--color-text-mute)] hover:text-[color:var(--color-text)] px-2 py-1" on:click={reset}>Change file</button>
       </div>
     </div>
+
+    {#if renamed.length && shape === 'objects'}
+      <p class="p-3 rounded-lg bg-[color:var(--color-warning)]/10 border border-[color:var(--color-warning)]/30 text-xs text-[color:var(--color-text-mute)]">Some column names repeat, and an object cannot hold two keys of the same name. They were renamed so no value is dropped: {renamed.join(', ')}.</p>
+    {/if}
 
     <div class="flex flex-wrap gap-4 p-4 rounded-xl bg-[color:var(--color-surface)] border border-[color:var(--color-border)]">
       <label class="text-sm">
